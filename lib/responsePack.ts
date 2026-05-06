@@ -1,6 +1,14 @@
 import { CASE_TYPE_LABELS } from "@/lib/labels";
 import { getResourcesForCase } from "@/lib/publicResources";
-import type { CaseClassification, CaseInput, RequestDraftOutput, ResponsePack, ServiceIntegration } from "@/lib/types";
+import type {
+  CaseClassification,
+  CaseInput,
+  DigitalSexCrimePatternResponse,
+  PreventionGuidance,
+  RequestDraftOutput,
+  ResponsePack,
+  ServiceIntegration,
+} from "@/lib/types";
 
 function compactList(items: Array<string | undefined>) {
   return items.filter((item): item is string => Boolean(item && item.trim()));
@@ -22,11 +30,13 @@ export function generateResponsePack(input: CaseInput, classification: CaseClass
       legalAidMemo: generateLegalAidMemo(input, classification),
     },
     serviceIntegrations: generateServiceIntegrations(classification),
+    preventionGuidance: generatePreventionGuidance(input, classification),
     automationBoundary: {
       automatedByJium: [
         "사건 유형 분류",
         "민감정보 마스킹",
         "안전한 검색어와 재확인 계획 생성",
+        "범죄 양상별 대응 매트릭스 생성",
         "삭제 요청서·신고서·고소 상담자료 초안 작성",
         "로컬 사건 보드와 문서 내보내기",
       ],
@@ -45,6 +55,196 @@ export function generateResponsePack(input: CaseInput, classification: CaseClass
         "플랫폼 강제 삭제 또는 접속 차단",
       ],
     },
+  };
+}
+
+function includesAny(text: string, keywords: string[]) {
+  return keywords.some((keyword) => text.includes(keyword.toLocaleLowerCase("ko-KR")));
+}
+
+function generatePreventionGuidance(input: CaseInput, classification: CaseClassification): PreventionGuidance {
+  const text = [input.situation, input.title, input.description, input.platform, input.keywords, input.exposedInfo.join(" ")]
+    .join(" ")
+    .toLocaleLowerCase("ko-KR");
+  const patterns = buildDigitalSexCrimePatterns();
+  const matchedPatterns = patterns.filter((pattern) => includesAny(text, pattern.riskSignals.map((signal) => signal.split(":")[0])));
+  const shouldShowAllCorePatterns = classification.caseType === "DIGITAL_SEX_CRIME" && matchedPatterns.length === 0;
+  const selectedPatterns = shouldShowAllCorePatterns ? patterns.slice(0, 4) : matchedPatterns;
+
+  return {
+    title: "범죄유형별 피해 확산 방지 매트릭스",
+    summary:
+      classification.caseType === "DIGITAL_SEX_CRIME"
+        ? "과거 디지털성범죄 양상을 피해자 대응 언어로 바꾸었습니다. 범행 방법을 자세히 설명하지 않고, 위험 신호와 필요한 조치만 보여줍니다."
+        : "디지털성범죄로 확정되지 않은 사건도 유포·협박·사칭 위험이 있으면 같은 안전 원칙으로 대응합니다.",
+    patterns: selectedPatterns.length ? selectedPatterns : [buildGeneralOnlineAbusePattern()],
+    survivorSupportProtocol: [
+      "피해자에게 원본을 보여달라고 요구하지 않습니다.",
+      "피해자가 안전한 기기와 장소에서 상담·신고할 수 있게 돕습니다.",
+      "사실 확인보다 안정, 휴식, 동행, 연락 차단이 먼저입니다.",
+      "피해자의 동의 없이 가족·학교·직장·SNS에 알리지 않습니다.",
+      "증거 정리는 URL, 계정명, 발견 일시, 협박 메시지 존재 여부처럼 최소 정보 중심으로 합니다.",
+      "미성년자 또는 신변 위협이 있으면 112, 1366, 중앙디지털성범죄피해자지원센터 연결을 우선합니다.",
+    ],
+    communityPrevention: [
+      "성적 이미지 합성·유포 의심 게시물을 발견하면 소비하거나 공유하지 않고 신고합니다.",
+      "피해자 신상 추측, 링크 재공유, 단체방 전달을 막는 안내문을 즉시 배포합니다.",
+      "학교·단체·직장은 피해자 조사보다 보호조치, 게시물 차단, 2차 가해 금지를 먼저 공지합니다.",
+      "플랫폼 신고 결과와 재유포 여부를 7일·30일·90일 단위로 확인합니다.",
+      "피해자를 탓하는 질문 대신 '무엇을 함께 처리하면 되는지'를 묻습니다.",
+    ],
+  };
+}
+
+function buildDigitalSexCrimePatterns(): DigitalSexCrimePatternResponse[] {
+  return [
+    {
+      id: "non-consensual-filming",
+      crimeType: "불법촬영 의심",
+      riskSignals: ["불법촬영: 촬영 동의가 없거나 몰래 촬영된 정황", "몰카: 숨겨진 촬영 또는 공공장소 촬영 의심", "촬영: 촬영물 존재를 뒤늦게 알게 된 경우"],
+      requiredMeasures: [
+        "피해물 원본을 지움AI에 업로드하지 않기",
+        "촬영 장소·시각·상대방 단서를 최소한으로 정리하기",
+        "중앙디지털성범죄피해자지원센터 또는 경찰 상담 연결",
+        "신체·주거·학교·직장 안전 위협이 있으면 112 우선",
+      ],
+      responseSteps: [
+        "안전한 장소로 이동하고 신뢰할 수 있는 사람 한 명에게 동행을 요청합니다.",
+        "URL이 없더라도 촬영 정황, 장소, 날짜, 상대방 단서를 시간순으로 적습니다.",
+        "피해물 확인을 위해 다시 내려받거나 주변에 보내지 않습니다.",
+        "전문기관 상담 후 삭제지원, 수사, 의료·심리 지원 여부를 결정합니다.",
+      ],
+      evidenceToKeep: ["촬영 의심 장소와 시각", "상대방 계정 또는 연락 수단", "협박 또는 암시 메시지", "이미 신고한 기관과 접수번호"],
+      helperActions: ["피해자 진술을 대신 판단하지 않기", "이동·통화·기관 상담 동행", "피해물 확인 요청 금지", "가해 의심자와 직접 대면하지 않기"],
+      preventionForOthers: ["불법촬영 의심 장소는 관리자·기관에 즉시 알리기", "동일 장소 피해 가능성이 있으면 공식기관 안내문 배포", "피해자 이름이 드러나는 단체방 대화 중단"],
+      doNotDo: ["피해물을 재생·저장·전달하기", "가해 의심자를 사적으로 추적하기", "피해자에게 왜 거기 있었는지 묻기"],
+      primaryRoutes: ["중앙디지털성범죄피해자지원센터", "경찰청 ECRM", "여성긴급전화 1366"],
+    },
+    {
+      id: "non-consensual-distribution",
+      crimeType: "비동의 유포·재유포",
+      riskSignals: ["유포: 동의 없이 게시·공유된 정황", "재유포: 삭제 후 다시 올라온 정황", "공유: 지인·단체방·SNS 전달 정황"],
+      requiredMeasures: [
+        "URL, 게시 위치, 발견 일시를 표로 정리",
+        "플랫폼 삭제 요청과 중앙디지털성범죄피해자지원센터 삭제지원 연결",
+        "삭제가 지연되면 방송미디어통신심의위원회 신고 검토",
+        "재유포는 새 사건으로 기록해 모니터링 주기에 포함",
+      ],
+      responseSteps: [
+        "같은 게시물을 반복 열람하지 말고 URL과 화면 위치만 기록합니다.",
+        "플랫폼 신고, 전문기관 삭제지원, 심의 요청을 순서대로 진행합니다.",
+        "삭제 완료 후에도 동일 키워드와 계정 단서를 7일·30일·90일에 재확인합니다.",
+        "주변인에게 링크 공유 중단 요청 문구를 전달합니다.",
+      ],
+      evidenceToKeep: ["게시물 URL", "게시자 ID·닉네임", "발견 일시", "플랫폼 신고 접수번호", "재유포 URL 목록"],
+      helperActions: ["링크를 열어보자는 제안 막기", "신고 문구 작성 돕기", "재유포 발견 시 새 URL만 전달받기", "피해자 대신 단체방 확산 중단 요청"],
+      preventionForOthers: ["단체방에서 링크·파일 재전송 금지 공지", "게시자를 태그하거나 조롱하지 않고 플랫폼 신고", "학교·직장에는 피해자 식별 없이 2차 가해 금지 안내"],
+      doNotDo: ["삭제 확인을 위해 여러 사람에게 열람 요청", "피해자 이름과 함께 신고 독려 게시", "가해자 추정 신상 공개"],
+      primaryRoutes: ["중앙디지털성범죄피해자지원센터", "방송미디어통신심의위원회", "플랫폼 신고"],
+    },
+    {
+      id: "distribution-threat",
+      crimeType: "유포협박·갈취",
+      riskSignals: ["협박: 유포하겠다는 말이나 압박", "금전: 돈·상품권·코인 요구", "추가촬영: 추가 사진·영상 요구", "성행위: 만남 또는 성적 요구"],
+      requiredMeasures: [
+        "돈이나 추가 자료를 보내지 않기",
+        "협박 메시지와 계정 정보를 보존",
+        "즉시 112 또는 경찰청 ECRM 신고 준비",
+        "중앙디지털성범죄피해자지원센터 상담 연결",
+      ],
+      responseSteps: [
+        "대화를 길게 이어가지 말고 안전한 기기에서 증거를 보존합니다.",
+        "금전·추가촬영·만남 요구에는 응하지 않습니다.",
+        "가족·학교·직장에 알려질 위험이 있으면 상담기관과 보호 공지 범위를 먼저 정합니다.",
+        "긴급 위협이면 112, 상담·삭제지원은 1366 또는 중앙센터로 연결합니다.",
+      ],
+      evidenceToKeep: ["협박 메시지 원문", "요구 내용", "송금 요구 계좌·연락 수단", "상대 계정 URL", "대화 시각"],
+      helperActions: ["피해자가 혼자 응답하지 않게 돕기", "금전 송금 중단", "신뢰 가능한 연락망 정리", "경찰·상담기관 연결 동행"],
+      preventionForOthers: ["협박범 요구를 들어주면 멈춘다는 식의 조언 금지", "단체방·지인에게 피해자 비난 금지 안내", "비슷한 협박 메시지를 받은 사람이 있으면 공식 신고로 연결"],
+      doNotDo: ["돈 보내기", "추가 촬영물 보내기", "직접 만나 해결하기", "보복 협박"],
+      primaryRoutes: ["112", "경찰청 ECRM", "중앙디지털성범죄피해자지원센터", "여성긴급전화 1366"],
+    },
+    {
+      id: "synthetic-deepfake",
+      crimeType: "합성·딥페이크 성착취",
+      riskSignals: ["딥페이크: 얼굴·신체·음성 합성 의심", "합성: 성적 이미지와 결합된 정황", "지인능욕: 특정인을 겨냥한 합성·모욕 표현"],
+      requiredMeasures: [
+        "합성물 원본을 재공유하지 않기",
+        "URL, 게시자, 제목, 썸네일 위치 등 최소 단서 정리",
+        "방송미디어통신심의위원회 또는 중앙센터 신고",
+        "학교·직장·커뮤니티 내 2차 가해 차단 공지 검토",
+      ],
+      responseSteps: [
+        "합성 여부를 스스로 검증하려고 파일을 퍼뜨리지 않습니다.",
+        "피해자 식별 정보와 게시 위치를 분리해 기록합니다.",
+        "디지털성범죄정보 신고와 플랫폼 삭제 요청을 병행합니다.",
+        "미성년자 관련이면 보호자·학교보다 전문기관과 먼저 대응 범위를 정합니다.",
+      ],
+      evidenceToKeep: ["URL", "게시 제목 또는 방 이름", "게시자 ID", "발견 일시", "피해자 신상 노출 여부"],
+      helperActions: ["합성물을 확인해달라는 요청 거절", "신고 화면까지 동행", "피해자 신상 언급 차단", "학교·직장 대응문 초안 작성 지원"],
+      preventionForOthers: ["합성물 제작·요청·공유도 피해를 키운다는 안내", "커뮤니티 신고 규칙 고정 공지", "피해자 이름 검색·조롱 금지"],
+      doNotDo: ["합성물 진위 판별을 위해 주변에 보내기", "피해자 사진을 더 수집하기", "가해자 추정 계정에 공개 댓글로 대응"],
+      primaryRoutes: ["방송미디어통신심의위원회 1377", "중앙디지털성범죄피해자지원센터", "경찰청 ECRM"],
+    },
+    {
+      id: "online-grooming",
+      crimeType: "온라인 그루밍·미성년자 유인",
+      riskSignals: ["그루밍: 친밀감을 이용한 통제 정황", "미성년: 아동·청소년 피해 가능성", "비밀: 주변에 말하지 말라는 압박", "만남: 오프라인 만남 요구"],
+      requiredMeasures: [
+        "피해자를 비난하지 않고 즉시 안전한 어른·기관 연결",
+        "대화 삭제 전에 상담기관 또는 경찰 안내 확인",
+        "오프라인 만남 중단과 위치 안전 확보",
+        "미성년자는 보호자 동의 없이도 전문기관 상담 가능 여부 확인",
+      ],
+      responseSteps: [
+        "피해자가 스스로 말할 수 있도록 대화를 끊지 않고 안전을 먼저 확인합니다.",
+        "상대방과 직접 논쟁하거나 함정 대화를 시도하지 않습니다.",
+        "대화 기록, 계정, 만남 요구 시각을 정리합니다.",
+        "1366, 중앙센터, 경찰 상담을 통해 신고와 보호조치를 정합니다.",
+      ],
+      evidenceToKeep: ["상대 계정", "대화 시각", "만남 요구", "비밀 유지 요구", "성적 요구 또는 압박 여부"],
+      helperActions: ["혼내지 않기", "기기 압수보다 안전한 상담 연결", "보호자·학교 통보 범위는 피해자 안전 기준으로 결정", "전문기관 동행"],
+      preventionForOthers: ["청소년 대상 비밀 대화·선물·만남 요구 위험 신호 교육", "피해 고백 시 처벌보다 보호가 먼저라는 원칙 공유", "학교 단위 익명 상담 경로 공지"],
+      doNotDo: ["피해자를 꾸짖어 침묵하게 만들기", "가해 의심자에게 직접 연락", "대화방 잠입·함정수사 흉내"],
+      primaryRoutes: ["여성긴급전화 1366", "중앙디지털성범죄피해자지원센터", "경찰청 ECRM"],
+    },
+    {
+      id: "sexual-harassment-doxxing",
+      crimeType: "사이버 성적 괴롭힘·신상노출",
+      riskSignals: ["성적 괴롭힘: 성적 모욕·조롱", "신상: 개인정보와 성적 내용 결합", "조리돌림: 다수 참여 괴롭힘", "악성댓글: 반복적 성적 모욕"],
+      requiredMeasures: [
+        "문제 표현, URL, 작성자, 게시 시각을 정리",
+        "플랫폼 신고와 개인정보침해 신고센터 상담 병행",
+        "피해자 신상 추가 노출을 막는 공지 또는 차단 요청",
+        "반복·집단 괴롭힘이면 경찰·법률 상담 검토",
+      ],
+      responseSteps: [
+        "모욕 표현을 반복해서 읽지 않도록 한 사람이 대신 정리합니다.",
+        "성적 내용과 개인정보 노출 항목을 나누어 기록합니다.",
+        "플랫폼 삭제 요청 후 KISA, 온라인피해365센터, 법률 상담 경로를 선택합니다.",
+        "2차 가해 댓글은 별도 URL로 누적 기록합니다.",
+      ],
+      evidenceToKeep: ["게시 URL", "문제 표현", "개인정보 노출 항목", "작성자 ID", "반복 게시 정황"],
+      helperActions: ["대신 캡처·목록화하되 원본 공유 금지", "피해자에게 댓글을 읽게 하지 않기", "차단·신고 버튼 위치 안내", "상담 문서 정리"],
+      preventionForOthers: ["피해자 실명 언급 금지", "댓글 캡처 재게시 금지", "커뮤니티 운영자에게 즉시 삭제·차단 요청"],
+      doNotDo: ["악성 댓글에 공개적으로 맞대응", "피해자 신상 확인 질문", "조롱성 캡처 공유"],
+      primaryRoutes: ["KISA 개인정보침해 신고센터", "온라인피해365센터", "대한법률구조공단"],
+    },
+  ];
+}
+
+function buildGeneralOnlineAbusePattern(): DigitalSexCrimePatternResponse {
+  return {
+    id: "general-online-abuse",
+    crimeType: "디지털 피해 가능성 확인 필요",
+    riskSignals: ["불명확: 아직 유형이 확정되지 않음"],
+    requiredMeasures: ["URL과 피해 설명만 최소 정리", "비밀번호·주민등록번호·피해물 원본 입력 금지", "온라인피해365센터 또는 관련 공식기관 상담"],
+    responseSteps: ["피해 유형을 성급히 단정하지 않습니다.", "확인된 사실과 추정을 분리합니다.", "공식 상담에서 어느 기관으로 갈지 확인합니다."],
+    evidenceToKeep: ["발견 일시", "게시 위치", "상대 계정", "피해 내용", "이미 한 조치"],
+    helperActions: ["피해자 말 끊지 않기", "원본 제출 요구하지 않기", "상담 연결 동행"],
+    preventionForOthers: ["링크 재공유 금지", "피해자 실명 언급 금지", "공식 신고 경로 안내"],
+    doNotDo: ["무단 추적", "신상 공개", "피해물 확인 요청"],
+    primaryRoutes: ["온라인피해365센터", "KISA 개인정보침해 신고센터", "대한법률구조공단"],
   };
 }
 

@@ -38,4 +38,12 @@ describe("generateResponsePack", () => {
     expect(pack.serviceIntegrations[0]?.kind).toBe("OFFICIAL");
     expect(pack.serviceIntegrations.find((service) => service.id === "lawtalk")?.cost).toBe("유료 가능");
   });
+
+  it("범죄유형별 필요한 조치와 대응 매트릭스를 생성한다", () => {
+    const pack = generateResponsePack(input, classifyCase(input));
+    const patternNames = pack.preventionGuidance.patterns.map((pattern) => pattern.crimeType);
+    expect(patternNames).toEqual(expect.arrayContaining(["유포협박·갈취", "합성·딥페이크 성착취"]));
+    expect(pack.preventionGuidance.patterns.flatMap((pattern) => pattern.requiredMeasures).join(" ")).toContain("돈이나 추가 자료를 보내지 않기");
+    expect(pack.preventionGuidance.survivorSupportProtocol.join(" ")).toContain("원본을 보여달라고 요구하지 않습니다");
+  });
 });

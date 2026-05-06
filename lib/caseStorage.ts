@@ -22,7 +22,7 @@ export function loadCases(): SavedCase[] {
       const responsePack = item.responsePack;
       return {
         ...item,
-        responsePack: responsePack?.serviceIntegrations ? responsePack : generateResponsePack(item.input, item.classification),
+        responsePack: responsePack?.serviceIntegrations && responsePack.preventionGuidance ? responsePack : generateResponsePack(item.input, item.classification),
       };
     });
   } catch {

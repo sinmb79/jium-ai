@@ -1,6 +1,6 @@
 "use client";
 
-import { Clipboard, ExternalLink, FileWarning, Gavel, Phone, SearchCheck, ShieldAlert } from "lucide-react";
+import { Clipboard, ExternalLink, FileWarning, Gavel, HeartHandshake, Phone, SearchCheck, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import { RESOURCE_KIND_LABELS } from "@/lib/publicResources";
 import type { ResponsePack } from "@/lib/types";
@@ -121,6 +121,81 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
           </div>
         </div>
         <p className="small muted">{pack.attributionGuidance.officialProcess.join(" ")}</p>
+      </section>
+
+      <section className="panel panel-tight" style={{ boxShadow: "none" }}>
+        <h3>
+          <HeartHandshake size={18} aria-hidden="true" /> {pack.preventionGuidance.title}
+        </h3>
+        <p className="small muted">{pack.preventionGuidance.summary}</p>
+        <div className="card-stack">
+          {pack.preventionGuidance.patterns.map((pattern) => (
+            <article className="resource-card" key={pattern.id}>
+              <span className="badge badge-critical">피해 확산 방지</span>
+              <h3>{pattern.crimeType}</h3>
+              <div className="two-col">
+                <div>
+                  <strong>이 유형이면 필요한 조치</strong>
+                  <ul className="action-list small">
+                    {pattern.requiredMeasures.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <strong>이렇게 대응</strong>
+                  <ul className="action-list small">
+                    {pattern.responseSteps.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <div className="two-col">
+                <div>
+                  <strong>보관할 최소 단서</strong>
+                  <ul className="action-list small">
+                    {pattern.evidenceToKeep.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <strong>도와주는 사람이 할 일</strong>
+                  <ul className="action-list small">
+                    {pattern.helperActions.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <p className="small">
+                <strong>우선 연결:</strong> {pattern.primaryRoutes.join(", ")}
+              </p>
+              <p className="small muted">
+                <strong>하지 말아야 할 일:</strong> {pattern.doNotDo.join(", ")}
+              </p>
+            </article>
+          ))}
+        </div>
+        <div className="two-col">
+          <div>
+            <strong>피해자를 도울 때</strong>
+            <ul className="action-list small">
+              {pack.preventionGuidance.survivorSupportProtocol.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <strong>추가 피해자를 막기 위해</strong>
+            <ul className="action-list small">
+              {pack.preventionGuidance.communityPrevention.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </section>
 
       <section className="panel panel-tight" style={{ boxShadow: "none" }}>

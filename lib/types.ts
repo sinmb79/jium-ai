@@ -109,12 +109,34 @@ export type ServiceIntegration = {
   privacyNote: string;
 };
 
+export type DigitalSexCrimePatternResponse = {
+  id: string;
+  crimeType: string;
+  riskSignals: string[];
+  requiredMeasures: string[];
+  responseSteps: string[];
+  evidenceToKeep: string[];
+  helperActions: string[];
+  preventionForOthers: string[];
+  doNotDo: string[];
+  primaryRoutes: string[];
+};
+
+export type PreventionGuidance = {
+  title: string;
+  summary: string;
+  patterns: DigitalSexCrimePatternResponse[];
+  survivorSupportProtocol: string[];
+  communityPrevention: string[];
+};
+
 export type ResponsePack = {
   monitoringPlan: MonitoringPlan;
   takedownSequence: string[];
   attributionGuidance: AttributionGuidance;
   legalSupport: LegalSupportPack;
   serviceIntegrations: ServiceIntegration[];
+  preventionGuidance: PreventionGuidance;
   automationBoundary: {
     automatedByJium: string[];
     requiresUserConfirmation: string[];

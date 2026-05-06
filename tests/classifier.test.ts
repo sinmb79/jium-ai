@@ -18,6 +18,11 @@ describe("classifyCase", () => {
     expect(result.safetyNote).toContain("원본");
   });
 
+  it("그루밍과 몸캠피싱 표현도 디지털 성범죄 긴급 경로로 분류한다", () => {
+    expect(classifyCase("온라인 그루밍으로 미성년자에게 비밀 대화를 요구했어요").caseType).toBe("DIGITAL_SEX_CRIME");
+    expect(classifyCase("몸캠피싱 협박을 받고 있어요").specialistFirst).toBe(true);
+  });
+
   it("계정 유출은 비밀번호 입력 금지를 안내한다", () => {
     const result = classifyCase("비밀번호가 다크웹에 유출된 것 같아요");
     expect(result.caseType).toBe("CREDENTIAL_LEAK");

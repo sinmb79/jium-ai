@@ -53,6 +53,28 @@ ${savedCase.responsePack.attributionGuidance.whatYouCanRecord.map((item) => `- $
 
 주의: 지움AI는 유출자를 특정하지 않습니다. 신원 확인은 수사기관 또는 법원의 절차가 필요합니다.
 
+### 범죄유형별 피해 확산 방지 매트릭스
+
+${savedCase.responsePack.preventionGuidance.summary}
+
+${savedCase.responsePack.preventionGuidance.patterns
+  .map(
+    (pattern, index) => `${index + 1}. ${pattern.crimeType}
+   - 필요한 조치: ${pattern.requiredMeasures.join(" / ")}
+   - 대응 순서: ${pattern.responseSteps.join(" / ")}
+   - 보관할 최소 단서: ${pattern.evidenceToKeep.join(", ")}
+   - 도와주는 사람이 할 일: ${pattern.helperActions.join(" / ")}
+   - 우선 연결: ${pattern.primaryRoutes.join(", ")}
+   - 하지 말아야 할 일: ${pattern.doNotDo.join(", ")}`,
+  )
+  .join("\n\n")}
+
+피해자를 도울 때:
+${savedCase.responsePack.preventionGuidance.survivorSupportProtocol.map((item) => `- ${item}`).join("\n")}
+
+추가 피해자를 막기 위해:
+${savedCase.responsePack.preventionGuidance.communityPrevention.map((item) => `- ${item}`).join("\n")}
+
 ### 경찰 신고 준비서
 
 ${savedCase.responsePack.legalSupport.policeReport.body}
