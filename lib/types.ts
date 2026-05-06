@@ -36,6 +36,32 @@ export type StorageMode = "LOCAL_FIRST" | "SERVER_OPT_IN";
 
 export type EvidenceStatus = "DISCOVERED" | "SUBMITTED" | "IN_REVIEW" | "REMOVED" | "REAPPEARED";
 
+export type DeletionAuthorityContext =
+  | "OWN_ACCOUNT"
+  | "ADMIN_AUTHORITY"
+  | "AUTHORIZED_REPRESENTATIVE"
+  | "SUBJECT_ONLY"
+  | "UNCLEAR";
+
+export type DeletionAuthorityDecision =
+  | "DIRECT_DELETE_ALLOWED"
+  | "REQUEST_ONLY"
+  | "SPECIALIST_FIRST"
+  | "LEGAL_REVIEW_REQUIRED";
+
+export type DeletionAuthorityAssessment = {
+  title: string;
+  context: DeletionAuthorityContext;
+  contextLabel: string;
+  decision: DeletionAuthorityDecision;
+  directDeletionAllowed: boolean;
+  summary: string;
+  allowedActions: string[];
+  blockedActions: string[];
+  verificationQuestions: string[];
+  warning?: string;
+};
+
 export type EvidenceItem = {
   id: string;
   url: string;
@@ -58,6 +84,7 @@ export type CaseInput = {
   keywords?: string;
   evidenceItems?: EvidenceItem[];
   keepExactUrlsForSubmission?: boolean;
+  deletionAuthority?: DeletionAuthorityContext;
   exposedInfo: string[];
   urgent: boolean;
   helperMode: "self" | "guardian" | "supporter";
@@ -128,6 +155,7 @@ export type VictimDeletionPlan = {
   title: string;
   summary: string;
   directRequestAllowed: boolean;
+  authorityAssessment: DeletionAuthorityAssessment;
   firstPrinciple: string;
   urgentWarning?: string;
   steps: VictimDeletionStep[];

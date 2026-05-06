@@ -335,6 +335,56 @@ h1 {
   accent-color: var(--green);
 }
 
+.authority-field {
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 0.85rem;
+  background: #fffbf1;
+}
+
+.authority-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.authority-option {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  min-height: 5.2rem;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  padding: 0.75rem;
+  background: #fffdf8;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.authority-option input {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.2rem;
+  accent-color: var(--green);
+}
+
+.authority-option strong,
+.authority-option small {
+  display: block;
+}
+
+.authority-option small {
+  margin-top: 0.2rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.authority-option.is-selected {
+  border-color: rgba(15, 107, 87, 0.62);
+  background: #edf7f3;
+}
+
 .button-row {
   display: flex;
   gap: 0.6rem;
@@ -745,6 +795,7 @@ h1 {
 
   .choice-grid,
   .checkbox-grid,
+  .authority-grid,
   .two-col,
   .evidence-summary dl div {
     grid-template-columns: 1fr;

@@ -61,6 +61,21 @@ ${savedCase.responsePack.victimDeletionPlan.summary}
 
 직접 요청 가능 여부: ${savedCase.responsePack.victimDeletionPlan.directRequestAllowed ? "직접 요청 가능" : "전문기관 우선"}
 
+삭제 실행 권한:
+- 선택한 권한: ${savedCase.responsePack.victimDeletionPlan.authorityAssessment.contextLabel}
+- 판정: ${savedCase.responsePack.victimDeletionPlan.authorityAssessment.directDeletionAllowed ? "직접 삭제 실행 가능" : "삭제 실행 차단"}
+- 요약: ${savedCase.responsePack.victimDeletionPlan.authorityAssessment.summary}
+${savedCase.responsePack.victimDeletionPlan.authorityAssessment.warning ? `- 경고: ${savedCase.responsePack.victimDeletionPlan.authorityAssessment.warning}\n` : ""}
+
+허용되는 조치:
+${savedCase.responsePack.victimDeletionPlan.authorityAssessment.allowedActions.map((item) => `- ${item}`).join("\n")}
+
+차단되는 조치:
+${savedCase.responsePack.victimDeletionPlan.authorityAssessment.blockedActions.map((item) => `- ${item}`).join("\n")}
+
+권한 확인 질문:
+${savedCase.responsePack.victimDeletionPlan.authorityAssessment.verificationQuestions.map((item) => `- ${item}`).join("\n")}
+
 ${savedCase.responsePack.victimDeletionPlan.urgentWarning ? `긴급 안내: ${savedCase.responsePack.victimDeletionPlan.urgentWarning}\n` : ""}
 
 ${savedCase.responsePack.victimDeletionPlan.steps

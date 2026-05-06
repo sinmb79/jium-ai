@@ -1,4 +1,5 @@
 import { CASE_TYPE_LABELS } from "@/lib/labels";
+import { evaluateDeletionAuthority } from "@/lib/deletionAuthority";
 import { formatEvidenceLedgerForDocument, getEvidenceLedger } from "@/lib/evidence";
 import { getResourcesForCase } from "@/lib/publicResources";
 import type {
@@ -65,11 +66,14 @@ export function generateResponsePack(input: CaseInput, classification: CaseClass
 }
 
 function generateVictimDeletionPlan(input: CaseInput, classification: CaseClassification): VictimDeletionPlan {
+  const authorityAssessment = evaluateDeletionAuthority(input, classification);
+
   if (classification.caseType === "DIGITAL_SEX_CRIME") {
     return {
       title: "피해자 직접 삭제 희망 플랜",
       summary: "성적 이미지·영상·딥페이크·유포협박 사건은 피해자가 직접 요청할 수 있어도 혼자 처리하는 방식은 위험합니다. 먼저 전문기관 삭제지원으로 연결하고, 플랫폼·심의·수사 절차를 병행합니다.",
       directRequestAllowed: false,
+      authorityAssessment,
       firstPrinciple: "삭제보다 먼저 증거의 통제권을 확보하고, 피해물 원본을 다시 내려받거나 전송하지 않습니다.",
       urgentWarning: input.urgent ? "현재 긴급 위험 또는 협박이 표시되었습니다. 신변 위협이 있으면 삭제 요청보다 112와 안전한 장소 확보가 먼저입니다." : "협박, 금전 요구, 미성년자 피해, 반복 유포가 확인되면 즉시 긴급 사건으로 전환하세요.",
       steps: [
@@ -126,6 +130,7 @@ function generateVictimDeletionPlan(input: CaseInput, classification: CaseClassi
       title: "피해자 직접 삭제 희망 플랜",
       summary: "본인이 올린 오래된 게시물은 직접 삭제, 플랫폼 요청, 개인정보 포털 지우개 서비스, 검색 결과 정리 순서로 나눕니다.",
       directRequestAllowed: true,
+      authorityAssessment,
       firstPrinciple: "본인이 지울 수 있는 곳은 먼저 직접 지우되, 검색 노출과 복제 게시물은 별도 기록으로 관리합니다.",
       steps: [
         {
@@ -171,6 +176,7 @@ function generateVictimDeletionPlan(input: CaseInput, classification: CaseClassi
       title: "피해자 직접 삭제 희망 플랜",
       summary: "검색 노출은 원본 게시물과 검색엔진 캐시를 분리해야 합니다. 원본이 살아 있으면 먼저 원본 조치, 원본이 사라졌으면 캐시·스니펫 제거가 중심입니다.",
       directRequestAllowed: true,
+      authorityAssessment,
       firstPrinciple: "검색엔진은 원본을 지우지 않습니다. 원본 삭제 여부를 먼저 확인하고, 남은 흔적을 따로 요청합니다.",
       steps: [
         {
@@ -215,6 +221,7 @@ function generateVictimDeletionPlan(input: CaseInput, classification: CaseClassi
     title: "피해자 직접 삭제 희망 플랜",
     summary: "개인정보·사진·이미지가 노출된 일반 사건은 피해자가 직접 삭제 요청을 시작할 수 있습니다. 다만 먼저 증거를 남기고, 플랫폼 요청과 공식기관 상담을 순서대로 분리해야 합니다.",
     directRequestAllowed: true,
+    authorityAssessment,
     firstPrinciple: "삭제 버튼을 누르기 전에 URL, 노출 항목, 발견 일시를 남겨야 이후 거부·재노출·수사 대응이 가능합니다.",
     steps: [
       {

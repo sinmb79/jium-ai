@@ -53,12 +53,31 @@ describe("generateResponsePack", () => {
       description: "제 사진이 허락 없이 커뮤니티에 올라갔어요.",
       exposedInfo: ["얼굴 사진"],
       urgent: false,
+      deletionAuthority: "SUBJECT_ONLY",
     };
     const pack = generateResponsePack(directInput, classifyCase(directInput));
 
     expect(pack.victimDeletionPlan.directRequestAllowed).toBe(true);
+    expect(pack.victimDeletionPlan.authorityAssessment.directDeletionAllowed).toBe(false);
+    expect(pack.victimDeletionPlan.authorityAssessment.warning).toContain("내 사진");
     expect(pack.victimDeletionPlan.steps.map((step) => step.title).join(" ")).toContain("플랫폼 관리자");
     expect(pack.victimDeletionPlan.copyableNotice.body).toContain("사진, 이미지");
+  });
+
+  it("본인 계정 권한이 확인될 때만 직접 삭제 실행 가능으로 표시한다", () => {
+    const ownedInput: CaseInput = {
+      ...input,
+      situation: "예전 게시물을 지우고 싶어요",
+      title: "내가 올린 사진 삭제",
+      description: "제가 예전에 올린 사진을 직접 삭제하려고 해요.",
+      exposedInfo: ["얼굴 사진"],
+      urgent: false,
+      deletionAuthority: "OWN_ACCOUNT",
+    };
+    const pack = generateResponsePack(ownedInput, classifyCase(ownedInput));
+
+    expect(pack.victimDeletionPlan.authorityAssessment.directDeletionAllowed).toBe(true);
+    expect(pack.victimDeletionPlan.authorityAssessment.allowedActions.join(" ")).toContain("직접 삭제");
   });
 
   it("법률·형사 지원 서비스를 공식 경로 우선으로 연계한다", () => {
