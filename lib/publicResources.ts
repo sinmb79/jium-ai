@@ -1,97 +1,238 @@
-import type { CaseType } from "@/lib/types";
+import type { CaseType, ServiceIntegration } from "@/lib/types";
 
-export type PublicResource = {
-  id: string;
-  name: string;
+export const RESOURCE_KIND_LABELS: Record<ServiceIntegration["kind"], string> = {
+  OFFICIAL: "공식기관",
+  PUBLIC_LEGAL: "공공 법률지원",
+  PRIVATE_LEGAL: "공개 법률 플랫폼",
+};
+
+export type PublicResource = ServiceIntegration & {
   category: CaseType | "ALL";
+  secondaryCategories?: CaseType[];
   description: string;
-  url: string;
   caution: string;
-  cost: "무료" | "상담 필요";
-  phone?: string;
 };
 
 export const PUBLIC_RESOURCES: PublicResource[] = [
   {
     id: "eraser",
     name: "개인정보 포털 지우개 서비스",
+    kind: "OFFICIAL",
     category: "SELF_POST_DELETE",
+    secondaryCategories: ["SEARCH_RESULT_REMOVAL"],
     description: "아동·청소년 시기에 작성한 개인정보 포함 게시물의 삭제 또는 검색 배제를 도와주는 공식 서비스",
     url: "https://www.privacy.go.kr/front/contents/cntntsView.do?contsNo=260",
     caution: "작성 시기, 신청 연령, 개인정보 포함 여부에 따라 대상이 달라질 수 있습니다.",
     cost: "무료",
+    useWhen: "아동·청소년 시기에 올린 개인정보 포함 게시물을 지우거나 검색에서 내리고 싶을 때",
+    handoffMode: "지움AI의 사건 요약을 보며 공식 신청 화면에 사용자가 직접 입력",
+    prepItems: ["게시물 URL", "작성 시기", "본인 확인 자료", "개인정보가 드러나는 부분"],
+    privacyNote: "신청 전 원본 자료를 지움AI에 업로드하지 말고, URL과 설명 중심으로 정리하세요.",
   },
   {
     id: "privacy-withdrawal",
     name: "개인정보 포털 웹사이트 회원탈퇴",
+    kind: "OFFICIAL",
     category: "ACCOUNT_DELETE",
     description: "더 이상 이용하지 않는 웹사이트의 회원탈퇴 신청을 지원하는 공식 서비스",
     url: "https://www.privacy.go.kr",
     caution: "모든 사이트가 대상은 아닙니다. 일부 사이트는 직접 탈퇴해야 합니다.",
     cost: "무료",
+    useWhen: "가입한 사이트가 많고 직접 탈퇴 경로를 찾기 어려울 때",
+    handoffMode: "회원탈퇴 대상 사이트 목록을 사용자가 확인한 뒤 공식 포털에서 신청",
+    prepItems: ["탈퇴하려는 사이트명", "가입 추정 이메일 또는 아이디", "본인 인증 수단"],
+    privacyNote: "비밀번호는 지움AI에 적지 말고 공식 포털 또는 해당 사이트에서만 입력하세요.",
   },
   {
     id: "kidc",
     name: "털린 내 정보 찾기",
+    kind: "OFFICIAL",
     category: "CREDENTIAL_LEAK",
     description: "계정정보가 불법 유통되는지 공식 경로에서 확인할 수 있는 서비스",
     url: "https://kidc.eprivacy.go.kr/intro/service.do",
     caution: "지움AI에는 비밀번호를 입력하지 마세요. 공식 사이트에서만 확인하세요.",
     cost: "무료",
+    useWhen: "이메일·계정정보 유출이 의심되고 비밀번호 변경 우선순위를 정해야 할 때",
+    handoffMode: "공식 사이트에서만 계정 확인을 진행하고, 지움AI에는 결과와 조치 여부만 기록",
+    prepItems: ["확인할 이메일", "변경해야 할 계정 목록", "2단계 인증 가능 여부"],
+    privacyNote: "비밀번호, 인증번호, 복구코드는 절대 지움AI나 외부 상담 글에 적지 마세요.",
   },
   {
     id: "d4u",
     name: "중앙디지털성범죄피해자지원센터",
+    kind: "OFFICIAL",
     category: "DIGITAL_SEX_CRIME",
     description: "디지털 성범죄 피해 상담, 삭제지원, 유포 모니터링, 수사·법률·의료 연계 지원",
     url: "https://d4u.stop.or.kr/main",
     caution: "피해물 원본을 지움AI에 올리지 말고 전문기관 안내에 따라 최소 정보만 정리하세요.",
     cost: "무료",
     phone: "02-735-8994",
+    useWhen: "불법촬영, 비동의 유포, 유포 협박, 딥페이크 등 디지털성범죄 피해가 있거나 의심될 때",
+    handoffMode: "상담 먼저 연결 후 상담원 안내에 따라 삭제지원·모니터링·수사·법률 연계를 진행",
+    prepItems: ["피해 유형", "URL 또는 플랫폼명", "발견 일시", "협박 메시지 존재 여부", "긴급 위험 여부"],
+    privacyNote: "피해 촬영물은 다시 내려받거나 전달하지 말고, 전문기관이 요구하는 방식으로만 제출하세요.",
   },
   {
     id: "women-1366",
     name: "여성긴급전화 1366",
+    kind: "OFFICIAL",
     category: "DIGITAL_SEX_CRIME",
     description: "긴급 상담과 지역 지원기관 연결을 받을 수 있는 24시간 상담 창구",
     url: "https://www.women1366.kr",
     caution: "위협이 진행 중이면 안전한 장소에서 연락하거나 주변 도움을 먼저 요청하세요.",
     cost: "무료",
     phone: "1366",
+    useWhen: "야간·휴일이거나 신변 위협, 협박, 불안이 커서 즉시 사람의 도움이 필요할 때",
+    handoffMode: "전화 상담으로 현재 위험을 먼저 낮추고 지역 기관 또는 경찰 신고로 연결",
+    prepItems: ["현재 위치 안전 여부", "가해자 연락 지속 여부", "보호자 또는 동행 가능자"],
+    privacyNote: "통화 기록이 위험할 수 있으면 안전한 기기와 장소를 먼저 확보하세요.",
+  },
+  {
+    id: "online365",
+    name: "온라인피해365센터",
+    kind: "OFFICIAL",
+    category: "ALL",
+    description: "명예훼손, 개인정보침해, 계정정지, 사이버범죄, 디지털성범죄 등 온라인 피해 전반의 상담과 기관 연계",
+    url: "https://www.helpos.kr",
+    caution: "공식 상담 전용입니다. SNS 사칭 계정이 개인정보나 금전을 요구하면 응하지 마세요.",
+    cost: "무료",
+    phone: "142-235",
+    useWhen: "피해 유형이 복합적이거나 어느 기관으로 가야 할지 확신이 없을 때",
+    handoffMode: "지움AI 사건 요약을 상담용으로 복사한 뒤 전화·카카오톡·홈페이지 상담을 선택",
+    prepItems: ["피해 발생 일시", "플랫폼 또는 URL", "피해 내용", "요청사항", "이미 연락한 기관"],
+    privacyNote: "상담 전에도 피해물 원본, 계정 비밀번호, 인증번호는 공유하지 마세요.",
   },
   {
     id: "privacy-kisa",
     name: "KISA 개인정보침해 신고센터",
+    kind: "OFFICIAL",
     category: "PERSONAL_INFO_EXPOSURE",
+    secondaryCategories: ["CREDENTIAL_LEAK", "IMPERSONATION"],
     description: "개인정보 침해 신고와 상담을 지원하는 공식 창구",
     url: "https://privacy.kisa.or.kr",
     caution: "신고 전 URL, 캡처 보유 여부, 침해 내용, 요청 이력을 정리하세요.",
     cost: "무료",
+    phone: "118",
+    useWhen: "주민번호, 연락처, 주소, 계정정보 등 개인정보 침해나 유출이 핵심일 때",
+    handoffMode: "침해 내용과 요청 이력을 정리한 뒤 공식 신고·상담 신청으로 이동",
+    prepItems: ["침해된 개인정보 종류", "게시 위치", "사업자 또는 플랫폼", "삭제 요청 이력", "캡처 보유 여부"],
+    privacyNote: "신분증 사본 등 고위험 자료는 지움AI에 보관하지 말고 기관 요구 시 별도로 제출하세요.",
   },
   {
     id: "ecrm",
     name: "경찰청 사이버범죄 신고시스템",
+    kind: "OFFICIAL",
     category: "DIGITAL_SEX_CRIME",
+    secondaryCategories: ["CREDENTIAL_LEAK", "IMPERSONATION", "DEFAMATION_PRIVACY", "PERSONAL_INFO_EXPOSURE"],
     description: "사이버범죄 피해 신고를 접수할 수 있는 경찰청 공식 경로",
     url: "https://ecrm.police.go.kr",
     caution: "긴급한 신변 위협이 있으면 112가 우선입니다.",
     cost: "무료",
+    phone: "112 / 182",
+    useWhen: "수사를 원하거나 협박, 사칭, 계정침해, 금전 요구, 반복 유포 등 범죄성이 의심될 때",
+    handoffMode: "지움AI의 경찰 신고 준비서를 복사한 뒤 ECRM에 사전 접수하고 필요 시 경찰서 방문",
+    prepItems: ["피해자 정보", "가해자 단서", "피해 일시", "피해 장소 또는 URL", "피해 과정", "증빙자료 목록"],
+    privacyNote: "추정과 확인 사실을 분리해서 적고, 유출자 신원은 공식 수사 절차로 확인해야 합니다.",
+  },
+  {
+    id: "kcsc",
+    name: "방송미디어통신심의위원회 신고",
+    kind: "OFFICIAL",
+    category: "DIGITAL_SEX_CRIME",
+    secondaryCategories: ["DEFAMATION_PRIVACY", "SEARCH_RESULT_REMOVAL", "IMPERSONATION"],
+    description: "불법촬영물, 허위 영상, 피해자 신상정보 등 불법·권리침해 정보의 삭제·접속차단 심의 요청 경로",
+    url: "https://www.kocsc.or.kr",
+    caution: "심의 대상과 처리 기간은 사안별로 다릅니다. 디지털성범죄는 전문기관 연계를 우선하세요.",
+    cost: "무료",
+    phone: "1377",
+    useWhen: "플랫폼 삭제 요청만으로 해결되지 않거나 접속차단·심의 절차가 필요할 때",
+    handoffMode: "삭제 요청 이력과 URL 목록을 정리한 뒤 공식 민원·신고 절차로 이동",
+    prepItems: ["문제 URL", "캡처 또는 설명", "삭제 요청 이력", "권리침해 소명 자료"],
+    privacyNote: "심의 요청 전에도 피해 자료의 재유포가 일어나지 않도록 원본 공유를 최소화하세요.",
   },
   {
     id: "legal-aid",
     name: "대한법률구조공단",
+    kind: "PUBLIC_LEGAL",
     category: "DEFAMATION_PRIVACY",
+    secondaryCategories: ["DIGITAL_SEX_CRIME", "PERSONAL_INFO_EXPOSURE", "IMPERSONATION", "SEARCH_RESULT_REMOVAL", "UNKNOWN"],
     description: "법률 상담과 구조 제도 확인을 위한 공공 법률지원 경로",
     url: "https://www.klac.or.kr",
     caution: "삭제 가능성보다 사실관계와 법적 쟁점을 먼저 정리하세요.",
     cost: "상담 필요",
+    phone: "132",
+    useWhen: "무료 또는 저비용 법률 상담이 필요하고 고소·손해배상·접근금지 가능성을 확인하고 싶을 때",
+    handoffMode: "지움AI의 형사 고소 상담 준비자료와 무료 법률상담 메모를 복사해 상담에 활용",
+    prepItems: ["사건 요약", "증거 목록", "상대방 단서", "원하는 조치", "경제적 지원 필요 여부"],
+    privacyNote: "상담 예약 전 피해물 원본을 온라인으로 보내야 하는지 반드시 확인하세요.",
+  },
+  {
+    id: "my-lawyer",
+    name: "대한변협 나의 변호사",
+    kind: "PUBLIC_LEGAL",
+    category: "DEFAMATION_PRIVACY",
+    secondaryCategories: ["DIGITAL_SEX_CRIME", "PERSONAL_INFO_EXPOSURE", "IMPERSONATION", "CREDENTIAL_LEAK", "UNKNOWN"],
+    description: "대한변호사협회 기반의 변호사 검색·상담 연결 공개 플랫폼",
+    url: "https://www.klaw.or.kr",
+    caution: "변호사 선임 전 상담 비용, 전문분야, 이해충돌 여부를 직접 확인하세요.",
+    cost: "유료 가능",
+    useWhen: "형사 고소 대리, 피해자 변호, 경찰 조사 동행 등 변호사 조력이 필요할 때",
+    handoffMode: "사건 유형과 지역·전문분야를 기준으로 변호사를 찾고, 지움AI 문서를 상담자료로 활용",
+    prepItems: ["사건 유형", "관할 지역", "상담 예산", "경찰 접수 여부", "피해자 보호 필요성"],
+    privacyNote: "상담 신청 글에는 피해물 원본보다 사실관계와 증거 보유 여부를 먼저 적으세요.",
+  },
+  {
+    id: "lawtalk",
+    name: "로톡",
+    kind: "PRIVATE_LEGAL",
+    category: "DEFAMATION_PRIVACY",
+    secondaryCategories: ["DIGITAL_SEX_CRIME", "PERSONAL_INFO_EXPOSURE", "IMPERSONATION", "CREDENTIAL_LEAK", "UNKNOWN"],
+    description: "온라인 상담, 고소대리, 경찰조사동행 등 공개 법률 상담 연결 서비스를 제공하는 민간 플랫폼",
+    url: "https://www.lawtalk.co.kr",
+    caution: "민간 유료 서비스일 수 있습니다. 비용과 변호사 자격·후기를 직접 비교하세요.",
+    cost: "유료 가능",
+    useWhen: "공공 상담만으로 부족해 빠른 유료 상담이나 형사 절차 동행을 검토할 때",
+    handoffMode: "지움AI의 경찰 신고서와 고소 상담자료를 복사해 상담 전에 전달할 질문으로 정리",
+    prepItems: ["희망 상담 방식", "예산", "사건 요약", "긴급 기한", "이미 진행한 신고·삭제 요청"],
+    privacyNote: "상담글에 민감한 신상정보와 피해물 원본을 공개 게시하지 마세요.",
+  },
+  {
+    id: "lawandgood",
+    name: "로앤굿",
+    kind: "PRIVATE_LEGAL",
+    category: "DEFAMATION_PRIVACY",
+    secondaryCategories: ["DIGITAL_SEX_CRIME", "PERSONAL_INFO_EXPOSURE", "IMPERSONATION", "UNKNOWN"],
+    description: "변호사 탐색과 사건 상담·선임을 지원하는 공개 법률 플랫폼",
+    url: "https://www.lawandgood.com",
+    caution: "민간 유료 서비스일 수 있습니다. 선임 범위와 환불·비밀유지 조건을 확인하세요.",
+    cost: "유료 가능",
+    useWhen: "여러 변호사 선택지를 비교하고 사건 진행 방식과 예상 비용을 확인하고 싶을 때",
+    handoffMode: "지움AI의 사건 정리 파일을 기준으로 상담 질문과 원하는 조치를 먼저 정리",
+    prepItems: ["상담 목적", "예상 예산", "증거 목록", "상대방 단서", "원하는 처리 방향"],
+    privacyNote: "민간 플랫폼에는 필요한 범위의 요약만 공유하고, 원본 증거 제출은 변호사 선임 후 안전한 채널을 확인하세요.",
   },
 ];
 
 export function getResourcesForCase(caseType: CaseType) {
-  const targeted = PUBLIC_RESOURCES.filter((resource) => resource.category === caseType || resource.category === "ALL");
+  const targeted = PUBLIC_RESOURCES.filter(
+    (resource) => resource.category === caseType || resource.category === "ALL" || resource.secondaryCategories?.includes(caseType),
+  ).sort(compareResourcePriority);
   if (targeted.length) {
     return targeted;
   }
-  return PUBLIC_RESOURCES.filter((resource) => ["privacy-kisa", "legal-aid"].includes(resource.id));
+  return PUBLIC_RESOURCES.filter((resource) => ["online365", "privacy-kisa", "legal-aid"].includes(resource.id)).sort(compareResourcePriority);
+}
+
+function compareResourcePriority(a: PublicResource, b: PublicResource) {
+  const kindRank: Record<ServiceIntegration["kind"], number> = {
+    OFFICIAL: 0,
+    PUBLIC_LEGAL: 1,
+    PRIVATE_LEGAL: 2,
+  };
+  const costRank: Record<ServiceIntegration["cost"], number> = {
+    무료: 0,
+    "상담 필요": 1,
+    "유료 가능": 2,
+  };
+  return kindRank[a.kind] - kindRank[b.kind] || costRank[a.cost] - costRank[b.cost] || a.name.localeCompare(b.name, "ko");
 }

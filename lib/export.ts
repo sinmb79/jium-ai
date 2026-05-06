@@ -1,4 +1,5 @@
 import { CASE_TYPE_LABELS, DELETION_CHANCE_LABELS, RISK_LABELS, STATUS_LABELS } from "@/lib/labels";
+import { RESOURCE_KIND_LABELS } from "@/lib/publicResources";
 import type { SavedCase } from "@/lib/types";
 
 export function savedCaseToMarkdown(savedCase: SavedCase) {
@@ -33,6 +34,47 @@ ${classification.evidenceChecklist.map((item) => `- ${item}`).join("\n")}
 ## 요청서 초안
 
 ${draft.body}
+
+## 토탈 대응 패키지
+
+### 안전 추적 계획
+
+${savedCase.responsePack.monitoringPlan.safeQueries.map((item) => `- 검색어: ${item}`).join("\n")}
+
+${savedCase.responsePack.monitoringPlan.cadence.map((item) => `- ${item}`).join("\n")}
+
+### 삭제 요청 순서
+
+${savedCase.responsePack.takedownSequence.map((item, index) => `${index + 1}. ${item}`).join("\n")}
+
+### 유출자 특정 단서 정리
+
+${savedCase.responsePack.attributionGuidance.whatYouCanRecord.map((item) => `- ${item}`).join("\n")}
+
+주의: 지움AI는 유출자를 특정하지 않습니다. 신원 확인은 수사기관 또는 법원의 절차가 필요합니다.
+
+### 경찰 신고 준비서
+
+${savedCase.responsePack.legalSupport.policeReport.body}
+
+### 형사 고소 상담 준비자료
+
+${savedCase.responsePack.legalSupport.criminalComplaintPrep.body}
+
+### 법률·형사 지원 서비스 연계
+
+${savedCase.responsePack.serviceIntegrations
+  .map(
+    (service, index) => `${index + 1}. ${service.name}
+   - 구분: ${RESOURCE_KIND_LABELS[service.kind]}
+   - 비용: ${service.cost}
+   - 링크: ${service.url}
+   - 사용 시점: ${service.useWhen}
+   - 연계 방식: ${service.handoffMode}
+   - 준비물: ${service.prepItems.join(", ")}
+   - 주의: ${service.privacyNote}`,
+  )
+  .join("\n\n")}
 
 ---
 

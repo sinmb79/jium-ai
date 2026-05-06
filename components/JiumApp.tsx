@@ -7,6 +7,7 @@ import { upsertCase } from "@/lib/caseStorage";
 import { CASE_TYPE_LABELS } from "@/lib/labels";
 import { detectSensitiveInput, maskSensitiveText } from "@/lib/pii";
 import { generateRequestDraft } from "@/lib/requestTemplates";
+import { generateResponsePack } from "@/lib/responsePack";
 import type { CaseInput, SavedCase } from "@/lib/types";
 import { appPath } from "@/lib/navigation";
 import { DeletionChanceBadge, RiskBadge } from "@/components/RiskBadge";
@@ -14,6 +15,7 @@ import { SafetyNotice } from "@/components/SafetyNotice";
 import { RequestDraft } from "@/components/RequestDraft";
 import { ResourceRouter } from "@/components/ResourceRouter";
 import { QuickExit } from "@/components/QuickExit";
+import { ResponsePackPanel } from "@/components/ResponsePackPanel";
 
 const situationChoices = [
   {
@@ -64,6 +66,7 @@ export function JiumApp() {
   const findings = useMemo(() => detectSensitiveInput(combinedText), [combinedText]);
   const classification = useMemo(() => (input.description ? classifyCase(input) : null), [input]);
   const draft = useMemo(() => (classification ? generateRequestDraft(input, classification) : null), [classification, input]);
+  const responsePack = useMemo(() => (classification ? generateResponsePack(input, classification) : null), [classification, input]);
 
   function chooseSituation(choice: (typeof situationChoices)[number]) {
     setInput((current) => ({
@@ -76,7 +79,7 @@ export function JiumApp() {
   }
 
   function buildSavedCase(): SavedCase | null {
-    if (!classification || !draft) {
+    if (!classification || !draft || !responsePack) {
       return null;
     }
 
@@ -93,6 +96,7 @@ export function JiumApp() {
       redactedPreview: maskSensitiveText(combinedText),
       classification,
       draft,
+      responsePack,
       status: "READY",
       notes: [],
     };
@@ -156,7 +160,7 @@ export function JiumApp() {
             </div>
             <div className="hero-point">
               <Brain size={18} aria-hidden="true" />
-              <span>유료 AI API는 나중에 켤 수 있지만, 기본값은 안전한 무료 모드입니다.</span>
+              <span>AI는 추적 계획·신고서·고소 준비자료를 자동 작성하지만, 제출은 사용자가 확인합니다.</span>
             </div>
           </div>
         </div>
@@ -312,6 +316,7 @@ export function JiumApp() {
                 </ul>
               </div>
               <RequestDraft draft={savedCase.draft} savedCase={savedCase} />
+              <ResponsePackPanel pack={savedCase.responsePack} />
             </div>
 
             <div className="card-stack">

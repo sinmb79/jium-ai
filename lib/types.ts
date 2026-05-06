@@ -74,6 +74,54 @@ export type RequestDraftOutput = {
     | "SELF_CHECKLIST";
 };
 
+export type MonitoringPlan = {
+  title: string;
+  safeQueries: string[];
+  manualCheckTargets: string[];
+  cadence: string[];
+  boundaries: string[];
+};
+
+export type AttributionGuidance = {
+  title: string;
+  whatYouCanRecord: string[];
+  whatNotToDo: string[];
+  officialProcess: string[];
+};
+
+export type LegalSupportPack = {
+  title: string;
+  policeReport: RequestDraftOutput;
+  criminalComplaintPrep: RequestDraftOutput;
+  legalAidMemo: RequestDraftOutput;
+};
+
+export type ServiceIntegration = {
+  id: string;
+  name: string;
+  kind: "OFFICIAL" | "PUBLIC_LEGAL" | "PRIVATE_LEGAL";
+  cost: "무료" | "상담 필요" | "유료 가능";
+  url: string;
+  phone?: string;
+  useWhen: string;
+  handoffMode: string;
+  prepItems: string[];
+  privacyNote: string;
+};
+
+export type ResponsePack = {
+  monitoringPlan: MonitoringPlan;
+  takedownSequence: string[];
+  attributionGuidance: AttributionGuidance;
+  legalSupport: LegalSupportPack;
+  serviceIntegrations: ServiceIntegration[];
+  automationBoundary: {
+    automatedByJium: string[];
+    requiresUserConfirmation: string[];
+    requiresOfficialAuthority: string[];
+  };
+};
+
 export type SavedCase = {
   id: string;
   createdAt: string;
@@ -84,6 +132,7 @@ export type SavedCase = {
   redactedPreview: string;
   classification: CaseClassification;
   draft: RequestDraftOutput;
+  responsePack: ResponsePack;
   status: CaseStatus;
   verifiedByUserAt?: string;
   notes: string[];

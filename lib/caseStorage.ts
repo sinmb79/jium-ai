@@ -1,4 +1,5 @@
 import type { CaseStatus, SavedCase } from "@/lib/types";
+import { generateResponsePack } from "@/lib/responsePack";
 
 const STORAGE_KEY = "jium-ai.local-cases.v1";
 
@@ -17,7 +18,13 @@ export function loadCases(): SavedCase[] {
     if (!Array.isArray(parsed)) {
       return [];
     }
-    return parsed as SavedCase[];
+    return (parsed as SavedCase[]).map((item) => {
+      const responsePack = item.responsePack;
+      return {
+        ...item,
+        responsePack: responsePack?.serviceIntegrations ? responsePack : generateResponsePack(item.input, item.classification),
+      };
+    });
   } catch {
     return [];
   }

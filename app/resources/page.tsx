@@ -1,5 +1,5 @@
 import { ExternalLink, ShieldCheck } from "lucide-react";
-import { PUBLIC_RESOURCES } from "@/lib/publicResources";
+import { PUBLIC_RESOURCES, RESOURCE_KIND_LABELS } from "@/lib/publicResources";
 import { HomeLink, QuickExit } from "@/components/QuickExit";
 import { appPath } from "@/lib/navigation";
 
@@ -27,8 +27,14 @@ export default function ResourcesPage() {
         <div className="resource-grid">
           {PUBLIC_RESOURCES.map((resource) => (
             <article className="resource-card" key={resource.id}>
+              <span className={resource.kind === "OFFICIAL" ? "badge badge-green" : resource.kind === "PUBLIC_LEGAL" ? "badge badge-low" : "badge badge-medium"}>
+                {RESOURCE_KIND_LABELS[resource.kind]}
+              </span>
               <h2 style={{ fontSize: "1.08rem" }}>{resource.name}</h2>
               <p>{resource.description}</p>
+              <p className="small">
+                <strong>연계 방식:</strong> {resource.handoffMode}
+              </p>
               <p className="small">
                 <strong>비용:</strong> {resource.cost}
               </p>

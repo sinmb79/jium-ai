@@ -71,6 +71,7 @@ export function CaseBoard() {
                 </li>
               ))}
             </ul>
+            <p className="small muted">신고·고소 준비자료 {item.responsePack.legalSupport.title} 포함</p>
             <div className="button-row">
               <button className="btn btn-secondary" type="button" onClick={() => downloadTextFile(`jium-ai-${item.id}.md`, savedCaseToMarkdown(item))}>
                 <Download size={16} aria-hidden="true" />
