@@ -4,11 +4,12 @@ import { AlertTriangle, Brain, CheckCircle2, Database, EyeOff, FileText, Lock, R
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { classifyCase } from "@/lib/classifier";
 import { upsertCase } from "@/lib/caseStorage";
+import { DELETION_AUTHORITY_LABELS } from "@/lib/deletionAuthority";
 import { CASE_TYPE_LABELS } from "@/lib/labels";
 import { detectSensitiveInput, maskSensitiveText } from "@/lib/pii";
 import { generateRequestDraft } from "@/lib/requestTemplates";
 import { generateResponsePack } from "@/lib/responsePack";
-import type { CaseInput, SavedCase } from "@/lib/types";
+import type { CaseInput, DeletionAuthorityContext, SavedCase } from "@/lib/types";
 import { appPath } from "@/lib/navigation";
 import { DeletionChanceBadge, RiskBadge } from "@/components/RiskBadge";
 import { SafetyNotice } from "@/components/SafetyNotice";
@@ -54,6 +55,14 @@ const situationChoices = [
 
 const exposedOptions = ["이름", "전화번호", "주소", "이메일", "얼굴 사진", "학교", "직장", "가족 정보", "계정 ID", "성적 이미지/영상 관련", "기타"];
 
+const authorityChoices: Array<{ id: DeletionAuthorityContext; desc: string }> = [
+  { id: "OWN_ACCOUNT", desc: "본인 계정으로 올렸고 삭제 버튼에 접근할 수 있음" },
+  { id: "ADMIN_AUTHORITY", desc: "페이지·게시판·저장소 관리자 권한이 있음" },
+  { id: "AUTHORIZED_REPRESENTATIVE", desc: "피해자의 동의나 위임을 받아 돕고 있음" },
+  { id: "SUBJECT_ONLY", desc: "사진 속 당사자이지만 게시자는 다른 사람임" },
+  { id: "UNCLEAR", desc: "누가 올렸는지, 삭제 권한이 있는지 아직 모름" },
+];
+
 const defaultInput: CaseInput = {
   situation: "",
   title: "",
@@ -63,6 +72,7 @@ const defaultInput: CaseInput = {
   keywords: "",
   evidenceItems: [],
   keepExactUrlsForSubmission: false,
+  deletionAuthority: "UNCLEAR",
   exposedInfo: [],
   urgent: false,
   helperMode: "self",
@@ -94,6 +104,12 @@ export function JiumApp() {
       title: current.title || choice.title,
       description: current.description || choice.starter,
       urgent: choice.id === "urgent" ? true : current.urgent,
+      deletionAuthority:
+        current.deletionAuthority && current.deletionAuthority !== "UNCLEAR"
+          ? current.deletionAuthority
+          : choice.id === "direct-delete" || choice.id === "personal"
+            ? "SUBJECT_ONLY"
+            : current.deletionAuthority,
     }));
   }
 
@@ -255,6 +271,30 @@ export function JiumApp() {
               </span>
               <input className="input" value={input.keywords} onChange={(event) => setInput({ ...input, keywords: event.target.value })} placeholder="검색어, 닉네임, 게시자 ID 등" />
             </label>
+
+            <fieldset className="field authority-field">
+              <legend className="label-row">
+                삭제 권한 확인 <span className="hint">직접 삭제 실행 가능 여부를 가르는 안전문</span>
+              </legend>
+              <div className="authority-grid">
+                {authorityChoices.map((choice) => (
+                  <label className={`authority-option ${input.deletionAuthority === choice.id ? "is-selected" : ""}`} key={choice.id}>
+                    <input
+                      type="radio"
+                      name="deletionAuthority"
+                      value={choice.id}
+                      checked={input.deletionAuthority === choice.id}
+                      onChange={() => setInput({ ...input, deletionAuthority: choice.id })}
+                    />
+                    <span>
+                      <strong>{DELETION_AUTHORITY_LABELS[choice.id]}</strong>
+                      <small>{choice.desc}</small>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <p className="small muted">내 사진이라는 사실과 해당 페이지를 지울 권한은 다릅니다. 권한이 확인되지 않으면 지움AI는 삭제 실행이 아니라 요청서와 공식 절차만 제공합니다.</p>
+            </fieldset>
 
             <EvidenceLedgerInput
               items={input.evidenceItems || []}

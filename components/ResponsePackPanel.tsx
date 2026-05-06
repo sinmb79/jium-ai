@@ -117,6 +117,17 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
           <span className={pack.victimDeletionPlan.directRequestAllowed ? "badge badge-green" : "badge badge-critical"}>
             {pack.victimDeletionPlan.directRequestAllowed ? "직접 요청 가능" : "전문기관 우선"}
           </span>
+          <span className={pack.victimDeletionPlan.authorityAssessment.directDeletionAllowed ? "badge badge-green" : "badge badge-medium"}>
+            {pack.victimDeletionPlan.authorityAssessment.directDeletionAllowed ? "직접 삭제 실행 가능" : "삭제 실행 차단"}
+          </span>
+        </div>
+        <div className="notice notice-safe">
+          <ShieldAlert size={20} aria-hidden="true" />
+          <div>
+            <strong>{pack.victimDeletionPlan.authorityAssessment.title}: {pack.victimDeletionPlan.authorityAssessment.contextLabel}</strong>
+            <p className="small">{pack.victimDeletionPlan.authorityAssessment.summary}</p>
+            {pack.victimDeletionPlan.authorityAssessment.warning ? <p className="small">{pack.victimDeletionPlan.authorityAssessment.warning}</p> : null}
+          </div>
         </div>
         <p className="small muted">{pack.victimDeletionPlan.summary}</p>
         <p className="small">
@@ -147,6 +158,35 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
               </p>
             </article>
           ))}
+        </div>
+        <div className="two-col">
+          <div>
+            <strong>허용되는 조치</strong>
+            <ul className="action-list small">
+              {pack.victimDeletionPlan.authorityAssessment.allowedActions.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <strong>차단되는 조치</strong>
+            <ul className="action-list small">
+              {pack.victimDeletionPlan.authorityAssessment.blockedActions.map((item) => (
+                <li key={item}>
+                  <Ban size={14} aria-hidden="true" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div>
+          <strong>권한 확인 질문</strong>
+          <ul className="action-list small">
+            {pack.victimDeletionPlan.authorityAssessment.verificationQuestions.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
         </div>
         <div className="two-col">
           <div>
