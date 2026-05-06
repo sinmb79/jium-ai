@@ -1,6 +1,10 @@
-import { detectSensitiveInput, maskSensitiveText } from "@/lib/pii";
+import { detectSensitiveInput, hasBlockingSensitiveInput, maskSensitiveText } from "@/lib/pii";
 import type { CaseInput } from "@/lib/types";
 import type { RedactedCaseInput } from "@/lib/ai/types";
+
+function redactValue(value: string) {
+  return maskSensitiveText(value);
+}
 
 export function redactCaseInput(input: CaseInput): RedactedCaseInput {
   const combined = [input.title, input.description, input.targetUrl, input.platform, input.keywords, input.exposedInfo.join(" ")].filter(Boolean).join("\n");
@@ -9,11 +13,16 @@ export function redactCaseInput(input: CaseInput): RedactedCaseInput {
   return {
     originalIntent: {
       ...input,
-      description: maskSensitiveText(input.description),
-      targetUrl: input.targetUrl ? maskSensitiveText(input.targetUrl) : input.targetUrl,
-      keywords: input.keywords ? maskSensitiveText(input.keywords) : input.keywords,
+      situation: redactValue(input.situation),
+      title: redactValue(input.title),
+      description: redactValue(input.description),
+      targetUrl: input.targetUrl ? redactValue(input.targetUrl) : input.targetUrl,
+      platform: input.platform ? redactValue(input.platform) : input.platform,
+      keywords: input.keywords ? redactValue(input.keywords) : input.keywords,
+      exposedInfo: input.exposedInfo.map(redactValue),
     },
     redactedDescription: maskSensitiveText(combined),
     findings,
+    blocked: hasBlockingSensitiveInput(combined),
   };
 }

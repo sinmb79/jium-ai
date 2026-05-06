@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, Brain, CheckCircle2, Database, EyeOff, FileText, Lock, RefreshCw, ShieldCheck } from "lucide-react";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { classifyCase } from "@/lib/classifier";
 import { upsertCase } from "@/lib/caseStorage";
 import { CASE_TYPE_LABELS } from "@/lib/labels";
@@ -62,11 +62,17 @@ export function JiumApp() {
   const [input, setInput] = useState<CaseInput>(defaultInput);
   const [savedCase, setSavedCase] = useState<SavedCase | null>(null);
   const [stored, setStored] = useState(false);
+  const [blockedSubmit, setBlockedSubmit] = useState(false);
   const combinedText = [input.title, input.description, input.targetUrl, input.platform, input.keywords, input.exposedInfo.join(" ")].join("\n");
   const findings = useMemo(() => detectSensitiveInput(combinedText), [combinedText]);
+  const hasBlockingFinding = findings.some((finding) => finding.severity === "block");
   const classification = useMemo(() => (input.description ? classifyCase(input) : null), [input]);
-  const draft = useMemo(() => (classification ? generateRequestDraft(input, classification) : null), [classification, input]);
-  const responsePack = useMemo(() => (classification ? generateResponsePack(input, classification) : null), [classification, input]);
+  const draft = useMemo(() => (classification && !hasBlockingFinding ? generateRequestDraft(input, classification) : null), [classification, hasBlockingFinding, input]);
+  const responsePack = useMemo(() => (classification && !hasBlockingFinding ? generateResponsePack(input, classification) : null), [classification, hasBlockingFinding, input]);
+
+  useEffect(() => {
+    setBlockedSubmit(false);
+  }, [combinedText]);
 
   function chooseSituation(choice: (typeof situationChoices)[number]) {
     setInput((current) => ({
@@ -104,6 +110,13 @@ export function JiumApp() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (hasBlockingFinding) {
+      setSavedCase(null);
+      setStored(false);
+      setBlockedSubmit(true);
+      return;
+    }
+
     const next = buildSavedCase();
     setSavedCase(next);
     setStored(false);
@@ -111,7 +124,6 @@ export function JiumApp() {
   }
 
   const isCritical = classification?.riskLevel === "CRITICAL";
-  const hasBlockingFinding = findings.some((finding) => finding.severity === "block");
 
   return (
     <main className="app-shell">
@@ -275,10 +287,20 @@ export function JiumApp() {
               </div>
             ) : null}
 
+            {hasBlockingFinding ? (
+              <div className="notice notice-critical" role="alert">
+                <AlertTriangle size={20} aria-hidden="true" />
+                <div>
+                  <strong>{blockedSubmit ? "결과 생성이 멈췄습니다." : "차단 수준의 민감정보가 있습니다."}</strong>
+                  비밀번호, 주민등록번호, 카드번호, 피해물 원본 업로드 표현은 먼저 지워주세요. 이 상태에서는 요청서와 신고서 초안을 만들거나 저장하지 않습니다.
+                </div>
+              </div>
+            ) : null}
+
             <div className="button-row">
               <button className="btn btn-primary" type="submit">
                 <FileText size={17} aria-hidden="true" />
-                결과와 요청서 만들기
+                {hasBlockingFinding ? "민감정보를 지운 뒤 만들기" : "결과와 요청서 만들기"}
               </button>
               <a className="btn btn-secondary" href={appPath("/safety")}>
                 <AlertTriangle size={17} aria-hidden="true" />

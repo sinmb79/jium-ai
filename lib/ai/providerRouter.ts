@@ -41,14 +41,16 @@ export async function classifyWithProvider(input: RedactedCaseInput): Promise<Ai
     return ruleBasedProvider.classify(input);
   }
 
-  if (shouldBlockExternalAi(fallback)) {
+  if (input.blocked || shouldBlockExternalAi(fallback)) {
     return {
       ok: true,
       provider: "rule",
       data: fallback,
       redacted: true,
       fallbackUsed: true,
-      safeMessage: "고위험 사건은 외부 AI 전송 없이 기본 안전 라우팅을 사용했습니다.",
+      safeMessage: input.blocked
+        ? "민감정보 차단 항목이 있어 외부 AI 전송 없이 기본 안전 라우팅을 사용했습니다."
+        : "고위험 사건은 외부 AI 전송 없이 기본 안전 라우팅을 사용했습니다.",
     };
   }
 
@@ -75,14 +77,19 @@ export async function generateRequestWithProvider(input: RedactedRequestInput): 
   const providerName = getConfiguredProviderName();
   const fallback = generateRequestDraft(input.originalIntent, input.classification);
 
-  if (providerName === "rule" || shouldBlockExternalAi(input.classification)) {
+  if (providerName === "rule" || input.blocked || shouldBlockExternalAi(input.classification)) {
     return {
       ok: true,
       provider: "rule",
       data: fallback,
       redacted: true,
       fallbackUsed: providerName !== "rule",
-      safeMessage: providerName === "rule" ? undefined : "고위험 사건은 외부 AI 전송 없이 템플릿을 사용했습니다.",
+      safeMessage:
+        providerName === "rule"
+          ? undefined
+          : input.blocked
+            ? "민감정보 차단 항목이 있어 외부 AI 전송 없이 템플릿을 사용했습니다."
+            : "고위험 사건은 외부 AI 전송 없이 템플릿을 사용했습니다.",
     };
   }
 

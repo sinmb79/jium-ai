@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2, Phone, ShieldAlert } from "lucide-react";
 import { HomeLink, QuickExit } from "@/components/QuickExit";
 import { appPath } from "@/lib/navigation";
+import { ExternalSafeLink } from "@/components/ExternalSafeLink";
 
 export default function SafetyPage() {
   return (
@@ -59,9 +60,9 @@ export default function SafetyPage() {
               </li>
             </ul>
             <div className="button-row" style={{ marginTop: "1rem" }}>
-              <a className="btn btn-primary" href="https://d4u.stop.or.kr/main" target="_blank" rel="noreferrer">
+              <ExternalSafeLink className="btn btn-primary" href="https://d4u.stop.or.kr/main" confirmMessage="중앙디지털성범죄피해자지원센터 공식 사이트로 이동합니다. 사건 내용과 피해 URL은 자동으로 전달되지 않습니다.">
                 센터 사이트 열기
-              </a>
+              </ExternalSafeLink>
               <a className="btn btn-secondary" href={appPath("/")}>
                 최소 정보만 정리하기
               </a>

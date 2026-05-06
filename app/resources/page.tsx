@@ -1,7 +1,8 @@
-import { ExternalLink, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { PUBLIC_RESOURCES, RESOURCE_KIND_LABELS } from "@/lib/publicResources";
 import { HomeLink, QuickExit } from "@/components/QuickExit";
 import { appPath } from "@/lib/navigation";
+import { ExternalSafeLink } from "@/components/ExternalSafeLink";
 
 export default function ResourcesPage() {
   return (
@@ -39,10 +40,9 @@ export default function ResourcesPage() {
                 <strong>비용:</strong> {resource.cost}
               </p>
               <p className="small">{resource.caution}</p>
-              <a className="btn btn-secondary" href={resource.url} target="_blank" rel="noreferrer">
-                <ExternalLink size={16} aria-hidden="true" />
+              <ExternalSafeLink href={resource.url} confirmMessage="외부 공식 사이트로 이동합니다. 사건 내용과 피해 URL은 자동으로 전달되지 않습니다.">
                 공식 사이트 열기
-              </a>
+              </ExternalSafeLink>
             </article>
           ))}
         </div>

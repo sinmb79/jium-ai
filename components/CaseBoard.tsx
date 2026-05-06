@@ -18,6 +18,13 @@ export function CaseBoard() {
     setCases(loadCases());
   }, []);
 
+  function removeCase(id: string) {
+    const ok = window.confirm("이 브라우저에 저장된 사건 기록을 삭제합니다. 내보내기 전이라면 복구할 수 없습니다.");
+    if (ok) {
+      setCases(deleteCase(id));
+    }
+  }
+
   if (!cases.length) {
     return (
       <div className="panel panel-tight">
@@ -71,13 +78,13 @@ export function CaseBoard() {
                 </li>
               ))}
             </ul>
-            <p className="small muted">신고·고소 준비자료 {item.responsePack.legalSupport.title} 포함</p>
+            <p className="small muted">신고·고소 준비자료, 피해 확산 방지 매트릭스, {item.responsePack.legalSupport.title} 포함</p>
             <div className="button-row">
               <button className="btn btn-secondary" type="button" onClick={() => downloadTextFile(`jium-ai-${item.id}.md`, savedCaseToMarkdown(item))}>
                 <Download size={16} aria-hidden="true" />
                 내보내기
               </button>
-              <button className="btn btn-ghost" type="button" onClick={() => setCases(deleteCase(item.id))}>
+              <button className="btn btn-ghost" type="button" onClick={() => removeCase(item.id)}>
                 <Trash2 size={16} aria-hidden="true" />
                 삭제
               </button>

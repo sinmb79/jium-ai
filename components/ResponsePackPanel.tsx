@@ -4,6 +4,7 @@ import { Clipboard, ExternalLink, FileWarning, Gavel, HeartHandshake, Phone, Sea
 import { useState } from "react";
 import { RESOURCE_KIND_LABELS } from "@/lib/publicResources";
 import type { ResponsePack } from "@/lib/types";
+import { ExternalSafeLink } from "@/components/ExternalSafeLink";
 
 function CopyButton({ text, label }: { text: string; label: string }) {
   const [copied, setCopied] = useState(false);
@@ -25,19 +26,9 @@ function CopyButton({ text, label }: { text: string; label: string }) {
 
 function OpenServiceButton({ url }: { url: string }) {
   return (
-    <button
-      className="btn btn-secondary"
-      type="button"
-      onClick={() => {
-        const ok = window.confirm("외부 법률·형사 지원 서비스로 이동합니다. 사건 내용과 피해 URL은 자동으로 전달되지 않습니다.");
-        if (ok) {
-          window.open(url, "_blank", "noopener,noreferrer");
-        }
-      }}
-    >
-      <ExternalLink size={16} aria-hidden="true" />
+    <ExternalSafeLink href={url} confirmMessage="외부 법률·형사 지원 서비스로 이동합니다. 사건 내용과 피해 URL은 자동으로 전달되지 않습니다.">
       서비스 열기
-    </button>
+    </ExternalSafeLink>
   );
 }
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { ExternalLink, Phone } from "lucide-react";
+import { Phone } from "lucide-react";
 import { getResourcesForCase, RESOURCE_KIND_LABELS } from "@/lib/publicResources";
 import type { CaseType } from "@/lib/types";
+import { ExternalSafeLink } from "@/components/ExternalSafeLink";
 
 function kindBadgeClass(kind: ReturnType<typeof getResourcesForCase>[number]["kind"]) {
   if (kind === "OFFICIAL") {
@@ -42,19 +43,9 @@ export function ResourceRouter({ caseType }: { caseType: CaseType }) {
               </p>
             ) : null}
             <p className="small">{resource.caution}</p>
-            <button
-              className="btn btn-secondary"
-              type="button"
-              onClick={() => {
-                const ok = window.confirm("외부 공식 사이트로 이동합니다. 피해 URL은 자동으로 전달되지 않습니다.");
-                if (ok) {
-                  window.open(resource.url, "_blank", "noopener,noreferrer");
-                }
-              }}
-            >
-              <ExternalLink size={16} aria-hidden="true" />
+            <ExternalSafeLink href={resource.url} confirmMessage="외부 공식 사이트로 이동합니다. 피해 URL은 자동으로 전달되지 않습니다.">
               공식 사이트 열기
-            </button>
+            </ExternalSafeLink>
           </article>
         ))}
       </div>

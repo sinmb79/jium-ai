@@ -39,7 +39,7 @@ const PATTERNS: Array<{
     type: "cardNumber",
     label: "카드번호 형태",
     severity: "block",
-    regex: /\b(?:\d[ -]*?){13,19}\b/g,
+    regex: /\b(?:\d{4}[ -]?){3}\d{4}\b|\b\d{4}[ -]?\d{6}[ -]?\d{5}\b/g,
     replacement: "[카드번호 가림]",
   },
   {
@@ -94,6 +94,10 @@ export function detectSensitiveInput(text: string): SensitiveFinding[] {
   });
 }
 
+export function hasBlockingSensitiveInput(text: string) {
+  return detectSensitiveInput(text).some((finding) => finding.severity === "block");
+}
+
 export function canStoreSafely(text: string) {
-  return !detectSensitiveInput(text).some((finding) => finding.severity === "block");
+  return !hasBlockingSensitiveInput(text);
 }

@@ -16,6 +16,7 @@ export type RedactedCaseInput = {
   originalIntent: CaseInput;
   redactedDescription: string;
   findings: string[];
+  blocked: boolean;
 };
 
 export type RedactedRequestInput = RedactedCaseInput & {
