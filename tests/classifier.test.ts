@@ -1,0 +1,26 @@
+import { describe, expect, it } from "vitest";
+import { classifyCase } from "@/lib/classifier";
+
+describe("classifyCase", () => {
+  it("전화번호 노출은 개인정보 노출로 분류한다", () => {
+    const result = classifyCase("내 전화번호가 커뮤니티에 올라갔어요");
+    expect(result.caseType).toBe("PERSONAL_INFO_EXPOSURE");
+    expect(result.riskLevel).toBe("HIGH");
+    expect(result.deletionChance).toBe("HIGH");
+  });
+
+  it("딥페이크 사건은 외부 AI보다 전문기관 라우팅을 우선한다", () => {
+    const result = classifyCase("제 딥페이크 영상이 퍼졌고 유포 협박을 받고 있어요");
+    expect(result.caseType).toBe("DIGITAL_SEX_CRIME");
+    expect(result.riskLevel).toBe("CRITICAL");
+    expect(result.deletionChance).toBe("SPECIALIST_REQUIRED");
+    expect(result.specialistFirst).toBe(true);
+    expect(result.safetyNote).toContain("원본");
+  });
+
+  it("계정 유출은 비밀번호 입력 금지를 안내한다", () => {
+    const result = classifyCase("비밀번호가 다크웹에 유출된 것 같아요");
+    expect(result.caseType).toBe("CREDENTIAL_LEAK");
+    expect(result.safetyNote).toContain("비밀번호");
+  });
+});

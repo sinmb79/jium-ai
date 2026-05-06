@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  displayName    String?
+  consentVersion String   @default("v1")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  cases          Case[]
+}
+
+model Case {
+  id                  String           @id @default(cuid())
+  userId              String?
+  title               String
+  description         String
+  redactedDescription String?
+  caseType            CaseType
+  riskLevel           RiskLevel
+  status              CaseStatus       @default(DRAFT)
+  deletionChance      DeletionChance
+  storageMode         StorageMode      @default(LOCAL_FIRST)
+  sensitivityLevel    SensitivityLevel @default(NORMAL)
+  platform            String?
+  targetUrl           String?
+  keywords            String?
+  exposedInfo         String?
+  aiSummary           String?
+  aiProviderUsed      String?
+  aiModelUsed         String?
+  aiRedactionApplied  Boolean          @default(false)
+  verifiedByUserAt    DateTime?
+  expiresAt           DateTime?
+  deletedAt           DateTime?
+  safetyNote          String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  user                User?            @relation(fields: [userId], references: [id])
+  evidences           Evidence[]
+  requestDrafts       RequestDraft[]
+  statusEvents        StatusEvent[]
+}
+
+model Evidence {
+  id        String       @id @default(cuid())
+  caseId    String
+  type      EvidenceType
+  label     String
+  value     String?
+  filePath  String?
+  createdAt DateTime     @default(now())
+
+  case      Case         @relation(fields: [caseId], references: [id])
+}
+
+model RequestDraft {
+  id            String        @id @default(cuid())
+  caseId        String
+  recipientType RecipientType
+  title         String
+  body          String
+  status        DraftStatus   @default(GENERATED)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  case          Case          @relation(fields: [caseId], references: [id])
+}
+
+model StatusEvent {
+  id          String   @id @default(cuid())
+  caseId      String
+  eventType   String
+  memo        String?
+  publicNote  String?
+  evidenceRef String?
+  createdAt   DateTime @default(now())
+
+  case        Case     @relation(fields: [caseId], references: [id])
+}
+
+enum CaseType {
+  PERSONAL_INFO_EXPOSURE
+  SELF_POST_DELETE
+  SEARCH_RESULT_REMOVAL
+  ACCOUNT_DELETE
+  CREDENTIAL_LEAK
+  DIGITAL_SEX_CRIME
+  DEFAMATION_PRIVACY
+  IMPERSONATION
+  UNKNOWN
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum CaseStatus {
+  DRAFT
+  READY
+  REQUESTED
+  WAITING_RESPONSE
+  NEEDS_MORE_INFO
+  PLATFORM_RESPONDED
+  USER_VERIFIED
+  REAPPEARED
+  CLOSED
+}
+
+enum DeletionChance {
+  HIGH
+  MEDIUM
+  LOW
+  SPECIALIST_REQUIRED
+  LEGAL_REVIEW_REQUIRED
+  NOT_SUPPORTED
+}
+
+enum StorageMode {
+  LOCAL_FIRST
+  SERVER_OPT_IN
+}
+
+enum SensitivityLevel {
+  NORMAL
+  SENSITIVE
+  CRITICAL
+}
+
+enum EvidenceType {
+  URL
+  SCREENSHOT
+  KEYWORD
+  PLATFORM
+  AUTHOR_ID
+  DATE
+  DESCRIPTION
+  OTHER
+}
+
+enum RecipientType {
+  PLATFORM_ADMIN
+  SEARCH_ENGINE
+  PUBLIC_AGENCY
+  POLICE
+  LEGAL_SUPPORT
+  SELF_CHECKLIST
+}
+
+enum DraftStatus {
+  GENERATED
+  COPIED
+  SENT_BY_USER
+  ARCHIVED
+}
