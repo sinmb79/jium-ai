@@ -1,4 +1,5 @@
 import { CASE_TYPE_LABELS, DELETION_CHANCE_LABELS, RISK_LABELS, STATUS_LABELS } from "@/lib/labels";
+import { formatEvidenceLedgerForDocument } from "@/lib/evidence";
 import { RESOURCE_KIND_LABELS } from "@/lib/publicResources";
 import type { SavedCase } from "@/lib/types";
 
@@ -30,6 +31,11 @@ ${classification.evidenceChecklist.map((item) => `- ${item}`).join("\n")}
 - 플랫폼: ${input.platform || "미입력"}
 - URL: ${input.targetUrl || "미입력"}
 - 키워드: ${input.keywords || "미입력"}
+- 정확한 URL 로컬 보관: ${input.keepExactUrlsForSubmission ? "사용자 선택으로 보관" : "로컬 저장 시 경로 숨김"}
+
+## 접근경로 증거목록
+
+${formatEvidenceLedgerForDocument(input)}
 
 ## 요청서 초안
 
@@ -46,6 +52,40 @@ ${savedCase.responsePack.monitoringPlan.cadence.map((item) => `- ${item}`).join(
 ### 삭제 요청 순서
 
 ${savedCase.responsePack.takedownSequence.map((item, index) => `${index + 1}. ${item}`).join("\n")}
+
+### 피해자 삭제지원 실행 계획
+
+${savedCase.responsePack.victimDeletionPlan.summary}
+
+첫 원칙: ${savedCase.responsePack.victimDeletionPlan.firstPrinciple}
+
+직접 요청 가능 여부: ${savedCase.responsePack.victimDeletionPlan.directRequestAllowed ? "직접 요청 가능" : "전문기관 우선"}
+
+${savedCase.responsePack.victimDeletionPlan.urgentWarning ? `긴급 안내: ${savedCase.responsePack.victimDeletionPlan.urgentWarning}\n` : ""}
+
+${savedCase.responsePack.victimDeletionPlan.steps
+  .map(
+    (step, index) => `${index + 1}. ${step.title}
+   - 주체: ${step.actor}
+   - 시점: ${step.timing}
+   - 사용자 행동: ${step.userAction.join(" / ")}
+   - 준비물: ${step.requiredMaterials.join(", ")}
+   - 확인 신호: ${step.successSignal}
+   - 다음 상태: ${STATUS_LABELS[step.nextStatus]}`,
+  )
+  .join("\n\n")}
+
+격상 신호:
+${savedCase.responsePack.victimDeletionPlan.escalationTriggers.map((item) => `- ${item}`).join("\n")}
+
+기록 원칙:
+${savedCase.responsePack.victimDeletionPlan.recordKeeping.map((item) => `- ${item}`).join("\n")}
+
+경계:
+${savedCase.responsePack.victimDeletionPlan.boundaries.map((item) => `- ${item}`).join("\n")}
+
+삭제지원 요청용 접근경로 요약:
+${savedCase.responsePack.victimDeletionPlan.copyableNotice.body}
 
 ### 안전한 개입 선택지
 

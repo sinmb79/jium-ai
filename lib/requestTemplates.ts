@@ -1,4 +1,5 @@
 import type { CaseClassification, CaseInput, RequestDraftOutput } from "@/lib/types";
+import { formatEvidenceLedgerForDocument } from "@/lib/evidence";
 
 export function generateRequestDraft(input: CaseInput, classification: CaseClassification): RequestDraftOutput {
   switch (classification.caseType) {
@@ -36,6 +37,9 @@ ${input.targetUrl || "[대상 URL 입력]"}
 게시 위치:
 ${input.platform || "[게시판/플랫폼명 입력]"}
 
+접근경로 증거목록:
+${formatEvidenceLedgerForDocument(input)}
+
 노출된 정보:
 ${exposed}
 
@@ -71,6 +75,9 @@ ${input.targetUrl || "[검색 결과 URL 또는 원본 URL 입력]"}
 
 검색어:
 ${input.keywords || "[검색어 입력]"}
+
+접근경로 증거목록:
+${formatEvidenceLedgerForDocument(input)}
 
 요청 사유:
 ${input.description || "개인정보 또는 사생활 관련 정보가 검색 결과에 노출되고 있습니다."}
@@ -109,6 +116,9 @@ ${input.platform || "[사이트명, SNS명, 메신저명 등]"}
 
 검색 또는 특정 가능한 키워드:
 ${input.keywords || "[게시물 제목, 유포자 ID, 닉네임 등]"}
+
+접근경로 증거목록:
+${formatEvidenceLedgerForDocument(input)}
 
 추천 연결:
 - 중앙디지털성범죄피해자지원센터
@@ -169,6 +179,9 @@ ${input.platform || "[사이트명 또는 앱 이름]"}
 URL 또는 검색어:
 ${input.targetUrl || input.keywords || "[URL 또는 검색어]"}
 
+접근경로 증거목록:
+${formatEvidenceLedgerForDocument(input)}
+
 확인할 점:
 1. 아동·청소년 시기에 작성한 게시물인지
 2. 게시물에 개인정보가 포함되어 있는지
@@ -216,6 +229,9 @@ export function generateLegalReviewPreparation(input: CaseInput): RequestDraftOu
 
 게시물 또는 표현:
 ${input.targetUrl || "[URL 또는 게시 위치]"}
+
+접근경로 증거목록:
+${formatEvidenceLedgerForDocument(input)}
 
 피해 내용:
 ${input.description}

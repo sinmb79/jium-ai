@@ -1,4 +1,5 @@
 import type { CaseClassification, CaseInput, CaseType, DeletionChance, RiskLevel, SensitivityLevel } from "@/lib/types";
+import { evidenceToSearchText } from "@/lib/evidence";
 
 type Rule = {
   caseType: CaseType;
@@ -112,7 +113,7 @@ const RULES: Rule[] = [
     riskLevel: "HIGH",
     deletionChance: "HIGH",
     sensitivityLevel: "SENSITIVE",
-    keywords: ["전화번호", "주소", "주민등록", "이메일", "학교", "직장", "얼굴", "실명", "신상", "개인정보", "가족 정보"],
+    keywords: ["전화번호", "주소", "주민등록", "이메일", "학교", "직장", "얼굴", "사진", "이미지", "프로필 사진", "초상권", "실명", "신상", "개인정보", "가족 정보"],
     route: ["게시판 관리자 삭제 요청", "개인정보침해 신고센터", "검색엔진 삭제 요청"],
     actions: ["URL과 노출 항목만 정리하기", "주민등록번호 원문은 입력하지 않기", "관리자용 삭제 요청서를 먼저 보내기"],
     evidence: ["URL", "노출된 정보 종류", "게시 위치", "발견 일시", "관리자에게 보낸 요청 이력"],
@@ -143,7 +144,10 @@ const RULES: Rule[] = [
 ];
 
 export function classifyCase(input: string | CaseInput): CaseClassification {
-  const text = typeof input === "string" ? input : [input.situation, input.title, input.description, input.keywords, input.platform, input.exposedInfo.join(" ")].join(" ");
+  const text =
+    typeof input === "string"
+      ? input
+      : [input.situation, input.title, input.description, input.keywords, input.platform, input.exposedInfo.join(" "), evidenceToSearchText(input)].join(" ");
   const normalized = text.toLocaleLowerCase("ko-KR");
   const urgent = typeof input === "string" ? false : input.urgent;
   const matched = RULES.find((rule) => rule.keywords.some((keyword) => normalized.includes(keyword.toLocaleLowerCase("ko-KR"))));

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { CASE_TYPE_LABELS, STATUS_LABELS } from "@/lib/labels";
 import type { CaseStatus, SavedCase } from "@/lib/types";
 import { clearCases, deleteCase, loadCases, updateCaseStatus } from "@/lib/caseStorage";
+import { countEvidenceUrls } from "@/lib/evidence";
 import { downloadTextFile, savedCaseToMarkdown } from "@/lib/export";
 import { RiskBadge } from "@/components/RiskBadge";
 import { appPath } from "@/lib/navigation";
@@ -68,6 +69,7 @@ export function CaseBoard() {
               <h3>{item.input.title}</h3>
               <p className="muted small">{item.classification.reason}</p>
               <p className="muted small">보관 기한: {new Date(item.expiresAt).toLocaleDateString("ko-KR")}</p>
+              <p className="muted small">접근경로 URL: {countEvidenceUrls(item.input)}건 · {item.input.keepExactUrlsForSubmission ? "정확 URL 보관" : "URL 경로 숨김"}</p>
             </div>
             <label className="field">
               <span className="hint">진행 상태</span>

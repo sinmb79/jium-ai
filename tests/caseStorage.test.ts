@@ -12,13 +12,29 @@ const input: CaseInput = {
   targetUrl: "https://example.com/private/post/123?name=test",
   platform: "Example Board",
   keywords: "test@example.com",
+  evidenceItems: [
+    {
+      id: "evidence-storage-test",
+      url: "https://example.com/private/post/123?name=test",
+      platform: "Example Board",
+      location: "피해 게시판",
+      posterId: "test@example.com",
+      foundAt: "2026-05-06T13:30",
+      capturedByUser: true,
+      submissionTarget: "KISA 개인정보침해 신고센터",
+      status: "DISCOVERED",
+      notes: "010-1234-5678이 보임",
+    },
+  ],
+  keepExactUrlsForSubmission: false,
   exposedInfo: ["전화번호", "이메일"],
   urgent: false,
   helperMode: "self",
 };
 
 function buildSavedCase(overrides: Partial<SavedCase> = {}): SavedCase {
-  const classification = classifyCase(input);
+  const caseInput = overrides.input || input;
+  const classification = classifyCase(caseInput);
   const now = new Date();
   const expiresAt = new Date(now);
   expiresAt.setDate(expiresAt.getDate() + 90);
@@ -29,11 +45,11 @@ function buildSavedCase(overrides: Partial<SavedCase> = {}): SavedCase {
     updatedAt: now.toISOString(),
     expiresAt: expiresAt.toISOString(),
     storageMode: "LOCAL_FIRST",
-    input,
+    input: caseInput,
     redactedPreview: "",
     classification,
-    draft: generateRequestDraft(input, classification),
-    responsePack: generateResponsePack(input, classification),
+    draft: generateRequestDraft(caseInput, classification),
+    responsePack: generateResponsePack(caseInput, classification),
     status: "READY",
     notes: [],
     ...overrides,
@@ -51,11 +67,31 @@ describe("caseStorage", () => {
     const [stored] = loadCases();
 
     expect(stored.input.targetUrl).toBe("https://example.com/[경로 숨김]");
+    expect(stored.input.evidenceItems?.[0]?.url).toBe("https://example.com/[경로 숨김]");
+    expect(stored.input.evidenceItems?.[0]?.posterId).toContain("[이메일 가림]");
+    expect(stored.input.evidenceItems?.[0]?.notes).toContain("[전화번호 가림]");
     expect(stored.input.description).toContain("[전화번호 가림]");
     expect(stored.input.keywords).toContain("[이메일 가림]");
     expect(stored.draft.body).not.toContain("010-1234-5678");
     expect(stored.draft.body).not.toContain("/private/post/123");
     expect(stored.notes.join(" ")).toContain("URL 원문");
+  });
+
+  it("사용자가 선택한 경우 기관 제출용 정확한 URL을 로컬 보드에 보관한다", () => {
+    upsertCase(
+      buildSavedCase({
+        input: {
+          ...input,
+          keepExactUrlsForSubmission: true,
+        },
+      }),
+    );
+
+    const [stored] = loadCases();
+
+    expect(stored.input.targetUrl).toBe("https://example.com/private/post/123?name=test");
+    expect(stored.input.evidenceItems?.[0]?.url).toBe("https://example.com/private/post/123?name=test");
+    expect(stored.input.description).toContain("[전화번호 가림]");
   });
 
   it("만료된 로컬 사건은 로드할 때 자동 정리한다", () => {

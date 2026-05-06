@@ -25,9 +25,29 @@ describe("generateRequestDraft", () => {
   });
 
   it("디지털 성범죄 사건에는 업로드 금지 문구를 포함한다", () => {
-    const input = { ...baseInput, description: "딥페이크 영상이 퍼졌어요", exposedInfo: ["성적 이미지/영상 관련"] };
+    const input = {
+      ...baseInput,
+      description: "딥페이크 영상이 퍼졌어요",
+      evidenceItems: [
+        {
+          id: "evidence-digital-1",
+          url: "https://example.com/leak/1",
+          platform: "Example",
+          location: "피해 게시판",
+          posterId: "poster",
+          foundAt: "2026-05-06T13:30",
+          capturedByUser: false,
+          submissionTarget: "중앙디지털성범죄피해자지원센터",
+          status: "DISCOVERED" as const,
+          notes: "",
+        },
+      ],
+      exposedInfo: ["성적 이미지/영상 관련"],
+    };
     const draft = generateRequestDraft(input, classifyCase(input));
     expect(draft.body).toContain("업로드하지 않습니다");
+    expect(draft.body).toContain("접근경로 증거목록");
+    expect(draft.body).toContain("https://example.com/leak/1");
     expect(draft.recipientType).toBe("PUBLIC_AGENCY");
   });
 });

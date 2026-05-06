@@ -37,6 +37,30 @@ describe("generateResponsePack", () => {
     expect(pack.legalSupport.criminalComplaintPrep.body).toContain("형사 고소 상담 준비자료");
   });
 
+  it("피해자 삭제지원 실행 계획을 접근경로 중심으로 생성한다", () => {
+    const pack = generateResponsePack(input, classifyCase(input));
+    expect(pack.victimDeletionPlan.firstPrinciple).toContain("피해물 원본");
+    expect(pack.victimDeletionPlan.steps.map((step) => step.title).join(" ")).toContain("접근경로");
+    expect(pack.victimDeletionPlan.copyableNotice.body).toContain("접근경로 증거목록");
+    expect(pack.victimDeletionPlan.boundaries.join(" ")).toContain("자동 제출하지 않습니다");
+  });
+
+  it("일반 사진·개인정보 노출은 직접 삭제 요청 플랜을 제공한다", () => {
+    const directInput: CaseInput = {
+      ...input,
+      situation: "사진/이미지를 직접 삭제 요청하고 싶어요",
+      title: "무단 사진 게시",
+      description: "제 사진이 허락 없이 커뮤니티에 올라갔어요.",
+      exposedInfo: ["얼굴 사진"],
+      urgent: false,
+    };
+    const pack = generateResponsePack(directInput, classifyCase(directInput));
+
+    expect(pack.victimDeletionPlan.directRequestAllowed).toBe(true);
+    expect(pack.victimDeletionPlan.steps.map((step) => step.title).join(" ")).toContain("플랫폼 관리자");
+    expect(pack.victimDeletionPlan.copyableNotice.body).toContain("사진, 이미지");
+  });
+
   it("법률·형사 지원 서비스를 공식 경로 우선으로 연계한다", () => {
     const pack = generateResponsePack(input, classifyCase(input));
     const ids = pack.serviceIntegrations.map((service) => service.id);

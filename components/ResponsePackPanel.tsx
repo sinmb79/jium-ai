@@ -111,6 +111,67 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
 
       <section className="panel panel-tight" style={{ boxShadow: "none" }}>
         <h3>
+          <FileWarning size={18} aria-hidden="true" /> {pack.victimDeletionPlan.title}
+        </h3>
+        <div className="badge-row">
+          <span className={pack.victimDeletionPlan.directRequestAllowed ? "badge badge-green" : "badge badge-critical"}>
+            {pack.victimDeletionPlan.directRequestAllowed ? "직접 요청 가능" : "전문기관 우선"}
+          </span>
+        </div>
+        <p className="small muted">{pack.victimDeletionPlan.summary}</p>
+        <p className="small">
+          <strong>첫 원칙:</strong> {pack.victimDeletionPlan.firstPrinciple}
+        </p>
+        {pack.victimDeletionPlan.urgentWarning ? <div className="notice notice-critical small">{pack.victimDeletionPlan.urgentWarning}</div> : null}
+        <div className="resource-grid">
+          {pack.victimDeletionPlan.steps.map((step) => (
+            <article className="resource-card" key={step.id}>
+              <span className="badge badge-low">{step.actor}</span>
+              <h3>{step.title}</h3>
+              <p className="small">
+                <strong>시점:</strong> {step.timing}
+              </p>
+              <div>
+                <strong>사용자가 할 일</strong>
+                <ul className="action-list small">
+                  {step.userAction.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              <p className="small">
+                <strong>필요 자료:</strong> {step.requiredMaterials.join(", ")}
+              </p>
+              <p className="small muted">
+                <strong>완료 신호:</strong> {step.successSignal}
+              </p>
+            </article>
+          ))}
+        </div>
+        <div className="two-col">
+          <div>
+            <strong>공식기관으로 올릴 신호</strong>
+            <ul className="action-list small">
+              {pack.victimDeletionPlan.escalationTriggers.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <strong>기록 원칙</strong>
+            <ul className="action-list small">
+              {pack.victimDeletionPlan.recordKeeping.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <p className="small muted">{pack.victimDeletionPlan.boundaries.join(" ")}</p>
+        <CopyButton text={pack.victimDeletionPlan.copyableNotice.body} label="직접 삭제 요청 문안 복사" />
+      </section>
+
+      <section className="panel panel-tight" style={{ boxShadow: "none" }}>
+        <h3>
           <Scale size={18} aria-hidden="true" /> 안전한 개입 선택지
         </h3>
         <p className="small muted">공식 경로, 상담이 필요한 선택, 금지 행동을 분리했습니다. 빠른 행동보다 안전한 행동이 먼저입니다.</p>

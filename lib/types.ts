@@ -34,6 +34,21 @@ export type SensitivityLevel = "NORMAL" | "SENSITIVE" | "CRITICAL";
 
 export type StorageMode = "LOCAL_FIRST" | "SERVER_OPT_IN";
 
+export type EvidenceStatus = "DISCOVERED" | "SUBMITTED" | "IN_REVIEW" | "REMOVED" | "REAPPEARED";
+
+export type EvidenceItem = {
+  id: string;
+  url: string;
+  platform?: string;
+  location?: string;
+  posterId?: string;
+  foundAt?: string;
+  capturedByUser: boolean;
+  submissionTarget?: string;
+  status: EvidenceStatus;
+  notes?: string;
+};
+
 export type CaseInput = {
   situation: string;
   title: string;
@@ -41,6 +56,8 @@ export type CaseInput = {
   targetUrl?: string;
   platform?: string;
   keywords?: string;
+  evidenceItems?: EvidenceItem[];
+  keepExactUrlsForSubmission?: boolean;
   exposedInfo: string[];
   urgent: boolean;
   helperMode: "self" | "guardian" | "supporter";
@@ -94,6 +111,30 @@ export type LegalSupportPack = {
   policeReport: RequestDraftOutput;
   criminalComplaintPrep: RequestDraftOutput;
   legalAidMemo: RequestDraftOutput;
+};
+
+export type VictimDeletionStep = {
+  id: string;
+  title: string;
+  actor: "피해자" | "전문기관" | "플랫폼/검색엔진" | "수사·심의기관";
+  timing: string;
+  userAction: string[];
+  requiredMaterials: string[];
+  successSignal: string;
+  nextStatus: CaseStatus;
+};
+
+export type VictimDeletionPlan = {
+  title: string;
+  summary: string;
+  directRequestAllowed: boolean;
+  firstPrinciple: string;
+  urgentWarning?: string;
+  steps: VictimDeletionStep[];
+  escalationTriggers: string[];
+  recordKeeping: string[];
+  boundaries: string[];
+  copyableNotice: RequestDraftOutput;
 };
 
 export type ServiceIntegration = {
@@ -158,6 +199,7 @@ export type PreventionGuidance = {
 export type ResponsePack = {
   monitoringPlan: MonitoringPlan;
   takedownSequence: string[];
+  victimDeletionPlan: VictimDeletionPlan;
   interventionChoices: InterventionChoice[];
   attributionGuidance: AttributionGuidance;
   legalSupport: LegalSupportPack;

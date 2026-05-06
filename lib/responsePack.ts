@@ -1,4 +1,5 @@
 import { CASE_TYPE_LABELS } from "@/lib/labels";
+import { formatEvidenceLedgerForDocument, getEvidenceLedger } from "@/lib/evidence";
 import { getResourcesForCase } from "@/lib/publicResources";
 import type {
   CaseClassification,
@@ -10,6 +11,7 @@ import type {
   RequestDraftOutput,
   ResponsePack,
   ServiceIntegration,
+  VictimDeletionPlan,
 } from "@/lib/types";
 
 function compactList(items: Array<string | undefined>) {
@@ -24,6 +26,7 @@ export function generateResponsePack(input: CaseInput, classification: CaseClass
   return {
     monitoringPlan: generateMonitoringPlan(input, classification),
     takedownSequence: generateTakedownSequence(classification),
+    victimDeletionPlan: generateVictimDeletionPlan(input, classification),
     interventionChoices: generateInterventionChoices(classification),
     attributionGuidance: generateAttributionGuidance(input),
     legalSupport: {
@@ -58,6 +61,245 @@ export function generateResponsePack(input: CaseInput, classification: CaseClass
         "플랫폼 강제 삭제 또는 접속 차단",
       ],
     },
+  };
+}
+
+function generateVictimDeletionPlan(input: CaseInput, classification: CaseClassification): VictimDeletionPlan {
+  if (classification.caseType === "DIGITAL_SEX_CRIME") {
+    return {
+      title: "피해자 직접 삭제 희망 플랜",
+      summary: "성적 이미지·영상·딥페이크·유포협박 사건은 피해자가 직접 요청할 수 있어도 혼자 처리하는 방식은 위험합니다. 먼저 전문기관 삭제지원으로 연결하고, 플랫폼·심의·수사 절차를 병행합니다.",
+      directRequestAllowed: false,
+      firstPrinciple: "삭제보다 먼저 증거의 통제권을 확보하고, 피해물 원본을 다시 내려받거나 전송하지 않습니다.",
+      urgentWarning: input.urgent ? "현재 긴급 위험 또는 협박이 표시되었습니다. 신변 위협이 있으면 삭제 요청보다 112와 안전한 장소 확보가 먼저입니다." : "협박, 금전 요구, 미성년자 피해, 반복 유포가 확인되면 즉시 긴급 사건으로 전환하세요.",
+      steps: [
+        {
+          id: "dsc-preserve-paths",
+          title: "피해물 원본 없이 접근경로만 정리",
+          actor: "피해자",
+          timing: "즉시",
+          userAction: ["URL, 게시 위치, 게시자 ID, 발견 일시만 적기", "피해물 파일을 지움AI나 주변인에게 보내지 않기", "협박 메시지는 대화방 전체 맥락과 시간 중심으로 보존"],
+          requiredMaterials: ["URL", "게시 위치", "게시자 ID 또는 닉네임", "발견 일시", "협박 메시지 존재 여부"],
+          successSignal: "전문기관 상담에 전달할 최소 증거목록이 준비됨",
+          nextStatus: "READY",
+        },
+        {
+          id: "dsc-specialist-intake",
+          title: "중앙디지털성범죄피해자지원센터 삭제지원 상담",
+          actor: "전문기관",
+          timing: "가능한 빨리",
+          userAction: ["상담 접수 후 삭제지원 가능 여부 확인", "상담원이 요청하는 방식으로만 자료 제출", "재유포 모니터링과 수사·법률 연계 여부 확인"],
+          requiredMaterials: ["피해 유형", "접근경로 증거목록", "긴급 위험 여부", "이미 신고한 기관"],
+          successSignal: "삭제지원 접수 또는 다음 공식 경로가 확인됨",
+          nextStatus: "REQUESTED",
+        },
+        {
+          id: "dsc-platform-kcsc",
+          title: "플랫폼 삭제 요청과 심의·차단 요청 병행",
+          actor: "수사·심의기관",
+          timing: "전문기관 안내 후",
+          userAction: ["플랫폼 신고함 또는 고객센터에 삭제·비공개 요청", "방송미디어통신심의위원회 신고 또는 1377 연결 검토", "처리 결과와 접수번호를 접근경로 메모에 기록"],
+          requiredMaterials: ["문제 URL", "삭제 요청 이력", "권리침해 설명", "접수번호"],
+          successSignal: "삭제, 비공개, 접속차단, 심의 접수 중 하나의 상태가 확인됨",
+          nextStatus: "WAITING_RESPONSE",
+        },
+        {
+          id: "dsc-reupload-monitor",
+          title: "재유포 확인과 새 URL 추가",
+          actor: "피해자",
+          timing: "7일·30일·90일",
+          userAction: ["같은 검색어와 게시자 단서로 최소 범위만 재확인", "재노출 발견 시 새 URL과 발견 일시만 추가", "혼자 불법 사이트에 가입하거나 우회 접속하지 않기"],
+          requiredMaterials: ["새 URL", "새 발견 일시", "이전 접수번호", "검색어"],
+          successSignal: "재유포가 없거나 새 유포분이 별도 기록으로 분리됨",
+          nextStatus: "USER_VERIFIED",
+        },
+      ],
+      escalationTriggers: ["가해자가 돈, 추가 촬영, 만남을 요구함", "미성년자 피해이거나 미성년자 시기 촬영물임", "가족·학교·직장에 보내겠다는 협박이 있음", "삭제 후 같은 자료가 다시 올라옴", "플랫폼이 답변하지 않거나 신고자가 반복 노출됨"],
+      recordKeeping: ["접수기관, 접수일, 접수번호를 기록", "삭제 완료와 사용자 확인 완료를 분리", "재유포 발견 시 기존 사건에 덮어쓰지 말고 새 접근경로로 추가"],
+      boundaries: ["지움AI는 기관에 자동 제출하지 않습니다.", "지움AI는 피해물을 저장하지 않습니다.", "지움AI는 불법 사이트를 자동 방문하지 않습니다.", "지움AI는 삭제를 보장하지 않습니다.", "가해자와 직접 협상하거나 송금하지 않습니다."],
+      copyableNotice: buildVictimDeletionNotice(input, classification, "디지털 성범죄 피해물 삭제지원 상담 요청"),
+    };
+  }
+
+  if (classification.caseType === "SELF_POST_DELETE") {
+    return {
+      title: "피해자 직접 삭제 희망 플랜",
+      summary: "본인이 올린 오래된 게시물은 직접 삭제, 플랫폼 요청, 개인정보 포털 지우개 서비스, 검색 결과 정리 순서로 나눕니다.",
+      directRequestAllowed: true,
+      firstPrinciple: "본인이 지울 수 있는 곳은 먼저 직접 지우되, 검색 노출과 복제 게시물은 별도 기록으로 관리합니다.",
+      steps: [
+        {
+          id: "self-post-own-delete",
+          title: "계정 접근 가능 여부 확인",
+          actor: "피해자",
+          timing: "즉시",
+          userAction: ["본인 계정으로 직접 삭제 가능한지 확인", "삭제 전 검색 결과와 URL을 기록", "삭제 후 원본 URL 접속 결과를 기록"],
+          requiredMaterials: ["계정 접근 가능 여부", "원본 URL", "검색어", "작성 시기"],
+          successSignal: "직접 삭제 또는 접근 불가 사유가 확인됨",
+          nextStatus: "REQUESTED",
+        },
+        {
+          id: "self-post-eraser",
+          title: "지우개 서비스 대상 여부 확인",
+          actor: "수사·심의기관",
+          timing: "직접 삭제가 어렵거나 검색 노출이 남을 때",
+          userAction: ["30세 미만 여부, 19세 미만 시기 작성 여부, 개인정보 포함 여부 확인", "본인 작성 근거와 URL을 신청 자료로 정리", "공식 개인정보 포털에서 사용자가 직접 신청"],
+          requiredMaterials: ["작성 당시 나이", "현재 나이대", "개인정보 포함 부분", "본인 작성 근거"],
+          successSignal: "지우개 서비스 신청 또는 지원 제외 사유가 확인됨",
+          nextStatus: "WAITING_RESPONSE",
+        },
+        {
+          id: "self-post-search-cleanup",
+          title: "검색 결과 캐시·스니펫 제거",
+          actor: "플랫폼/검색엔진",
+          timing: "원본 삭제 후",
+          userAction: ["원본 삭제 여부를 확인", "검색엔진에 캐시 또는 스니펫 삭제 요청", "7일 뒤 같은 검색어로 확인"],
+          requiredMaterials: ["검색어", "검색 결과 URL", "원본 삭제 확인", "확인 일시"],
+          successSignal: "검색 결과가 사라졌거나 갱신 요청 결과가 확인됨",
+          nextStatus: "USER_VERIFIED",
+        },
+      ],
+      escalationTriggers: ["본인이 작성했지만 계정을 잃어버림", "개인정보가 포함되어 있는데 운영자가 삭제를 거부함", "검색 결과에 삭제된 내용이 계속 남음", "타인이 복사해 재게시함"],
+      recordKeeping: ["직접 삭제일과 검색 재확인일을 분리", "지원 제외 사유를 메모", "재게시물은 새 접근경로로 추가"],
+      boundaries: ["타인의 정당한 비판글 삭제에는 쓰지 않습니다.", "검색 결과 삭제는 원본 삭제와 별개입니다.", "지움AI는 공식 신청을 대리 제출하지 않습니다."],
+      copyableNotice: buildVictimDeletionNotice(input, classification, "자기 게시물 삭제 또는 검색 배제 요청"),
+    };
+  }
+
+  if (classification.caseType === "SEARCH_RESULT_REMOVAL") {
+    return {
+      title: "피해자 직접 삭제 희망 플랜",
+      summary: "검색 노출은 원본 게시물과 검색엔진 캐시를 분리해야 합니다. 원본이 살아 있으면 먼저 원본 조치, 원본이 사라졌으면 캐시·스니펫 제거가 중심입니다.",
+      directRequestAllowed: true,
+      firstPrinciple: "검색엔진은 원본을 지우지 않습니다. 원본 삭제 여부를 먼저 확인하고, 남은 흔적을 따로 요청합니다.",
+      steps: [
+        {
+          id: "search-source-check",
+          title: "원본 존재 여부 확인",
+          actor: "피해자",
+          timing: "즉시",
+          userAction: ["검색 결과 URL과 원본 URL을 구분", "원본 페이지가 아직 열리는지 직접 확인", "개인정보가 보이는 스니펫 문구를 기록"],
+          requiredMaterials: ["검색어", "검색 결과 URL", "원본 URL", "스니펫 문구"],
+          successSignal: "원본 조치가 필요한지 캐시 조치만 필요한지 결정됨",
+          nextStatus: "READY",
+        },
+        {
+          id: "search-platform-first",
+          title: "원본 게시물 삭제 요청",
+          actor: "플랫폼/검색엔진",
+          timing: "원본이 살아 있을 때",
+          userAction: ["게시판 또는 플랫폼에 삭제·비공개 요청", "처리 결과 회신을 저장", "응답이 없으면 공식 상담 경로 검토"],
+          requiredMaterials: ["원본 URL", "노출 정보", "요청 사유", "본인 확인 최소 자료"],
+          successSignal: "원본이 삭제 또는 비공개 처리됨",
+          nextStatus: "PLATFORM_RESPONDED",
+        },
+        {
+          id: "search-cache-removal",
+          title: "검색엔진 캐시·스니펫 삭제 요청",
+          actor: "플랫폼/검색엔진",
+          timing: "원본 조치 후",
+          userAction: ["검색엔진별 삭제 요청 화면에 직접 입력", "검색어와 검색 결과 URL을 제출", "7일·30일 후 같은 검색어로 확인"],
+          requiredMaterials: ["검색 결과 URL", "원본 삭제 확인", "검색어", "확인 일시"],
+          successSignal: "검색 결과가 제거되거나 스니펫이 갱신됨",
+          nextStatus: "USER_VERIFIED",
+        },
+      ],
+      escalationTriggers: ["원본 사이트가 응답하지 않음", "개인정보가 계속 검색에 노출됨", "검색 결과가 다른 복제 페이지로 이어짐"],
+      recordKeeping: ["원본 URL과 검색 결과 URL을 따로 기록", "원본 삭제일과 검색 제거 요청일을 분리", "검색어별 확인 결과를 7일·30일·90일로 기록"],
+      boundaries: ["검색엔진 요청은 원본 삭제를 대신하지 않습니다.", "URL 자동 방문이나 대량 조회를 하지 않습니다.", "삭제 성공을 보장하지 않습니다."],
+      copyableNotice: buildVictimDeletionNotice(input, classification, "검색 결과 제외 또는 캐시 삭제 요청"),
+    };
+  }
+
+  return {
+    title: "피해자 직접 삭제 희망 플랜",
+    summary: "개인정보·사진·이미지가 노출된 일반 사건은 피해자가 직접 삭제 요청을 시작할 수 있습니다. 다만 먼저 증거를 남기고, 플랫폼 요청과 공식기관 상담을 순서대로 분리해야 합니다.",
+    directRequestAllowed: true,
+    firstPrinciple: "삭제 버튼을 누르기 전에 URL, 노출 항목, 발견 일시를 남겨야 이후 거부·재노출·수사 대응이 가능합니다.",
+    steps: [
+      {
+        id: "general-evidence-first",
+        title: "삭제 전 증거와 노출 범위 확정",
+        actor: "피해자",
+        timing: "즉시",
+        userAction: ["URL과 게시 위치를 기록", "노출된 정보 종류를 체크", "캡처 보유 여부와 발견 일시를 적기"],
+        requiredMaterials: ["URL", "플랫폼명", "노출 정보", "발견 일시", "캡처 보유 여부"],
+        successSignal: "요청서에 넣을 사실관계가 정리됨",
+        nextStatus: "READY",
+      },
+      {
+        id: "general-platform-request",
+        title: "플랫폼 관리자에게 삭제·비공개 요청",
+        actor: "플랫폼/검색엔진",
+        timing: "증거 정리 직후",
+        userAction: ["요청서 초안을 검토 후 직접 제출", "본인 확인 자료는 최소한만 제출", "접수번호나 회신 메일을 저장"],
+        requiredMaterials: ["대상 URL", "노출 정보", "피해 내용", "처리 결과 회신 받을 연락처"],
+        successSignal: "삭제, 비공개, 보완요청, 거절 중 하나의 답변이 확인됨",
+        nextStatus: "REQUESTED",
+      },
+      {
+        id: "general-official-escalation",
+        title: "무응답·거절 시 공식기관 상담",
+        actor: "수사·심의기관",
+        timing: "플랫폼 답변 지연 또는 거절 시",
+        userAction: ["KISA 118 또는 온라인피해365센터 상담 준비", "협박·사칭·금전 피해가 있으면 ECRM 신고 준비", "삭제 요청 이력을 함께 제출"],
+        requiredMaterials: ["삭제 요청 이력", "플랫폼 답변", "증거목록", "피해 내용"],
+        successSignal: "상담 접수, 신고 접수, 추가 제출자료가 확인됨",
+        nextStatus: "WAITING_RESPONSE",
+      },
+      {
+        id: "general-user-verify",
+        title: "사용자 확인 완료 처리",
+        actor: "피해자",
+        timing: "삭제 또는 비공개 후",
+        userAction: ["같은 URL과 검색어로 직접 확인", "검색엔진 캐시가 남으면 별도 요청", "사건 보드 상태를 사용자 확인 완료로 변경"],
+        requiredMaterials: ["확인 일시", "검색어", "처리 결과", "남은 노출 여부"],
+        successSignal: "피해자가 직접 더 이상 노출되지 않음을 확인함",
+        nextStatus: "USER_VERIFIED",
+      },
+    ],
+    escalationTriggers: ["주민등록번호·주소·전화번호 등 민감한 개인정보가 남아 있음", "운영자가 삭제를 거부하거나 답하지 않음", "가해자가 협박하거나 반복 게시함", "삭제 후 검색 결과나 복제 게시물이 남음"],
+    recordKeeping: ["삭제 요청일, 접수번호, 답변일을 기록", "삭제 완료와 사용자 확인 완료를 구분", "재노출은 기존 성공을 덮어쓰지 말고 새 접근경로로 기록"],
+    boundaries: ["지움AI는 플랫폼에 자동 제출하지 않습니다.", "비밀번호나 신분증 원본을 저장하지 않습니다.", "삭제 성공을 보장하지 않습니다.", "타인의 정당한 기록 은폐에는 사용하지 않습니다."],
+    copyableNotice: buildVictimDeletionNotice(input, classification, "개인정보 또는 이미지 노출 게시물 삭제 요청"),
+  };
+}
+
+function buildVictimDeletionNotice(input: CaseInput, classification: CaseClassification, title: string): RequestDraftOutput {
+  return {
+    title,
+    recipientType: classification.caseType === "DIGITAL_SEX_CRIME" ? "PUBLIC_AGENCY" : classification.caseType === "SEARCH_RESULT_REMOVAL" ? "SEARCH_ENGINE" : "PLATFORM_ADMIN",
+    checklist: ["대상 URL", "게시 위치", "노출된 정보", "발견 일시", "요청 이력", "처리 결과 회신 방법"],
+    body: `
+안녕하세요.
+
+아래 게시물 또는 검색 노출에 제 개인정보, 사진, 이미지 또는 사생활 관련 정보가 포함되어 있어 삭제, 비공개, 검색 제외 또는 접속차단에 필요한 조치를 요청드립니다.
+
+대상 URL:
+${input.targetUrl || "[대상 URL 입력]"}
+
+게시 위치/플랫폼:
+${input.platform || "[게시판, SNS, 검색엔진, 앱 이름 입력]"}
+
+접근경로 증거목록:
+${formatEvidenceLedgerForDocument(input)}
+
+노출된 정보:
+${input.exposedInfo.length ? input.exposedInfo.join(", ") : "[노출 정보 종류 입력]"}
+
+피해 내용:
+${input.description || "[피해 내용을 확인된 사실 중심으로 입력]"}
+
+요청 사항:
+1. 해당 게시물 또는 이미지의 삭제, 비공개, 블라인드, 검색 제외 등 가능한 조치
+2. 저장된 캐시, 썸네일, 미리보기, 스니펫에 개인정보가 남아 있는 경우 갱신 또는 제거
+3. 동일 URL 또는 동일 계정의 재게시물이 확인될 경우 추가 조치
+4. 처리 결과와 보완 필요 자료 회신
+
+저는 이 요청의 처리 결과를 직접 확인하고, 필요한 경우 공식 상담기관 또는 수사·심의 절차를 통해 추가 조치를 진행하겠습니다.
+
+감사합니다.
+`.trim(),
   };
 }
 
@@ -530,9 +772,12 @@ function generateServiceIntegrations(classification: CaseClassification): Servic
 }
 
 function generateMonitoringPlan(input: CaseInput, classification: CaseClassification) {
+  const evidenceItems = getEvidenceLedger(input);
   const baseQueries = compactList([
     input.keywords,
     input.platform && input.keywords ? `${input.platform} ${input.keywords}` : undefined,
+    ...evidenceItems.map((item) => item.posterId),
+    ...evidenceItems.map((item) => (item.platform && item.posterId ? `${item.platform} ${item.posterId}` : undefined)),
     input.exposedInfo.includes("전화번호") ? "\"전화번호\" \"이름\"" : undefined,
     classification.caseType === "DIGITAL_SEX_CRIME" ? "[피해자 이름/닉네임] [유포자 ID]" : undefined,
     classification.caseType === "SEARCH_RESULT_REMOVAL" ? `cache:${quote(input.targetUrl, "[원본 URL]")}` : undefined,
@@ -541,13 +786,14 @@ function generateMonitoringPlan(input: CaseInput, classification: CaseClassifica
   return {
     title: "안전 추적 계획",
     safeQueries: baseQueries.length ? baseQueries : ["[이름/닉네임]", "[플랫폼명] [게시물 제목]", "[검색 결과에 보인 문구]"],
-    manualCheckTargets: [
-      "원본 게시물 URL",
-      "검색엔진 결과",
-      "플랫폼 신고함 또는 고객센터 답변",
-      "동일 문구 재게시 여부",
-      "공식기관 접수 진행 상황",
-    ],
+    manualCheckTargets: evidenceItems.length
+      ? [
+          ...evidenceItems.map((item, index) => `${index + 1}. ${quote(item.platform, "플랫폼 미입력")} / ${quote(item.url || item.location, "URL 또는 게시 위치 미입력")}`),
+          "검색엔진 결과",
+          "플랫폼 신고함 또는 고객센터 답변",
+          "공식기관 접수 진행 상황",
+        ]
+      : ["원본 게시물 URL", "검색엔진 결과", "플랫폼 신고함 또는 고객센터 답변", "동일 문구 재게시 여부", "공식기관 접수 진행 상황"],
     cadence: ["접수 당일 1회", "7일 후 재확인", "30일 후 재확인", "90일 후 재확인", "재노출 발견 시 새 사건으로 기록"],
     boundaries: [
       "지움AI는 피해 URL을 자동 방문하지 않습니다.",
@@ -561,7 +807,7 @@ function generateMonitoringPlan(input: CaseInput, classification: CaseClassifica
 function generateTakedownSequence(classification: CaseClassification) {
   if (classification.caseType === "DIGITAL_SEX_CRIME") {
     return [
-      "원본 피해물 업로드 없이 URL·게시 위치·게시자 ID만 정리",
+      "원본 피해물 업로드 없이 URL·게시 위치·게시자 ID를 접근경로 증거목록으로 정리",
       "중앙디지털성범죄피해자지원센터 또는 1366 상담 접수",
       "전문기관 안내에 따라 삭제지원·수사·법률 연계 진행",
       "플랫폼 신고와 경찰 신고는 상담기관 안내에 맞춰 제출",
@@ -580,7 +826,7 @@ function generateTakedownSequence(classification: CaseClassification) {
   }
 
   return [
-    "대상 URL과 노출 항목 정리",
+    "대상 URL과 노출 항목을 접근경로 증거목록으로 정리",
     "플랫폼 관리자에게 삭제 또는 비공개 요청",
     "원본 조치 후 검색엔진 캐시/스니펫 제거 요청",
     "응답이 없거나 보완 요청이 오면 사건 보드 상태 변경",
@@ -594,6 +840,7 @@ function generateAttributionGuidance(input: CaseInput) {
     whatYouCanRecord: [
       "게시자 ID, 닉네임, 프로필 URL",
       "게시물 URL과 발견 일시",
+      "기관별 제출 대상과 접수번호",
       "협박 메시지 존재 여부와 받은 시각",
       "금전 요구, 추가 유포 협박, 연락 수단",
       "동일 문구나 동일 계정의 반복 게시 정황",
@@ -609,6 +856,7 @@ function generateAttributionGuidance(input: CaseInput) {
       "지움AI는 유출자를 특정하지 않고 단서만 정리합니다.",
       "플랫폼 로그, IP, 가입 정보 확인은 수사기관 또는 법원의 절차가 필요합니다.",
       `현재 입력된 단서: ${quote(input.platform, "[플랫폼 미입력]")} / ${quote(input.targetUrl, "[URL 미입력]")} / ${quote(input.keywords, "[키워드 미입력]")}`,
+      `현재 접근경로 수: ${getEvidenceLedger(input).length}건`,
       "신고서에는 '의심 단서'와 '확인된 사실'을 분리해 적습니다.",
     ],
   };
@@ -633,6 +881,9 @@ ${input.targetUrl || "[URL 미입력]"}
 
 플랫폼:
 ${input.platform || "[플랫폼 미입력]"}
+
+접근경로 증거목록:
+${formatEvidenceLedgerForDocument(input)}
 
 게시자 ID·닉네임·연락 수단 등 의심 단서:
 ${input.keywords || "[확인된 단서만 입력. 추정은 추정이라고 표시]"}
@@ -669,6 +920,9 @@ ${input.description}
 관련 URL/플랫폼:
 ${input.targetUrl || "[URL 미입력]"}
 ${input.platform || "[플랫폼 미입력]"}
+
+접근경로 증거목록:
+${formatEvidenceLedgerForDocument(input)}
 
 피해 유형:
 ${CASE_TYPE_LABELS[classification.caseType]}
@@ -713,6 +967,9 @@ ${classification.riskLevel}
 
 준비한 자료:
 ${classification.evidenceChecklist.map((item) => `- ${item}`).join("\n")}
+
+접근경로 증거목록:
+${formatEvidenceLedgerForDocument(input)}
 
 원하는 조치:
 1. 게시물 삭제 또는 비공개

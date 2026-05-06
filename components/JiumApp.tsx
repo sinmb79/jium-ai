@@ -16,6 +16,8 @@ import { RequestDraft } from "@/components/RequestDraft";
 import { ResourceRouter } from "@/components/ResourceRouter";
 import { QuickExit } from "@/components/QuickExit";
 import { ResponsePackPanel } from "@/components/ResponsePackPanel";
+import { EvidenceLedgerInput } from "@/components/EvidenceLedgerInput";
+import { EvidenceLedgerPanel } from "@/components/EvidenceLedgerPanel";
 
 const situationChoices = [
   {
@@ -37,6 +39,12 @@ const situationChoices = [
     starter: "원본 글은 지웠는데 검색 결과에 계속 보여요.",
   },
   {
+    id: "direct-delete",
+    title: "사진/이미지를 직접 삭제 요청하고 싶어요",
+    desc: "무단 게시된 사진, 이미지, 프로필, 썸네일",
+    starter: "제 사진이나 이미지가 허락 없이 올라가서 직접 삭제 요청하고 싶어요.",
+  },
+  {
     id: "urgent",
     title: "긴급한 유포/협박 피해예요",
     desc: "딥페이크, 불법촬영, 유포 협박",
@@ -53,6 +61,8 @@ const defaultInput: CaseInput = {
   targetUrl: "",
   platform: "",
   keywords: "",
+  evidenceItems: [],
+  keepExactUrlsForSubmission: false,
   exposedInfo: [],
   urgent: false,
   helperMode: "self",
@@ -63,7 +73,10 @@ export function JiumApp() {
   const [savedCase, setSavedCase] = useState<SavedCase | null>(null);
   const [stored, setStored] = useState(false);
   const [blockedSubmit, setBlockedSubmit] = useState(false);
-  const combinedText = [input.title, input.description, input.targetUrl, input.platform, input.keywords, input.exposedInfo.join(" ")].join("\n");
+  const evidenceText = (input.evidenceItems || [])
+    .map((item) => [item.url, item.platform, item.location, item.posterId, item.foundAt, item.submissionTarget, item.notes].filter(Boolean).join(" "))
+    .join("\n");
+  const combinedText = [input.title, input.description, input.targetUrl, input.platform, input.keywords, evidenceText, input.exposedInfo.join(" ")].join("\n");
   const findings = useMemo(() => detectSensitiveInput(combinedText), [combinedText]);
   const hasBlockingFinding = findings.some((finding) => finding.severity === "block");
   const classification = useMemo(() => (input.description ? classifyCase(input) : null), [input]);
@@ -243,6 +256,13 @@ export function JiumApp() {
               <input className="input" value={input.keywords} onChange={(event) => setInput({ ...input, keywords: event.target.value })} placeholder="검색어, 닉네임, 게시자 ID 등" />
             </label>
 
+            <EvidenceLedgerInput
+              items={input.evidenceItems || []}
+              keepExactUrlsForSubmission={Boolean(input.keepExactUrlsForSubmission)}
+              onChange={(items) => setInput({ ...input, evidenceItems: items })}
+              onKeepExactUrlsChange={(value) => setInput({ ...input, keepExactUrlsForSubmission: value })}
+            />
+
             <fieldset className="field">
               <legend className="label-row">노출된 정보</legend>
               <div className="checkbox-grid">
@@ -342,6 +362,8 @@ export function JiumApp() {
             </div>
 
             <div className="card-stack">
+              <EvidenceLedgerPanel input={savedCase.input} />
+
               <div className="panel panel-tight">
                 <span className="eyebrow">증거 정리</span>
                 <ul className="action-list">
@@ -367,7 +389,9 @@ export function JiumApp() {
 
               <div className="panel panel-tight">
                 <span className="eyebrow">로컬 보드</span>
-                <p className="muted">저장하면 이 브라우저에만 남고, URL 원문과 차단 수준 정보는 저장용 문서에서 낮춰 보관합니다. 공용 PC에서는 저장하지 않는 편이 안전합니다.</p>
+                <p className="muted">
+                  저장하면 이 브라우저에만 남습니다. 정확한 URL 보관을 켜지 않으면 URL 경로와 차단 수준 정보는 저장용 문서에서 낮춰 보관합니다. 공용 PC에서는 저장하지 않는 편이 안전합니다.
+                </p>
                 <div className="button-row">
                   <button
                     className="btn btn-primary"
@@ -377,7 +401,7 @@ export function JiumApp() {
                       upsertCase(savedCase);
                       setStored(true);
                     }}
-                    title={hasBlockingFinding ? "차단 수준 민감정보를 먼저 가려야 합니다." : "원문 URL을 숨긴 저장용 사본을 현재 브라우저에만 저장합니다."}
+                    title={hasBlockingFinding ? "차단 수준 민감정보를 먼저 가려야 합니다." : "현재 브라우저에만 저장합니다."}
                   >
                     <Database size={17} aria-hidden="true" />
                     {stored ? "저장됨" : "로컬 보드에 저장"}

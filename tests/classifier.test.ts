@@ -9,6 +9,12 @@ describe("classifyCase", () => {
     expect(result.deletionChance).toBe("HIGH");
   });
 
+  it("무단 사진과 이미지는 직접 삭제 요청 가능한 개인정보 노출로 분류한다", () => {
+    const result = classifyCase("제 사진과 프로필 이미지가 허락 없이 게시됐어요");
+    expect(result.caseType).toBe("PERSONAL_INFO_EXPOSURE");
+    expect(result.deletionChance).toBe("HIGH");
+  });
+
   it("딥페이크 사건은 외부 AI보다 전문기관 라우팅을 우선한다", () => {
     const result = classifyCase("제 딥페이크 영상이 퍼졌고 유포 협박을 받고 있어요");
     expect(result.caseType).toBe("DIGITAL_SEX_CRIME");

@@ -2,6 +2,7 @@ import type { CaseInput, CaseStatus, SavedCase } from "@/lib/types";
 import { generateResponsePack } from "@/lib/responsePack";
 import { generateRequestDraft } from "@/lib/requestTemplates";
 import { maskSensitiveText } from "@/lib/pii";
+import { hasEvidenceValue, normalizeEvidenceItem } from "@/lib/evidence";
 
 const STORAGE_KEY = "jium-ai.local-cases.v1";
 const HIDDEN_URL_VALUE = "[URL 원문은 로컬 저장하지 않음]";
@@ -21,14 +22,29 @@ function safeUrlForStorage(value?: string) {
 }
 
 export function sanitizeCaseInputForStorage(input: CaseInput): CaseInput {
+  const keepExactUrls = Boolean(input.keepExactUrlsForSubmission);
+  const evidenceItems = (input.evidenceItems || [])
+    .map(normalizeEvidenceItem)
+    .filter(hasEvidenceValue)
+    .map((item) => ({
+      ...item,
+      url: keepExactUrls ? item.url : safeUrlForStorage(item.url) || "",
+      platform: item.platform ? maskSensitiveText(item.platform) : item.platform,
+      location: item.location ? maskSensitiveText(item.location) : item.location,
+      posterId: item.posterId ? maskSensitiveText(item.posterId) : item.posterId,
+      notes: item.notes ? maskSensitiveText(item.notes) : item.notes,
+    }));
+
   return {
     ...input,
     situation: maskSensitiveText(input.situation),
     title: maskSensitiveText(input.title),
     description: maskSensitiveText(input.description),
-    targetUrl: safeUrlForStorage(input.targetUrl),
+    targetUrl: keepExactUrls ? input.targetUrl?.trim() : safeUrlForStorage(input.targetUrl),
     platform: input.platform ? maskSensitiveText(input.platform) : input.platform,
     keywords: input.keywords ? maskSensitiveText(input.keywords) : input.keywords,
+    evidenceItems,
+    keepExactUrlsForSubmission: keepExactUrls,
     exposedInfo: input.exposedInfo.map(maskSensitiveText),
   };
 }
