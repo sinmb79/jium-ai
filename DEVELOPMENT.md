@@ -30,6 +30,7 @@
 - v1.5 주요 사례 기반 대응 보강 문서: `docs/digital-sex-crime-case-lessons-v1.5.md`
 - v1.5 접근경로 증거목록 설계 문서: `docs/evidence-access-ledger-v1.5.md`
 - v1.7 피해자 직접 삭제 희망 플로우: `docs/victim-direct-deletion-flow-v1.7.md`
+- v1.8 첫 사용자 안내서: `docs/first-user-guide-v1.8.md`
 - 현재 앱 코드: Next.js App Router 기반으로 구현됨
 - `package.json`: 있음
 - Git 저장소: `https://github.com/sinmb79/jium-ai`
