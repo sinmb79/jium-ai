@@ -23,6 +23,14 @@ describe("generateResponsePack", () => {
     expect(pack.automationBoundary.requiresOfficialAuthority.join(" ")).toContain("신원 확인");
   });
 
+  it("공식 조치, 법률 검토, 금지 행동을 개입 선택지로 분리한다", () => {
+    const pack = generateResponsePack(input, classifyCase(input));
+    const categories = pack.interventionChoices.map((choice) => choice.category);
+
+    expect(categories).toEqual(expect.arrayContaining(["OFFICIAL_SAFE", "LEGAL_REVIEW", "PROHIBITED"]));
+    expect(pack.interventionChoices.find((choice) => choice.category === "PROHIBITED")?.userAction.join(" ")).toContain("피해물");
+  });
+
   it("신고서와 형사 고소 상담자료를 생성한다", () => {
     const pack = generateResponsePack(input, classifyCase(input));
     expect(pack.legalSupport.policeReport.body).toContain("경찰청 사이버범죄 신고 준비서");

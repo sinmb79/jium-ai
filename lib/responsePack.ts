@@ -5,6 +5,7 @@ import type {
   CaseInput,
   CaseStudyLesson,
   DigitalSexCrimePatternResponse,
+  InterventionChoice,
   PreventionGuidance,
   RequestDraftOutput,
   ResponsePack,
@@ -23,6 +24,7 @@ export function generateResponsePack(input: CaseInput, classification: CaseClass
   return {
     monitoringPlan: generateMonitoringPlan(input, classification),
     takedownSequence: generateTakedownSequence(classification),
+    interventionChoices: generateInterventionChoices(classification),
     attributionGuidance: generateAttributionGuidance(input),
     legalSupport: {
       title: "신고·고소·법률상담 준비 패키지",
@@ -57,6 +59,169 @@ export function generateResponsePack(input: CaseInput, classification: CaseClass
       ],
     },
   };
+}
+
+function generateInterventionChoices(classification: CaseClassification): InterventionChoice[] {
+  if (classification.caseType === "DIGITAL_SEX_CRIME") {
+    return [
+      {
+        id: "digital-sex-crime-specialist-first",
+        title: "전문기관 상담·삭제지원 연결",
+        category: "OFFICIAL_SAFE",
+        riskLevel: "낮음",
+        whenToUse: "불법촬영, 비동의 유포, 유포협박, 딥페이크, 몸캠피싱, 그루밍이 의심될 때",
+        howJiumHelps: ["URL·게시 위치·발견 일시 중심으로 상담 준비자료를 정리", "피해물 원본 업로드 없이 신고·삭제지원 경로를 분리", "7일·30일·90일 재확인 계획 생성"],
+        userAction: ["중앙디지털성범죄피해자지원센터 또는 1366에 먼저 연결", "긴급 신변 위협이 있으면 112 우선", "상담원 안내 전에는 피해물을 다시 내려받지 않기"],
+        legalRiskNotice: "전문기관 상담과 공식 신고는 안전한 첫 조치입니다. 다만 제출 자료 범위는 기관 안내에 따르세요.",
+        relatedResources: ["중앙디지털성범죄피해자지원센터", "여성긴급전화 1366", "경찰청 ECRM", "방송미디어통신심의위원회"],
+      },
+      {
+        id: "digital-sex-crime-legal-consult",
+        title: "경찰 신고·고소 상담 준비",
+        category: "LEGAL_REVIEW",
+        riskLevel: "상담 필요",
+        whenToUse: "협박, 금전 요구, 반복 유포, 미성년자 피해, 가해자 처벌 의사가 있을 때",
+        howJiumHelps: ["경찰 신고 준비서와 형사 고소 상담자료 초안 작성", "확인된 사실과 의심 단서를 분리", "무료 법률상담 메모 생성"],
+        userAction: ["신고 전 사실과 추정을 나누어 확인", "피해물 원본 제출은 수사기관·전문기관 안내에 따르기", "가족·학교·직장 공유 범위는 상담 후 결정"],
+        legalRiskNotice: "고소, 죄명, 증거 제출 범위는 변호사·수사기관 상담이 필요합니다. 지움AI는 법률 판단을 대신하지 않습니다.",
+        relatedResources: ["경찰청 ECRM", "대한법률구조공단", "대한변협 나의 변호사"],
+      },
+      {
+        id: "digital-sex-crime-prohibited-access",
+        title: "초대코드 요청·회원가입·피해물 다운로드",
+        category: "PROHIBITED",
+        riskLevel: "금지",
+        whenToUse: "하지 말아야 할 행동입니다.",
+        howJiumHelps: ["안전 추적 계획에서 자동 접속·크롤링·우회 접속 제외", "금지 행동을 대응 패키지와 내보내기 문서에 표시"],
+        userAction: ["불법 사이트에 가입하지 않기", "초대코드나 링크를 공유하지 않기", "피해물을 내려받거나 재생하지 않기"],
+        legalRiskNotice: "피해 촬영물 소지·저장·시청·공유는 2차 피해를 키우고 법적 위험을 만들 수 있습니다.",
+        relatedResources: ["중앙디지털성범죄피해자지원센터", "방송미디어통신심의위원회"],
+      },
+      {
+        id: "digital-sex-crime-prohibited-contact",
+        title: "가해자와 직접 협상·송금·보복 연락",
+        category: "PROHIBITED",
+        riskLevel: "금지",
+        whenToUse: "하지 말아야 할 행동입니다.",
+        howJiumHelps: ["협박 대응 문서에서 직접 협상을 배제", "112·ECRM·상담기관 연결 순서 제시"],
+        userAction: ["돈이나 추가 자료를 보내지 않기", "직접 만나 해결하려 하지 않기", "보복성 공개글이나 신상 공개를 하지 않기"],
+        legalRiskNotice: "직접 협상은 추가 협박과 증거 훼손 위험이 큽니다. 보복성 신상 공개도 별도 법적 문제가 될 수 있습니다.",
+        relatedResources: ["112", "경찰청 ECRM", "여성긴급전화 1366"],
+      },
+    ];
+  }
+
+  if (classification.caseType === "CREDENTIAL_LEAK") {
+    return [
+      {
+        id: "credential-official-check",
+        title: "공식 유출 확인·비밀번호 변경",
+        category: "OFFICIAL_SAFE",
+        riskLevel: "낮음",
+        whenToUse: "계정정보 유출, 이상 로그인, 다크웹 유통이 의심될 때",
+        howJiumHelps: ["비밀번호를 입력하지 않는 대응 체크리스트 생성", "우선 변경할 계정과 2단계 인증 항목 정리"],
+        userAction: ["공식 사이트에서만 유출 여부 확인", "같은 비밀번호를 쓰는 계정부터 변경", "모르는 로그인 세션 로그아웃"],
+        legalRiskNotice: "공식 서비스 외의 링크에 비밀번호를 입력하지 마세요.",
+        relatedResources: ["털린 내 정보 찾기", "KISA 개인정보침해 신고센터"],
+      },
+      {
+        id: "credential-legal-review",
+        title: "계정 침입·금전 피해 신고 상담",
+        category: "LEGAL_REVIEW",
+        riskLevel: "상담 필요",
+        whenToUse: "계정 도용, 금전 피해, 사칭, 협박이 함께 발생했을 때",
+        howJiumHelps: ["피해 일시와 로그인 기록을 상담용으로 정리", "ECRM 신고 준비서 초안 생성"],
+        userAction: ["피해 입증자료를 보존", "금융 피해가 있으면 은행·수사기관 안내 확인", "비밀번호 원문은 어떤 문서에도 적지 않기"],
+        legalRiskNotice: "형사처벌과 피해회복 가능성은 수사기관·법률상담을 통해 확인해야 합니다.",
+        relatedResources: ["경찰청 ECRM", "대한법률구조공단"],
+      },
+      {
+        id: "credential-prohibited-secret-sharing",
+        title: "비밀번호·인증번호 공유",
+        category: "PROHIBITED",
+        riskLevel: "금지",
+        whenToUse: "하지 말아야 할 행동입니다.",
+        howJiumHelps: ["비밀번호, 주민등록번호, 카드번호 감지 시 결과 생성과 저장 차단"],
+        userAction: ["비밀번호, OTP, 복구코드, 인증번호를 입력하지 않기", "캡처해서 상담글에 올리지 않기"],
+        legalRiskNotice: "비밀값을 공유하면 추가 침해와 책임 소재 혼선이 생길 수 있습니다.",
+        relatedResources: ["털린 내 정보 찾기", "KISA 개인정보침해 신고센터"],
+      },
+    ];
+  }
+
+  if (classification.caseType === "DEFAMATION_PRIVACY") {
+    return [
+      {
+        id: "defamation-platform-request",
+        title: "플랫폼 신고·삭제 요청",
+        category: "OFFICIAL_SAFE",
+        riskLevel: "낮음",
+        whenToUse: "사생활 정보, 모욕 표현, 허위 사실 게시물이 플랫폼에 남아 있을 때",
+        howJiumHelps: ["문제 표현과 피해 내용을 분리", "플랫폼 제출용 요청서 초안 생성"],
+        userAction: ["문제 표현, URL, 작성자 ID, 발견 일시를 정리", "플랫폼 정책에 맞춰 직접 제출"],
+        legalRiskNotice: "표현물 삭제 가능성은 플랫폼 정책과 법적 판단에 따라 달라질 수 있습니다.",
+        relatedResources: ["온라인피해365센터", "플랫폼 신고"],
+      },
+      {
+        id: "defamation-legal-review",
+        title: "명예훼손·모욕·사생활 침해 법률상담",
+        category: "LEGAL_REVIEW",
+        riskLevel: "상담 필요",
+        whenToUse: "고소, 손해배상, 접근금지, 반복 게시 대응을 검토할 때",
+        howJiumHelps: ["무료 법률상담 메모 생성", "확인된 사실과 의견·추정을 분리"],
+        userAction: ["공익적 비판 가능성과 사실관계를 상담 전 정리", "삭제 보장 문구를 기대하지 않기"],
+        legalRiskNotice: "명예훼손·모욕은 표현의 자유와 충돌할 수 있어 법률 검토가 필요합니다.",
+        relatedResources: ["대한법률구조공단", "대한변협 나의 변호사"],
+      },
+      {
+        id: "defamation-prohibited-retaliation",
+        title: "상대 신상 공개·맞대응 게시",
+        category: "PROHIBITED",
+        riskLevel: "금지",
+        whenToUse: "하지 말아야 할 행동입니다.",
+        howJiumHelps: ["유출자 특정 단서와 사적 신상털이를 분리", "공식 절차가 필요한 영역을 표시"],
+        userAction: ["상대방 실명·주소·직장 추적 또는 공개 금지", "확실하지 않은 사람을 범인으로 단정하지 않기"],
+        legalRiskNotice: "보복성 공개와 신상털이는 별도 개인정보 침해·명예훼손 위험을 만들 수 있습니다.",
+        relatedResources: ["온라인피해365센터", "대한법률구조공단"],
+      },
+    ];
+  }
+
+  return [
+    {
+      id: "general-official-request",
+      title: "플랫폼·공식기관 직접 요청",
+      category: "OFFICIAL_SAFE",
+      riskLevel: "낮음",
+      whenToUse: "게시물 삭제, 검색 노출 제거, 계정 탈퇴, 개인정보 침해 상담이 필요할 때",
+      howJiumHelps: ["사건 유형 분류", "요청서 초안 생성", "공식기관과 무료 경로 우선 정렬"],
+      userAction: ["문서를 검토한 뒤 사용자가 직접 제출", "URL은 자동 전달하지 않고 필요한 곳에만 직접 입력"],
+      legalRiskNotice: "삭제 성공은 보장되지 않지만 공식 요청은 가장 안전한 시작점입니다.",
+      relatedResources: classification.recommendedRoute,
+    },
+    {
+      id: "general-legal-review",
+      title: "공공 법률상담 또는 변호사 상담",
+      category: "LEGAL_REVIEW",
+      riskLevel: "상담 필요",
+      whenToUse: "법적 책임, 고소, 손해배상, 게시자 특정 절차가 필요할 때",
+      howJiumHelps: ["상담용 사건 요약과 질문 목록 생성", "확인 사실과 추정을 나누어 정리"],
+      userAction: ["무료 법률구조 가능성부터 확인", "유료 상담 전 비용과 비밀유지 조건 확인"],
+      legalRiskNotice: "법률 판단과 대리 행위는 지움AI가 대신하지 않습니다.",
+      relatedResources: ["대한법률구조공단", "대한변협 나의 변호사"],
+    },
+    {
+      id: "general-prohibited-automation",
+      title: "자동 대량 신고·로그인 자동화·무단 크롤링",
+      category: "PROHIBITED",
+      riskLevel: "금지",
+      whenToUse: "하지 말아야 할 행동입니다.",
+      howJiumHelps: ["링크 미리보기, 자동 URL fetch, 로그인 자동화를 배제", "수동 확인과 공식 제출 흐름만 안내"],
+      userAction: ["정부·플랫폼 사이트 로그인 정보를 앱에 입력하지 않기", "피해 URL을 자동 수집하거나 반복 접속하지 않기"],
+      legalRiskNotice: "자동화된 접근은 약관 위반, 증거 훼손, 피해 확산, 법적 위험으로 이어질 수 있습니다.",
+      relatedResources: ["온라인피해365센터", "KISA 개인정보침해 신고센터"],
+    },
+  ];
 }
 
 function includesAny(text: string, keywords: string[]) {

@@ -172,7 +172,7 @@ export function JiumApp() {
             </div>
             <div className="hero-point">
               <Brain size={18} aria-hidden="true" />
-              <span>AI는 추적 계획·신고서·고소 준비자료를 자동 작성하지만, 제출은 사용자가 확인합니다.</span>
+              <span>지움AI는 추적 계획·신고서·고소 준비자료를 정리하지만, 제출은 사용자가 확인합니다.</span>
             </div>
           </div>
         </div>
@@ -367,7 +367,7 @@ export function JiumApp() {
 
               <div className="panel panel-tight">
                 <span className="eyebrow">로컬 보드</span>
-                <p className="muted">저장하면 이 브라우저에만 남습니다. 공용 PC에서는 저장하지 않는 편이 안전합니다.</p>
+                <p className="muted">저장하면 이 브라우저에만 남고, URL 원문과 차단 수준 정보는 저장용 문서에서 낮춰 보관합니다. 공용 PC에서는 저장하지 않는 편이 안전합니다.</p>
                 <div className="button-row">
                   <button
                     className="btn btn-primary"
@@ -377,7 +377,7 @@ export function JiumApp() {
                       upsertCase(savedCase);
                       setStored(true);
                     }}
-                    title={hasBlockingFinding ? "차단 수준 민감정보를 먼저 가려야 합니다." : "현재 브라우저에만 저장합니다."}
+                    title={hasBlockingFinding ? "차단 수준 민감정보를 먼저 가려야 합니다." : "원문 URL을 숨긴 저장용 사본을 현재 브라우저에만 저장합니다."}
                   >
                     <Database size={17} aria-hidden="true" />
                     {stored ? "저장됨" : "로컬 보드에 저장"}

@@ -47,6 +47,21 @@ ${savedCase.responsePack.monitoringPlan.cadence.map((item) => `- ${item}`).join(
 
 ${savedCase.responsePack.takedownSequence.map((item, index) => `${index + 1}. ${item}`).join("\n")}
 
+### 안전한 개입 선택지
+
+${savedCase.responsePack.interventionChoices
+  .map(
+    (choice, index) => `${index + 1}. ${choice.title}
+   - 구분: ${choice.category}
+   - 위험 수준: ${choice.riskLevel}
+   - 사용 시점: ${choice.whenToUse}
+   - 지움AI가 돕는 일: ${choice.howJiumHelps.join(" / ")}
+   - 사용자 행동: ${choice.userAction.join(" / ")}
+   - 법적 주의: ${choice.legalRiskNotice}
+   - 연결 경로: ${choice.relatedResources.join(", ")}`,
+  )
+  .join("\n\n")}
+
 ### 유출자 특정 단서 정리
 
 ${savedCase.responsePack.attributionGuidance.whatYouCanRecord.map((item) => `- ${item}`).join("\n")}

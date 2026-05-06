@@ -134,6 +134,18 @@ export type CaseStudyLesson = {
   sourceNote: string;
 };
 
+export type InterventionChoice = {
+  id: string;
+  title: string;
+  category: "OFFICIAL_SAFE" | "LEGAL_REVIEW" | "PROHIBITED";
+  riskLevel: "낮음" | "상담 필요" | "금지";
+  whenToUse: string;
+  howJiumHelps: string[];
+  userAction: string[];
+  legalRiskNotice: string;
+  relatedResources: string[];
+};
+
 export type PreventionGuidance = {
   title: string;
   summary: string;
@@ -146,6 +158,7 @@ export type PreventionGuidance = {
 export type ResponsePack = {
   monitoringPlan: MonitoringPlan;
   takedownSequence: string[];
+  interventionChoices: InterventionChoice[];
   attributionGuidance: AttributionGuidance;
   legalSupport: LegalSupportPack;
   serviceIntegrations: ServiceIntegration[];

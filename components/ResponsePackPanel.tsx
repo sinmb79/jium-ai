@@ -1,6 +1,6 @@
 "use client";
 
-import { Clipboard, ExternalLink, FileWarning, Gavel, HeartHandshake, Phone, SearchCheck, ShieldAlert } from "lucide-react";
+import { Ban, Clipboard, ExternalLink, FileWarning, Gavel, HeartHandshake, Phone, Scale, SearchCheck, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import { RESOURCE_KIND_LABELS } from "@/lib/publicResources";
 import type { ResponsePack } from "@/lib/types";
@@ -40,6 +40,26 @@ function kindBadgeClass(kind: ResponsePack["serviceIntegrations"][number]["kind"
     return "badge badge-low";
   }
   return "badge badge-medium";
+}
+
+function interventionBadgeClass(category: ResponsePack["interventionChoices"][number]["category"]) {
+  if (category === "OFFICIAL_SAFE") {
+    return "badge badge-green";
+  }
+  if (category === "LEGAL_REVIEW") {
+    return "badge badge-medium";
+  }
+  return "badge badge-critical";
+}
+
+function interventionLabel(category: ResponsePack["interventionChoices"][number]["category"]) {
+  if (category === "OFFICIAL_SAFE") {
+    return "안전한 공식 조치";
+  }
+  if (category === "LEGAL_REVIEW") {
+    return "상담 후 결정";
+  }
+  return "하지 말아야 할 일";
 }
 
 export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
@@ -87,6 +107,40 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
             <li key={step}>{step}</li>
           ))}
         </ul>
+      </section>
+
+      <section className="panel panel-tight" style={{ boxShadow: "none" }}>
+        <h3>
+          <Scale size={18} aria-hidden="true" /> 안전한 개입 선택지
+        </h3>
+        <p className="small muted">공식 경로, 상담이 필요한 선택, 금지 행동을 분리했습니다. 빠른 행동보다 안전한 행동이 먼저입니다.</p>
+        <div className="resource-grid">
+          {pack.interventionChoices.map((choice) => (
+            <article className="resource-card" key={choice.id}>
+              <span className={interventionBadgeClass(choice.category)}>{interventionLabel(choice.category)}</span>
+              <h3>{choice.title}</h3>
+              <p>{choice.whenToUse}</p>
+              <p className="small">
+                <strong>위험 수준:</strong> {choice.riskLevel}
+              </p>
+              <div>
+                <strong>{choice.category === "PROHIBITED" ? "사용자가 피할 일" : "사용자가 할 일"}</strong>
+                <ul className="action-list small">
+                  {choice.userAction.map((item) => (
+                    <li key={item}>
+                      {choice.category === "PROHIBITED" ? <Ban size={14} aria-hidden="true" /> : null}
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <p className="small muted">{choice.legalRiskNotice}</p>
+              <p className="small">
+                <strong>연결:</strong> {choice.relatedResources.join(", ")}
+              </p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="panel panel-tight" style={{ boxShadow: "none" }}>

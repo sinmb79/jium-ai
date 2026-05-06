@@ -4,7 +4,7 @@ import { Download, RefreshCw, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CASE_TYPE_LABELS, STATUS_LABELS } from "@/lib/labels";
 import type { CaseStatus, SavedCase } from "@/lib/types";
-import { deleteCase, loadCases, updateCaseStatus } from "@/lib/caseStorage";
+import { clearCases, deleteCase, loadCases, updateCaseStatus } from "@/lib/caseStorage";
 import { downloadTextFile, savedCaseToMarkdown } from "@/lib/export";
 import { RiskBadge } from "@/components/RiskBadge";
 import { appPath } from "@/lib/navigation";
@@ -22,6 +22,14 @@ export function CaseBoard() {
     const ok = window.confirm("이 브라우저에 저장된 사건 기록을 삭제합니다. 내보내기 전이라면 복구할 수 없습니다.");
     if (ok) {
       setCases(deleteCase(id));
+    }
+  }
+
+  function removeAllCases() {
+    const ok = window.confirm("이 브라우저에 저장된 모든 사건 기록을 삭제합니다. 내보내기 전이라면 복구할 수 없습니다.");
+    if (ok) {
+      clearCases();
+      setCases([]);
     }
   }
 
@@ -43,7 +51,11 @@ export function CaseBoard() {
       <div className="panel panel-tight">
         <span className="eyebrow">로컬 우선</span>
         <h1 style={{ fontSize: "clamp(2rem, 5vw, 3.8rem)", maxWidth: "14ch" }}>사건 보드</h1>
-        <p className="lead">이 목록은 서버가 아니라 현재 브라우저 저장소에 있습니다. 공용 PC에서는 사용 후 삭제하세요.</p>
+        <p className="lead">이 목록은 서버가 아니라 현재 브라우저 저장소에 있습니다. 저장본은 원문 URL을 숨기고, 만료된 기록은 로드 시 자동 정리됩니다.</p>
+        <button className="btn btn-danger" type="button" onClick={removeAllCases}>
+          <Trash2 size={16} aria-hidden="true" />
+          전체 삭제
+        </button>
       </div>
       <div className="board-grid">
         {cases.map((item) => (
@@ -55,6 +67,7 @@ export function CaseBoard() {
             <div>
               <h3>{item.input.title}</h3>
               <p className="muted small">{item.classification.reason}</p>
+              <p className="muted small">보관 기한: {new Date(item.expiresAt).toLocaleDateString("ko-KR")}</p>
             </div>
             <label className="field">
               <span className="hint">진행 상태</span>
