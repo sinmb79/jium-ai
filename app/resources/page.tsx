@@ -1,12 +1,13 @@
 import { ExternalLink, ShieldCheck } from "lucide-react";
 import { PUBLIC_RESOURCES } from "@/lib/publicResources";
 import { HomeLink, QuickExit } from "@/components/QuickExit";
+import { appPath } from "@/lib/navigation";
 
 export default function ResourcesPage() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/">
+        <a className="brand" href={appPath("/")}>
           <span className="brand-mark">
             <ShieldCheck size={19} aria-hidden="true" />
           </span>

@@ -7,6 +7,7 @@ import type { CaseStatus, SavedCase } from "@/lib/types";
 import { deleteCase, loadCases, updateCaseStatus } from "@/lib/caseStorage";
 import { downloadTextFile, savedCaseToMarkdown } from "@/lib/export";
 import { RiskBadge } from "@/components/RiskBadge";
+import { appPath } from "@/lib/navigation";
 
 const statuses = Object.keys(STATUS_LABELS) as CaseStatus[];
 
@@ -23,7 +24,7 @@ export function CaseBoard() {
         <span className="eyebrow">로컬 사건 보드</span>
         <h2>아직 저장한 사건이 없습니다.</h2>
         <p className="muted">진단 결과에서 "로컬 보드에 저장"을 누르면 이 브라우저 안에만 저장됩니다.</p>
-        <a className="btn btn-primary" href="/">
+        <a className="btn btn-primary" href={appPath("/")}>
           진단 시작하기
         </a>
       </div>

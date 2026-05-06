@@ -8,6 +8,7 @@ import { CASE_TYPE_LABELS } from "@/lib/labels";
 import { detectSensitiveInput, maskSensitiveText } from "@/lib/pii";
 import { generateRequestDraft } from "@/lib/requestTemplates";
 import type { CaseInput, SavedCase } from "@/lib/types";
+import { appPath } from "@/lib/navigation";
 import { DeletionChanceBadge, RiskBadge } from "@/components/RiskBadge";
 import { SafetyNotice } from "@/components/SafetyNotice";
 import { RequestDraft } from "@/components/RequestDraft";
@@ -111,20 +112,20 @@ export function JiumApp() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="지움AI 홈">
+        <a className="brand" href={appPath("/")} aria-label="지움AI 홈">
           <span className="brand-mark">
             <ShieldCheck size={19} aria-hidden="true" />
           </span>
           <span>지움AI</span>
         </a>
         <nav className="topbar-actions" aria-label="주요 이동">
-          <a className="btn btn-ghost" href="/dashboard">
+          <a className="btn btn-ghost" href={appPath("/dashboard")}>
             사건 보드
           </a>
-          <a className="btn btn-ghost" href="/resources">
+          <a className="btn btn-ghost" href={appPath("/resources")}>
             공식기관
           </a>
-          <a className="btn btn-ghost" href="/safety">
+          <a className="btn btn-ghost" href={appPath("/safety")}>
             긴급 안전
           </a>
           <QuickExit />
@@ -275,7 +276,7 @@ export function JiumApp() {
                 <FileText size={17} aria-hidden="true" />
                 결과와 요청서 만들기
               </button>
-              <a className="btn btn-secondary" href="/safety">
+              <a className="btn btn-secondary" href={appPath("/safety")}>
                 <AlertTriangle size={17} aria-hidden="true" />
                 긴급 안전 안내
               </a>
@@ -354,7 +355,7 @@ export function JiumApp() {
                     <Database size={17} aria-hidden="true" />
                     {stored ? "저장됨" : "로컬 보드에 저장"}
                   </button>
-                  <a className="btn btn-secondary" href="/dashboard">
+                  <a className="btn btn-secondary" href={appPath("/dashboard")}>
                     사건 보드 보기
                   </a>
                 </div>

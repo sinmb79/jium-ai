@@ -1,11 +1,12 @@
 import { AlertTriangle, CheckCircle2, Phone, ShieldAlert } from "lucide-react";
 import { HomeLink, QuickExit } from "@/components/QuickExit";
+import { appPath } from "@/lib/navigation";
 
 export default function SafetyPage() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/">
+        <a className="brand" href={appPath("/")}>
           <span className="brand-mark">
             <ShieldAlert size={19} aria-hidden="true" />
           </span>
@@ -61,7 +62,7 @@ export default function SafetyPage() {
               <a className="btn btn-primary" href="https://d4u.stop.or.kr/main" target="_blank" rel="noreferrer">
                 센터 사이트 열기
               </a>
-              <a className="btn btn-secondary" href="/">
+              <a className="btn btn-secondary" href={appPath("/")}>
                 최소 정보만 정리하기
               </a>
             </div>

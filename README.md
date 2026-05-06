@@ -42,6 +42,12 @@ npm run dev
 http://localhost:3000
 ```
 
+공개 페이지:
+
+```txt
+https://sinmb79.github.io/jium-ai/
+```
+
 ## ⚙️ 환경변수
 
 기본 모드는 환경변수가 없어도 동작합니다.
@@ -73,6 +79,8 @@ AI_PROVIDER=rule
 - OpenAI-compatible endpoint
 
 중요한 사건은 AI보다 안전 라우팅이 먼저입니다. 민감정보는 redaction pipeline을 거친 뒤에만 provider로 보낼 수 있습니다.
+
+GitHub Pages 공개 버전은 정적·로컬 우선 모드로 배포됩니다. 서버 측 유료 AI API를 실제로 붙일 때는 Vercel, Netlify, 내부망 Next.js 서버처럼 서버 런타임이 있는 환경에서 `lib/ai` adapter를 연결하세요.
 
 ## 🧪 검증
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Home, ShieldOff } from "lucide-react";
+import { appPath } from "@/lib/navigation";
 
 export function QuickExit() {
   return (
@@ -20,7 +21,7 @@ export function QuickExit() {
 
 export function HomeLink() {
   return (
-    <a className="btn btn-secondary" href="/" title="지움AI 첫 화면으로 이동">
+    <a className="btn btn-secondary" href={appPath("/")} title="지움AI 첫 화면으로 이동">
       <Home size={17} aria-hidden="true" />
       처음으로
     </a>
