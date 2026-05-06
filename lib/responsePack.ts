@@ -3,6 +3,7 @@ import { getResourcesForCase } from "@/lib/publicResources";
 import type {
   CaseClassification,
   CaseInput,
+  CaseStudyLesson,
   DigitalSexCrimePatternResponse,
   PreventionGuidance,
   RequestDraftOutput,
@@ -70,6 +71,7 @@ function generatePreventionGuidance(input: CaseInput, classification: CaseClassi
   const matchedPatterns = patterns.filter((pattern) => includesAny(text, pattern.riskSignals.map((signal) => signal.split(":")[0])));
   const shouldShowAllCorePatterns = classification.caseType === "DIGITAL_SEX_CRIME" && matchedPatterns.length === 0;
   const selectedPatterns = shouldShowAllCorePatterns ? patterns.slice(0, 4) : matchedPatterns;
+  const lessons = buildCaseStudyLessons();
 
   return {
     title: "범죄유형별 피해 확산 방지 매트릭스",
@@ -78,6 +80,10 @@ function generatePreventionGuidance(input: CaseInput, classification: CaseClassi
         ? "과거 디지털성범죄 양상을 피해자 대응 언어로 바꾸었습니다. 범행 방법을 자세히 설명하지 않고, 위험 신호와 필요한 조치만 보여줍니다."
         : "디지털성범죄로 확정되지 않은 사건도 유포·협박·사칭 위험이 있으면 같은 안전 원칙으로 대응합니다.",
     patterns: selectedPatterns.length ? selectedPatterns : [buildGeneralOnlineAbusePattern()],
+    caseStudyLessons:
+      classification.caseType === "DIGITAL_SEX_CRIME"
+        ? lessons
+        : lessons.filter((lesson) => includesAny(text, [lesson.id, ...lesson.title.split(" "), ...lesson.riskPattern.split(" ")])),
     survivorSupportProtocol: [
       "피해자에게 원본을 보여달라고 요구하지 않습니다.",
       "피해자가 안전한 기기와 장소에서 상담·신고할 수 있게 돕습니다.",
@@ -92,8 +98,88 @@ function generatePreventionGuidance(input: CaseInput, classification: CaseClassi
       "학교·단체·직장은 피해자 조사보다 보호조치, 게시물 차단, 2차 가해 금지를 먼저 공지합니다.",
       "플랫폼 신고 결과와 재유포 여부를 7일·30일·90일 단위로 확인합니다.",
       "피해자를 탓하는 질문 대신 '무엇을 함께 처리하면 되는지'를 묻습니다.",
+      "초대코드, 링크, 포인트 보상형 공유를 발견하면 참여하지 말고 공식 신고 경로로 넘깁니다.",
     ],
   };
+}
+
+function buildCaseStudyLessons(): CaseStudyLesson[] {
+  return [
+    {
+      id: "nth-room",
+      title: "n번방·박사방형 조직적 성착취",
+      riskPattern: "협박, 심리적 지배, 미성년자 피해, 역할분담, 유료화·조직화, 폐쇄형 채팅방 확산",
+      whyItMatters:
+        "정부 대책은 n번방·박사방을 계기로 디지털성범죄를 중대범죄로 보고 무관용, 아동·청소년 보호, 사각지대 해소, 사회적 인식 전환을 함께 추진했습니다.",
+      responsePrinciples: [
+        "피해자를 설득하거나 추궁하지 않고 즉시 안전 확보와 상담 연결을 우선합니다.",
+        "협박 메시지, 계정, 송금 요구, 방 이름 같은 단서만 정리하고 피해물 원본은 다루지 않습니다.",
+        "수사, 삭제지원, 법률, 의료·심리 지원을 하나의 흐름으로 묶어 진행합니다.",
+      ],
+      rescueActions: [
+        "112, 1366, 중앙디지털성범죄피해자지원센터 중 하나로 즉시 연결",
+        "피해자 동의 없이 가족·학교·직장에 알리지 않기",
+        "고소장·신고서에는 확인된 사실과 추정을 분리",
+        "미성년자는 보호자 동의 전이라도 전문기관 상담 가능 여부 확인",
+      ],
+      preventionActions: [
+        "학교·단체에 '피해물 열람·저장·전달 금지' 원칙을 먼저 공지",
+        "청소년에게 비밀 유지 요구, 선물·돈 제안, 만남 요구를 위험 신호로 교육",
+        "가해자 신상털이가 아니라 공식 신고와 피해자 보호로 대응",
+      ],
+      doNotDo: ["피해물 확인 요청", "가해자와 직접 협상", "단체방 잠입·함정 대화 시도", "피해자 이름을 넣은 공개 신고 독려"],
+      sourceNote: "2020년 관계부처 합동 디지털 성범죄 근절대책과 중앙디지털성범죄피해자지원센터 지원 체계를 기준으로 정리",
+    },
+    {
+      id: "closed-illegal-site",
+      title: "놀쟈.com류 폐쇄형 불법촬영물 유통 사이트",
+      riskPattern: "초대코드, 포인트·등급 보상, 반복 접속, 불법촬영물·성착취물 중심 게시판, 도메인 변경, 이용자 가담",
+      whyItMatters:
+        "공개 법률가이드들은 이런 유형을 단순 시청 문제가 아니라 폐쇄형 유통망과 이용자 활동이 결합되는 구조로 설명합니다. 피해자 구제에서는 사이트 접속보다 유통 차단과 신고 연결이 먼저입니다.",
+      responsePrinciples: [
+        "사이트에 가입하거나 반복 접속하지 않고, 이미 확인한 URL·게시 위치·발견 일시만 기록합니다.",
+        "초대코드나 링크를 공유하지 않습니다. 공유 자체가 확산에 기여할 수 있습니다.",
+        "피해자라면 중앙센터 삭제지원과 방심위 1377, 수사를 원하면 ECRM 흐름으로 분리합니다.",
+      ],
+      rescueActions: [
+        "불법 사이트 링크를 주변에 확인 요청하지 않기",
+        "피해자가 특정되는 제목·닉네임·게시 위치를 최소 단서로 정리",
+        "1377 디지털성범죄 민원 또는 중앙센터 상담으로 삭제·차단 지원 연결",
+        "협박·금전 요구·아동청소년 피해가 있으면 경찰 신고 준비",
+      ],
+      preventionActions: [
+        "커뮤니티에 초대코드·가입 링크 게시 금지 규칙 고정",
+        "포인트나 등급을 얻기 위한 공유가 범죄 확산이라는 안내",
+        "운영자에게 불법촬영물 신고·삭제 요청 절차와 보존 범위를 분리해 안내",
+      ],
+      doNotDo: ["초대코드 요청·공유", "회원가입 후 내부 검색", "피해물 다운로드", "링크를 단체방에 뿌려 신고 독려"],
+      sourceNote: "놀쟈.com 관련 공개 법률가이드와 디지털성범죄 원스톱 신고 ARS 안내를 피해자 안전 기준으로 재구성",
+    },
+    {
+      id: "support-gap",
+      title: "피해지원 공백을 줄이는 원스톱 연결",
+      riskPattern: "어디에 신고해야 할지 몰라 시간이 지체됨, 삭제·수사·법률·심리 지원이 흩어짐, 재유포 추적 피로",
+      whyItMatters:
+        "중앙디지털성범죄피해자지원센터는 상담, 삭제지원, 유포 모니터링, 수사·법률·의료 연계를 통합지원하고, 1377 ARS는 삭제·차단, 상담, 수사 요청 기관으로 연결합니다.",
+      responsePrinciples: [
+        "한 번에 모든 절차를 끝내려 하지 않고 상담 접수, 삭제지원, 수사, 법률상담을 순서화합니다.",
+        "피해자가 직접 반복 검색하지 않도록 조력자가 URL 목록과 접수번호만 관리합니다.",
+        "접수 후 7일·30일·90일 재확인으로 재유포를 새 사건으로 분리합니다.",
+      ],
+      rescueActions: [
+        "중앙센터 02-735-8994 또는 1366으로 상담 시작",
+        "1377에서 디지털성범죄 민원 선택 후 삭제·차단 또는 수사 연결",
+        "법률구조공단 132 또는 피해자 국선변호사 등 무료 법률지원 검토",
+      ],
+      preventionActions: [
+        "학교·기관 내 담당자를 정해 피해자에게 기관을 전전하게 하지 않기",
+        "공용 문서에는 피해자 식별 정보를 빼고 접수번호 중심으로 관리",
+        "재유포 발견자는 피해자에게 링크를 보내지 말고 담당 조력자에게 최소 정보만 전달",
+      ],
+      doNotDo: ["피해자에게 여러 기관에 반복 설명 요구", "피해 사실을 내부 공유방에 상세 전파", "삭제 결과를 보장한다고 말하기"],
+      sourceNote: "중앙디지털성범죄피해자지원센터, 여성가족부 특별지원단, 1377 원스톱 신고 안내를 기준으로 정리",
+    },
+  ];
 }
 
 function buildDigitalSexCrimePatterns(): DigitalSexCrimePatternResponse[] {

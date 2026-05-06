@@ -122,10 +122,23 @@ export type DigitalSexCrimePatternResponse = {
   primaryRoutes: string[];
 };
 
+export type CaseStudyLesson = {
+  id: string;
+  title: string;
+  riskPattern: string;
+  whyItMatters: string;
+  responsePrinciples: string[];
+  rescueActions: string[];
+  preventionActions: string[];
+  doNotDo: string[];
+  sourceNote: string;
+};
+
 export type PreventionGuidance = {
   title: string;
   summary: string;
   patterns: DigitalSexCrimePatternResponse[];
+  caseStudyLessons: CaseStudyLesson[];
   survivorSupportProtocol: string[];
   communityPrevention: string[];
 };

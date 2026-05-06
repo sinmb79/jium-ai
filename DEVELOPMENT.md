@@ -27,6 +27,7 @@
 - v1.2 법률·형사 서비스 연계 문서: `docs/legal-criminal-service-integration-v1.2.md`
 - v1.3 디지털성범죄 대응 매트릭스: `docs/digital-sex-crime-response-matrix-v1.3.md`
 - v1.4 전체 재검토 보강 문서: `docs/final-review-hardening-v1.4.md`
+- v1.5 주요 사례 기반 대응 보강 문서: `docs/digital-sex-crime-case-lessons-v1.5.md`
 - 현재 앱 코드: Next.js App Router 기반으로 구현됨
 - `package.json`: 있음
 - Git 저장소: `https://github.com/sinmb79/jium-ai`

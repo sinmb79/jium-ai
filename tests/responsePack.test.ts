@@ -46,4 +46,12 @@ describe("generateResponsePack", () => {
     expect(pack.preventionGuidance.patterns.flatMap((pattern) => pattern.requiredMeasures).join(" ")).toContain("돈이나 추가 자료를 보내지 않기");
     expect(pack.preventionGuidance.survivorSupportProtocol.join(" ")).toContain("원본을 보여달라고 요구하지 않습니다");
   });
+
+  it("n번방형·폐쇄형 사이트형 사례 교훈을 피해자 구제 중심으로 제공한다", () => {
+    const pack = generateResponsePack(input, classifyCase(input));
+    const titles = pack.preventionGuidance.caseStudyLessons.map((lesson) => lesson.title);
+    expect(titles).toEqual(expect.arrayContaining(["n번방·박사방형 조직적 성착취", "놀쟈.com류 폐쇄형 불법촬영물 유통 사이트"]));
+    expect(pack.preventionGuidance.caseStudyLessons.flatMap((lesson) => lesson.doNotDo).join(" ")).toContain("초대코드 요청·공유");
+    expect(pack.preventionGuidance.caseStudyLessons.flatMap((lesson) => lesson.rescueActions).join(" ")).toContain("1377");
+  });
 });

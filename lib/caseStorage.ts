@@ -20,9 +20,14 @@ export function loadCases(): SavedCase[] {
     }
     return (parsed as SavedCase[]).map((item) => {
       const responsePack = item.responsePack;
+      const hasCurrentResponsePack = Boolean(
+        responsePack?.serviceIntegrations &&
+          responsePack.preventionGuidance?.caseStudyLessons &&
+          responsePack.preventionGuidance?.patterns,
+      );
       return {
         ...item,
-        responsePack: responsePack?.serviceIntegrations && responsePack.preventionGuidance ? responsePack : generateResponsePack(item.input, item.classification),
+        responsePack: hasCurrentResponsePack ? responsePack : generateResponsePack(item.input, item.classification),
       };
     });
   } catch {

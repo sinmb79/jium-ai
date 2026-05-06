@@ -23,6 +23,11 @@ describe("classifyCase", () => {
     expect(classifyCase("몸캠피싱 협박을 받고 있어요").specialistFirst).toBe(true);
   });
 
+  it("n번방형·폐쇄형 사이트형 단서를 디지털 성범죄로 분류한다", () => {
+    expect(classifyCase("n번방 같은 단체방 유포 협박을 받았어요").caseType).toBe("DIGITAL_SEX_CRIME");
+    expect(classifyCase("놀쟈 초대코드와 불법 촬영물 사이트 링크가 공유됐어요").specialistFirst).toBe(true);
+  });
+
   it("계정 유출은 비밀번호 입력 금지를 안내한다", () => {
     const result = classifyCase("비밀번호가 다크웹에 유출된 것 같아요");
     expect(result.caseType).toBe("CREDENTIAL_LEAK");

@@ -119,6 +119,57 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
           <HeartHandshake size={18} aria-hidden="true" /> {pack.preventionGuidance.title}
         </h3>
         <p className="small muted">{pack.preventionGuidance.summary}</p>
+        {pack.preventionGuidance.caseStudyLessons.length ? (
+          <div className="card-stack">
+            {pack.preventionGuidance.caseStudyLessons.map((lesson) => (
+              <article className="resource-card" key={lesson.id}>
+                <span className="badge badge-high">사례 기반 대응</span>
+                <h3>{lesson.title}</h3>
+                <p className="small muted">{lesson.whyItMatters}</p>
+                <p className="small">
+                  <strong>위험 신호:</strong> {lesson.riskPattern}
+                </p>
+                <div className="two-col">
+                  <div>
+                    <strong>처리 원칙</strong>
+                    <ul className="action-list small">
+                      {lesson.responsePrinciples.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <strong>피해자 구제</strong>
+                    <ul className="action-list small">
+                      {lesson.rescueActions.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                <div className="two-col">
+                  <div>
+                    <strong>재발 방지</strong>
+                    <ul className="action-list small">
+                      {lesson.preventionActions.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <strong>하지 말아야 할 일</strong>
+                    <ul className="action-list small">
+                      {lesson.doNotDo.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                <p className="small muted">{lesson.sourceNote}</p>
+              </article>
+            ))}
+          </div>
+        ) : null}
         <div className="card-stack">
           {pack.preventionGuidance.patterns.map((pattern) => (
             <article className="resource-card" key={pattern.id}>

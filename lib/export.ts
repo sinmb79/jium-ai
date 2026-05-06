@@ -57,6 +57,21 @@ ${savedCase.responsePack.attributionGuidance.whatYouCanRecord.map((item) => `- $
 
 ${savedCase.responsePack.preventionGuidance.summary}
 
+### 주요 사례에서 배운 대응 원칙
+
+${savedCase.responsePack.preventionGuidance.caseStudyLessons
+  .map(
+    (lesson, index) => `${index + 1}. ${lesson.title}
+   - 위험 신호: ${lesson.riskPattern}
+   - 왜 중요한가: ${lesson.whyItMatters}
+   - 처리 원칙: ${lesson.responsePrinciples.join(" / ")}
+   - 피해자 구제: ${lesson.rescueActions.join(" / ")}
+   - 재발 방지: ${lesson.preventionActions.join(" / ")}
+   - 하지 말아야 할 일: ${lesson.doNotDo.join(" / ")}
+   - 기준: ${lesson.sourceNote}`,
+  )
+  .join("\n\n")}
+
 ${savedCase.responsePack.preventionGuidance.patterns
   .map(
     (pattern, index) => `${index + 1}. ${pattern.crimeType}
