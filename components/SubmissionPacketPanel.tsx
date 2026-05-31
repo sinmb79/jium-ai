@@ -3,10 +3,11 @@
 import { Brain, Clipboard, Download, ExternalLink, FileCheck2, Search, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { appendCaseAudit } from "@/lib/caseStorage";
-import { downloadTextFile } from "@/lib/export";
+import { downloadBytesFile, downloadFile, downloadTextFile } from "@/lib/export";
 import { buildAnonymizedLearningRecord, saveLearningRecord } from "@/lib/learningStore";
 import { buildSafeSearchActions } from "@/lib/searchConnectors";
 import { buildSubmissionConnectorActions } from "@/lib/submissionConnectors";
+import { buildPrintableSubmissionHtml, buildSubmissionPackageZip } from "@/lib/submissionPackage";
 import { buildSubmissionPacket, submissionPacketWithEvidenceToMarkdown } from "@/lib/submissionPacket";
 import type { SavedCase } from "@/lib/types";
 
@@ -168,6 +169,28 @@ export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
         >
           <Download size={17} aria-hidden="true" />
           제출 패킷 내려받기
+        </button>
+        <button
+          className="btn btn-secondary"
+          type="button"
+          onClick={() => {
+            appendCaseAudit(savedCase.id, "SUBMISSION_PACKET_DOWNLOADED", "기관 제출 인쇄용 HTML을 내려받음");
+            downloadFile(`jium-ai-printable-${savedCase.id}.html`, buildPrintableSubmissionHtml(savedCase, packet), "text/html;charset=utf-8");
+          }}
+        >
+          <Download size={17} aria-hidden="true" />
+          인쇄용 HTML
+        </button>
+        <button
+          className="btn btn-secondary"
+          type="button"
+          onClick={() => {
+            appendCaseAudit(savedCase.id, "SUBMISSION_PACKET_DOWNLOADED", "기관 제출 ZIP 패키지를 내려받음");
+            downloadBytesFile(`jium-ai-submission-${savedCase.id}.zip`, buildSubmissionPackageZip(savedCase), "application/zip");
+          }}
+        >
+          <Download size={17} aria-hidden="true" />
+          제출 ZIP
         </button>
         <button
           className="btn btn-secondary"

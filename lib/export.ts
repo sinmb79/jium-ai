@@ -179,11 +179,20 @@ ${savedCase.responsePack.serviceIntegrations
 }
 
 export function downloadFile(filename: string, content: string, type = "text/markdown;charset=utf-8") {
+  downloadBlobFile(filename, new Blob([content], { type }));
+}
+
+export function downloadBytesFile(filename: string, bytes: Uint8Array, type = "application/octet-stream") {
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  downloadBlobFile(filename, new Blob([copy.buffer], { type }));
+}
+
+export function downloadBlobFile(filename: string, blob: Blob) {
   if (typeof window === "undefined") {
     return;
   }
 
-  const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;

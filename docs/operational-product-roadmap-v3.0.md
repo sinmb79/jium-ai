@@ -42,12 +42,22 @@
   - 파일 안에는 제목, URL, 게시자 단서 같은 평문 사건 정보를 넣지 않음
   - 가져오기와 내보내기는 기기 안전 확인 뒤에만 실행
 
+## v3.2 제출 패키지 보강
+
+- 기관 제출 ZIP 패키지
+  - 제출 패킷 Markdown
+  - 담당자 읽기전용 HTML
+  - 인쇄용 HTML 제출본
+  - 증거 체인 manifest JSON
+  - Mermaid 추격 다이어그램 원문
+  - 제출 전 체크리스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
 
-- PDF/A 또는 인쇄용 HTML 제출본
-- ZIP 제출 패키지: Markdown, 담당자 HTML, 증거 체인 manifest JSON, 체크리스트
+- PDF/A 또는 인쇄용 HTML 제출본: 인쇄용 HTML 1차 구현 완료
+- ZIP 제출 패키지: Markdown, 담당자 HTML, 증거 체인 manifest JSON, 체크리스트: 1차 구현 완료
 - 사건별 `.jiumcase` 암호화 내보내기와 가져오기: 1차 구현 완료
 - 제출 패킷 버전 고정과 변경 이력 비교
 
