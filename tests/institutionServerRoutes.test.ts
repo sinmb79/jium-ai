@@ -23,6 +23,8 @@ import {
   INSTITUTION_SESSION_COOKIE_NAME,
   readInstitutionSessionTokenFromCookie,
 } from "@/lib/institutionSessionCookie";
+import { createInstitutionSessionToken } from "@/lib/institutionSessionToken";
+import type { InstitutionAccountSession } from "@/lib/institutionAuth";
 
 const now = Date.parse("2026-05-31T06:00:00.000Z");
 const origin = "https://agency.example";
@@ -94,6 +96,7 @@ function routeEnv(dir: string, overrides: InstitutionServerRouteEnv = {}): Insti
     INSTITUTION_SESSION_SECRET: strongSecret,
     INSTITUTION_ALLOWED_ORIGINS: origin,
     INSTITUTION_AUDIT_LEDGER_DIR: dir,
+    INSTITUTION_ACCOUNT_REGISTRY_DIR: path.join(dir, "accounts"),
     ...overrides,
   };
 }
@@ -154,6 +157,59 @@ describe("institution server route adapter", () => {
     expect(ledgerText).not.toContain(origin);
   });
 
+  it("serves account provisioning through the materialized server route handler set", async () => {
+    const { trustedKey } = await generateTrustedKey();
+    const dir = await tempDir();
+    const config = loadInstitutionServerRouteConfig({
+      env: routeEnv(dir),
+      trustedKeys: [trustedKey],
+      now: () => now,
+    });
+    const routes = createInstitutionServerRouteHandlers(config);
+    const adminSession: InstitutionAccountSession = {
+      sessionId: "srv-admin-route-001",
+      organizationId: "org-program-admin",
+      organizationName: "Jium Program Admin",
+      subjectId: "operator:admin-route-001",
+      role: "PROGRAM_ADMIN",
+      assuranceLevel: "SERVER_SESSION_MFA",
+      issuedAt: "2026-05-31T05:00:00.000Z",
+      authenticatedAt: "2026-05-31T05:05:00.000Z",
+      expiresAt: "2026-05-31T07:00:00.000Z",
+      mfaVerifiedAt: "2026-05-31T05:06:00.000Z",
+      capabilityIds: ["AUTHORIZED_FEED_SUMMARY", "INSTITUTION_ACCOUNT_ADMIN"],
+      evidenceAccessScope: "OFFICIAL_REQUEST_ONLY",
+      limitations: ["account registry administration only", "no raw victim indicators"],
+    };
+    const token = await createInstitutionSessionToken(adminSession, config.tokenKey, { tokenId: adminSession.sessionId, now });
+    const response = await routes.accounts(
+      new Request("https://jium.example/api/institution/accounts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: origin,
+          Cookie: `${INSTITUTION_SESSION_COOKIE_NAME}=${token}`,
+          "X-Jium-Institution-Account-Admin": "1",
+        },
+        body: JSON.stringify({
+          action: "PROVISION",
+          account: {
+            organizationId: "org-support-center-001",
+            organizationName: "Authorized Support Center",
+            subjectId: "operator:caseworker-route-001",
+            role: "VICTIM_SUPPORT_CASEWORKER",
+          },
+        }),
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.account.subjectId).toBe("operator:caseworker-route-001");
+    expect((await config.accountStore!.read()).accounts).toHaveLength(1);
+    expect(await config.auditStore!.verify()).toMatchObject({ valid: true, recordCount: 1 });
+  });
+
   it("rejects unsafe route environment configuration", async () => {
     const dir = await tempDir();
     const { trustedKey } = await generateTrustedKey();
@@ -188,6 +244,12 @@ describe("institution server route adapter", () => {
         trustedKeys: [trustedKey],
       }),
     ).toThrow("INSTITUTION_AUDIT_LEDGER_DIR");
+    expect(() =>
+      loadInstitutionServerRouteConfig({
+        env: routeEnv(dir, { INSTITUTION_ACCOUNT_REGISTRY_DIR: "" }),
+        trustedKeys: [trustedKey],
+      }),
+    ).toThrow("INSTITUTION_ACCOUNT_REGISTRY_DIR");
     expect(() =>
       loadInstitutionServerRouteConfig({
         env: routeEnv(dir),

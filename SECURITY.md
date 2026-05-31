@@ -84,13 +84,13 @@ npm run security:feed-keys
 
 기관·파트너 운영자 세션은 `jium-authorized-operator-credential-signed-v1` credential로 열 수 있습니다. credential은 같은 신뢰 공개키 체계로 검증되며, subjectId는 이메일·전화번호·URL·초대링크가 아닌 가명 운영자 ID여야 합니다. 로컬 확인 문장 세션은 네트워크 없는 현장용 보조 장치이며, 운영 배포에서는 서명 credential 또는 서버 기반 기관 계정 인증을 우선해야 합니다.
 
-서버 기반 기관 계정 세션은 역할별 capability matrix와 MFA 요구사항을 통과해야 합니다. PROGRAM_ADMIN의 신뢰 공개키 검토 같은 고위험 권한은 `SERVER_SESSION_MFA`와 `mfaVerifiedAt` 검증이 필요합니다.
+서버 기반 기관 계정 세션은 역할별 capability matrix와 MFA 요구사항을 통과해야 합니다. PROGRAM_ADMIN의 계정 발급·해지, 신뢰 공개키 검토, 감사 원장 검토 같은 고위험 권한은 `SERVER_SESSION_MFA`와 `mfaVerifiedAt` 검증이 필요합니다.
 
 ```bash
 npm run security:auth
 ```
 
-대시보드의 기관 계정 관리자 패널은 기관 세션 JSON을 검토해 role, capability, MFA, 만료, 고위험 권한, 원문 식별자 노출 위험을 확인하는 감사 보조 도구입니다. 이 패널은 계정 발급·해지 기능이 아니며, subjectId에는 이메일, 전화번호, URL, 초대링크, onion 주소 같은 원문 식별자를 넣지 않아야 합니다.
+대시보드의 기관 계정 관리자 패널은 기관 세션 JSON을 검토해 role, capability, MFA, 만료, 고위험 권한, 원문 식별자 노출 위험을 확인하는 감사 보조 도구입니다. subjectId에는 이메일, 전화번호, URL, 초대링크, onion 주소 같은 원문 식별자를 넣지 않아야 합니다. 실제 계정 발급·해지는 서버 Route `/api/institution/accounts`에서 `INSTITUTION_ACCOUNT_ADMIN` capability가 있는 PROGRAM_ADMIN MFA 세션으로만 수행합니다.
 
 서버 배포에서 기관 계정 세션 토큰을 발급할 때는 `INSTITUTION_SESSION_SECRET` 같은 서버 전용 HMAC secret을 사용해야 합니다. 이 값은 32바이트 이상 고엔트로피 secret이어야 하며, `NEXT_PUBLIC_*`, 브라우저 번들, 저장소, 클라이언트 JSON에 넣지 않습니다. 토큰 검증 코어는 변조, 만료, 약한 secret, 비활성 key를 거부합니다.
 
@@ -108,14 +108,15 @@ npm run security:auth
 
 수사·심의기관 제출 전 최종 검수표는 자동 제출 기능이 아니라 보류·검토·통과 항목을 분리하는 안전장치입니다. 검수표는 원본 피해물 포함 여부, 무결성 지문, 요청 이력, 수사권한 분리를 확인하며, IP·가입자·결제·서버 로그와 같은 항목은 피해자 직접 추적이 아니라 공식기관 요청사항으로만 표시합니다.
 
-Next 서버 배포로 전환할 때는 기관 route adapter가 `INSTITUTION_SESSION_SECRET`, `INSTITUTION_ALLOWED_ORIGINS`, `INSTITUTION_AUDIT_LEDGER_DIR`, 신뢰 공개키를 모두 요구합니다. `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET`은 설정 자체를 거부하며, 운영 환경에서 `INSTITUTION_SECURE_COOKIES=false`도 거부합니다. 서버 Route 파일은 `server-route-templates/app/api/institution/*/route.ts`에 보관하고, `npm run server:routes:materialize`로 `app/api` 아래에 생성합니다. 다시 정적 Pages 빌드로 돌아갈 때는 `npm run server:routes:clean`으로 생성 파일을 제거합니다.
+Next 서버 배포로 전환할 때는 기관 route adapter가 `INSTITUTION_SESSION_SECRET`, `INSTITUTION_ALLOWED_ORIGINS`, `INSTITUTION_AUDIT_LEDGER_DIR`, `INSTITUTION_ACCOUNT_REGISTRY_DIR`, 신뢰 공개키를 모두 요구합니다. `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET`은 설정 자체를 거부하며, 운영 환경에서 `INSTITUTION_SECURE_COOKIES=false`도 거부합니다. 서버 Route 파일은 `server-route-templates/app/api/institution/*/route.ts`에 보관하고, `npm run server:routes:materialize`로 `app/api` 아래에 생성합니다. 다시 정적 Pages 빌드로 돌아갈 때는 `npm run server:routes:clean`으로 생성 파일을 제거합니다.
 
-배포 프로필 가드는 `npm run security:deployment`로 실행합니다. `GITHUB_PAGES=true` 정적 export에서는 `app/**/route.ts` 같은 Route Handler 파일이 있으면 실패하며, `JIUM_SERVER_ROUTES=true` 서버 운영 프로필에서는 기관 secret, 허용 Origin, 감사 원장 디렉터리 같은 서버 설정이 없으면 실패합니다. GitHub Pages 배포와 PR 품질 게이트 모두 이 검사를 실행합니다.
+배포 프로필 가드는 `npm run security:deployment`로 실행합니다. `GITHUB_PAGES=true` 정적 export에서는 `app/**/route.ts` 같은 Route Handler 파일이 있으면 실패하며, `JIUM_SERVER_ROUTES=true` 서버 운영 프로필에서는 기관 secret, 허용 Origin, 감사 원장 디렉터리, 계정 registry 디렉터리 같은 서버 설정이 없으면 실패합니다. GitHub Pages 배포와 PR 품질 게이트 모두 이 검사를 실행합니다.
 
 서버 운영 빌드는 아래 순서로 준비합니다.
 
 ```powershell
 $env:JIUM_SERVER_ROUTES="true"
+$env:INSTITUTION_ACCOUNT_REGISTRY_DIR="C:\secure\jium-account-registry"
 npm run server:routes:materialize
 npm run security:deployment
 npm run build:server

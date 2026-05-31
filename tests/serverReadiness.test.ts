@@ -31,6 +31,7 @@ async function writeRegistry(root: string, keys: unknown[]) {
 
 async function writeRequiredRouteTemplates(root: string) {
   for (const relativePath of [
+    "api/institution/accounts/route.ts",
     "api/institution/audit-ledger/route.ts",
     "api/institution/login/route.ts",
     "api/institution/logout/route.ts",
@@ -65,6 +66,7 @@ function serverEnv(root: string, overrides: Record<string, string | undefined> =
     INSTITUTION_SESSION_SECRET: "0123456789abcdef0123456789abcdef",
     INSTITUTION_ALLOWED_ORIGINS: "https://agency.example",
     INSTITUTION_AUDIT_LEDGER_DIR: path.join(root, "audit-ledger"),
+    INSTITUTION_ACCOUNT_REGISTRY_DIR: path.join(root, "account-registry"),
     INSTITUTION_SECURE_COOKIES: "true",
     ...overrides,
   };

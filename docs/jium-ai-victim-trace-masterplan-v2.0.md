@@ -403,6 +403,13 @@ v3.35 데스크톱 OS 보안 저장소 브리지에서 추가 반영한 항목:
 - 평문 잔류 방지: Windows DPAPI 경로는 사용자 프로필 파일에 DPAPI 보호 blob만 기록하고, 브리지 모드에서는 브라우저 localStorage에 payload를 복사하지 않는다.
 - 운영 점검: `npm run desktop:vault:describe`와 `npm run desktop:vault -- write <key> <utf8-file>`, `read|has|delete <key>`로 데스크톱 런타임 연결 상태를 확인할 수 있다.
 
+v3.36 기관 계정 발급·해지 backend에서 추가 반영한 항목:
+
+- 계정 registry: 기관 계정을 가명 subjectId, 역할, capability, 증거 접근 범위, 상태로 관리하고 원문 이메일·전화번호·URL·초대링크를 거부한다.
+- 관리자 권한: 계정 발급·해지는 `INSTITUTION_ACCOUNT_ADMIN` capability를 가진 `PROGRAM_ADMIN` MFA 서버 세션만 수행한다.
+- 서버 Route: `/api/institution/accounts` 템플릿을 추가하고 CSRF, Origin, Content-Type, body size, HttpOnly 세션 쿠키 검사를 적용한다.
+- 감사 기록: 계정 발급, 해지, 조회, 거부 이벤트를 기관 인증 감사 원장에 비식별 필드만으로 기록한다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

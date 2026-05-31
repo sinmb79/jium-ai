@@ -259,3 +259,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Windows uses DPAPI CurrentUser protected blobs, macOS uses Keychain generic passwords, and Linux uses Secret Service through `secret-tool`.
 - Added `desktop/electron-preload.cjs` so an Electron shell can expose the native bridge as `window.jiumSecureVault`.
 - Added `desktop:vault` and `desktop:vault:describe` scripts for local operational checks.
+
+## Implemented in v3.36
+
+- Added institution account registry records with pseudonymous account IDs, roles, capabilities, evidence-access scope, and ACTIVE/SUSPENDED/REVOKED status.
+- Added a server-side account registry file store guarded against path traversal and invalid registry contents.
+- Added `/api/institution/accounts` server route template for LIST, PROVISION, and REVOKE operations.
+- Account provisioning requires a PROGRAM_ADMIN MFA session with `INSTITUTION_ACCOUNT_ADMIN`; audit events stay privacy-minimized.

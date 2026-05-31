@@ -40,7 +40,7 @@ export type InstitutionAccountAdminReport = {
   checklist: string[];
 };
 
-const HIGH_RISK_CAPABILITIES: InstitutionCapability[] = ["TRUSTED_KEY_REVIEW", "INSTITUTION_AUDIT_LEDGER_REVIEW"];
+const HIGH_RISK_CAPABILITIES: InstitutionCapability[] = ["INSTITUTION_ACCOUNT_ADMIN", "TRUSTED_KEY_REVIEW", "INSTITUTION_AUDIT_LEDGER_REVIEW"];
 const MINUTE_MS = 60 * 1000;
 
 function parseDate(value?: string) {

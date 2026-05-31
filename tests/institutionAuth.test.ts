@@ -86,6 +86,23 @@ describe("institution account auth and RBAC", () => {
     );
   });
 
+  it("requires program admin MFA for account provisioning administration", () => {
+    const admin = session({
+      role: "PROGRAM_ADMIN",
+      capabilityIds: ["AUTHORIZED_FEED_SUMMARY", "INSTITUTION_ACCOUNT_ADMIN"],
+    });
+    const withoutMfa = session({
+      role: "PROGRAM_ADMIN",
+      assuranceLevel: "SERVER_SESSION",
+      mfaVerifiedAt: undefined,
+      capabilityIds: ["AUTHORIZED_FEED_SUMMARY", "INSTITUTION_ACCOUNT_ADMIN"],
+    });
+
+    expect(validateInstitutionAccountSession(admin, now).valid).toBe(true);
+    expect(canUseInstitutionCapability(admin, "INSTITUTION_ACCOUNT_ADMIN", now)).toBe(true);
+    expect(validateInstitutionAccountSession(withoutMfa, now).errors.join("\n")).toContain("INSTITUTION_ACCOUNT_ADMIN requires SERVER_SESSION_MFA");
+  });
+
   it("rejects raw account identifiers and expired sessions", () => {
     const raw = validateInstitutionAccountSession(session({ subjectId: "caseworker@example.invalid" }), now);
     const expired = validateInstitutionAccountSession(session({ expiresAt: "2026-05-01T00:00:00.000Z" }), now);

@@ -11,6 +11,7 @@ import { truthy, validateDeploymentProfile } from "./check-deployment-profile.mj
 import { listServerRouteTemplates } from "./materialize-server-routes.mjs";
 
 export const REQUIRED_SERVER_ROUTE_TEMPLATES = [
+  "api/institution/accounts/route.ts",
   "api/institution/audit-ledger/route.ts",
   "api/institution/login/route.ts",
   "api/institution/logout/route.ts",

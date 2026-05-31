@@ -509,6 +509,25 @@
 - 검증 범위
   - Windows DPAPI record 저장 경로, 평문 미저장, Secret Service stdin 전달, 안전하지 않은 key 차단, CLI descriptor를 테스트
 
+## v3.36 기관 계정 발급·해지 backend
+
+- 서버 계정 registry
+  - `lib/institutionAccountRegistry.ts`를 추가해 기관 계정을 `ACTIVE/SUSPENDED/REVOKED` 상태로 관리
+  - accountId, organizationId, subjectId는 가명 식별자만 허용하고 URL, 초대링크, onion, 이메일, 전화번호 형태를 거부
+  - role-capability matrix를 재사용해 역할 밖 권한 발급을 차단
+- 계정 registry 파일 저장소
+  - `INSTITUTION_ACCOUNT_REGISTRY_DIR` 아래 단순 `.json` 파일에 계정 registry를 저장
+  - 경로 traversal과 잘못된 파일명을 거부하고, 쓰기 전 registry 전체 검증을 수행
+- 서버 HTTP 코어와 Route 템플릿
+  - `/api/institution/accounts` Route 템플릿을 추가
+  - `INSTITUTION_ACCOUNT_ADMIN` capability를 가진 `PROGRAM_ADMIN` MFA 세션만 LIST/PROVISION/REVOKE를 실행
+  - CSRF header, Origin, Content-Type, body size, HttpOnly 세션 쿠키 검사를 통과해야 함
+- 감사 원장 연동
+  - 계정 발급, 해지, 목록 조회, 거부 이벤트를 기관 인증 감사 원장에 기록
+  - 감사 이벤트에는 credential 원문, 세션 토큰, Origin 원문, 피해 URL, 이메일, 전화번호를 남기지 않음
+- 검증 범위
+  - registry 검증, 파일 저장소, HTTP handler, 서버 Route adapter, materialize/readiness 검사를 테스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -567,7 +586,8 @@
 - 기관 감사 원장 서버 요약 API: 1차 구현 완료
 - 암호화 보관함 보안 저장소 backend 분리: 1차 구현 완료
 - 기관 계정 관리자 검토 패널: 1차 구현 완료
-- 운영 배포 전 과제: 실제 파트너 공개키 값 등록과 승인 기록 보관, 데스크톱 앱 패키징·서명·자동 업데이트, 정식 기관 계정 발급·해지 backend
+- 기관 계정 발급·해지 backend: 1차 구현 완료
+- 운영 배포 전 과제: 실제 파트너 공개키 값 등록과 승인 기록 보관, 데스크톱 앱 패키징·서명·자동 업데이트, 계정 관리자 UI와 운영 승인 워크플로 고도화
 
 ## 공식 경로 기준
 

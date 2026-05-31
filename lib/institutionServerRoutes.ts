@@ -1,6 +1,7 @@
 import { TRUSTED_AUTHORIZED_FEED_KEYS } from "@/lib/authorizedFeedTrustedKeys";
 import type { TrustedAuthorizedFeedKey } from "@/lib/authorizedFeedSignature";
 import type { InstitutionAuditSink } from "@/lib/institutionAuditLog";
+import { handleInstitutionAccountAdminRequest } from "@/lib/institutionAccountProvisioningHttp";
 import {
   handleInstitutionCredentialLoginRequest,
   handleInstitutionLogoutRequest,
@@ -15,6 +16,10 @@ import {
   createInstitutionAuditLedgerFileStore,
   type InstitutionAuditLedgerFileStore,
 } from "@/lib/serverInstitutionAuditLedgerStore";
+import {
+  createInstitutionAccountRegistryFileStore,
+  type InstitutionAccountRegistryStore,
+} from "@/lib/serverInstitutionAccountStore";
 
 export type InstitutionServerRouteEnv = Record<string, string | undefined>;
 
@@ -26,6 +31,7 @@ export type InstitutionServerRouteConfig = {
   secureCookies: boolean;
   auditSink?: InstitutionAuditSink;
   auditStore?: InstitutionAuditLedgerFileStore;
+  accountStore?: InstitutionAccountRegistryStore;
   now?: () => number;
 };
 
@@ -36,6 +42,7 @@ export type InstitutionServerRouteConfigOptions = {
   now?: () => number;
   requireTrustedKeys?: boolean;
   requireAuditStore?: boolean;
+  requireAccountStore?: boolean;
 };
 
 export type InstitutionServerRouteHandlers = {
@@ -43,6 +50,7 @@ export type InstitutionServerRouteHandlers = {
   session: (request: Request) => Promise<Response>;
   logout: (request: Request) => Promise<Response>;
   auditLedger: (request: Request) => Promise<Response>;
+  accounts: (request: Request) => Promise<Response>;
 };
 
 function clean(value: string | undefined) {
@@ -122,6 +130,15 @@ export function loadInstitutionServerRouteConfig(
     throw new Error("INSTITUTION_AUDIT_LEDGER_DIR or an explicit auditSink is required for server routes");
   }
 
+  const accountRegistryDir = clean(env.INSTITUTION_ACCOUNT_REGISTRY_DIR);
+  const accountRegistryFile = clean(env.INSTITUTION_ACCOUNT_REGISTRY_FILE) || undefined;
+  const accountStore = accountRegistryDir
+    ? createInstitutionAccountRegistryFileStore(accountRegistryDir, { fileName: accountRegistryFile, now: options.now })
+    : undefined;
+  if ((options.requireAccountStore ?? true) && !accountStore) {
+    throw new Error("INSTITUTION_ACCOUNT_REGISTRY_DIR is required for server account provisioning routes");
+  }
+
   const tokenKey = tokenKeyFromEnv(env, now);
   return {
     trustedKeys,
@@ -131,6 +148,7 @@ export function loadInstitutionServerRouteConfig(
     secureCookies: secureCookiesFromEnv(env),
     auditSink: options.auditSink || auditStore?.append,
     auditStore,
+    accountStore,
     now: options.now,
   };
 }
@@ -177,5 +195,24 @@ export function createInstitutionServerRouteHandlers(
         auditSink: config.auditSink,
         now: config.now?.(),
       }),
+    accounts: (request) => {
+      if (!config.accountStore) {
+        return Promise.resolve(new Response(JSON.stringify({ ok: false, errorCode: "ACCOUNT_REGISTRY_STORE_UNAVAILABLE" }), {
+          status: 503,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Cache-Control": "no-store",
+          },
+        }));
+      }
+      return handleInstitutionAccountAdminRequest(request, {
+        tokenKeys: config.tokenKeys,
+        secureCookies: config.secureCookies,
+        allowedOrigins: config.allowedOrigins,
+        accountStore: config.accountStore,
+        auditSink: config.auditSink,
+        now: config.now?.(),
+      });
+    },
   };
 }

@@ -28,6 +28,7 @@ function routeEnv(root: string, overrides: Record<string, string | undefined> = 
     INSTITUTION_SESSION_SECRET: "0123456789abcdef0123456789abcdef",
     INSTITUTION_ALLOWED_ORIGINS: "https://agency.example",
     INSTITUTION_AUDIT_LEDGER_DIR: path.join(root, "audit-ledger"),
+    INSTITUTION_ACCOUNT_REGISTRY_DIR: path.join(root, "account-registry"),
     INSTITUTION_SECURE_COOKIES: "true",
     ...overrides,
   };
@@ -40,6 +41,7 @@ afterEach(async () => {
 describe("server route materialization", () => {
   it("keeps the server route templates explicit and lazy-loaded", () => {
     expect(listServerRouteTemplates().map((template) => template.relativePath)).toEqual([
+      "api/institution/accounts/route.ts",
       "api/institution/audit-ledger/route.ts",
       "api/institution/login/route.ts",
       "api/institution/logout/route.ts",
@@ -58,6 +60,7 @@ describe("server route materialization", () => {
 
     expect(result.profile).toBe("server-routes");
     expect(result.routeFiles).toEqual([
+      "app/api/institution/accounts/route.ts",
       "app/api/institution/audit-ledger/route.ts",
       "app/api/institution/login/route.ts",
       "app/api/institution/logout/route.ts",

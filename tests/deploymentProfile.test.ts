@@ -52,6 +52,7 @@ describe("deployment profile guard", () => {
         INSTITUTION_SESSION_SECRET: "0123456789abcdef0123456789abcdef",
         INSTITUTION_ALLOWED_ORIGINS: "https://agency.example",
         INSTITUTION_AUDIT_LEDGER_DIR: "C:/audit",
+        INSTITUTION_ACCOUNT_REGISTRY_DIR: "C:/accounts",
       },
       process.cwd(),
     );
@@ -62,12 +63,14 @@ describe("deployment profile guard", () => {
         NEXT_PUBLIC_INSTITUTION_SESSION_SECRET: "leak",
         INSTITUTION_ALLOWED_ORIGINS: "https://agency.example",
         INSTITUTION_AUDIT_LEDGER_DIR: "C:/audit",
+        INSTITUTION_ACCOUNT_REGISTRY_DIR: "C:/accounts",
       },
       process.cwd(),
     );
 
     expect(missing.valid).toBe(false);
     expect(missing.errors.join("\n")).toContain("INSTITUTION_SESSION_SECRET");
+    expect(missing.errors.join("\n")).toContain("INSTITUTION_ACCOUNT_REGISTRY_DIR");
     expect(conflict.valid).toBe(false);
     expect(conflict.errors.join("\n")).toContain("cannot be combined");
     expect(publicSecret.valid).toBe(false);
@@ -82,6 +85,7 @@ describe("deployment profile guard", () => {
         INSTITUTION_SESSION_SECRET: "0123456789abcdef0123456789abcdef",
         INSTITUTION_ALLOWED_ORIGINS: "https://agency.example",
         INSTITUTION_AUDIT_LEDGER_DIR: "C:/audit",
+        INSTITUTION_ACCOUNT_REGISTRY_DIR: "C:/accounts",
         INSTITUTION_SECURE_COOKIES: "true",
       },
       process.cwd(),

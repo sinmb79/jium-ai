@@ -56,6 +56,9 @@ export function validateDeploymentProfile(env = process.env, root = repoRoot) {
     if (!env.INSTITUTION_AUDIT_LEDGER_DIR?.trim()) {
       errors.push("JIUM_SERVER_ROUTES=true requires INSTITUTION_AUDIT_LEDGER_DIR");
     }
+    if (!env.INSTITUTION_ACCOUNT_REGISTRY_DIR?.trim()) {
+      errors.push("JIUM_SERVER_ROUTES=true requires INSTITUTION_ACCOUNT_REGISTRY_DIR");
+    }
     if (env.NODE_ENV === "production" && String(env.INSTITUTION_SECURE_COOKIES || "").toLowerCase() === "false") {
       errors.push("INSTITUTION_SECURE_COOKIES=false is not allowed in production server routes");
     }
