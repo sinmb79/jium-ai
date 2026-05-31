@@ -494,6 +494,21 @@
 - 검증 범위
   - 검수 엔진, UI 렌더링, ZIP 포함 여부, 제출 패킷 통합 화면, 타입 검사를 테스트
 
+## v3.35 데스크톱 OS 보안 저장소 브리지
+
+- 네이티브 secure vault bridge
+  - `scripts/native-secure-vault-bridge.mjs`를 추가해 데스크톱 런타임에서 같은 `jium-ai.encrypted-cases.v1` vault payload를 OS 보안 저장소에 저장할 수 있게 함
+  - Windows는 DPAPI CurrentUser로 보호한 blob을 사용자 프로필 아래 JSON record로 저장
+  - macOS는 사용자 Keychain generic password, Linux는 Secret Service `secret-tool` 경로를 사용
+- Electron preload 연결
+  - `desktop/electron-preload.cjs`에서 `window.jiumSecureVault`를 노출해 기존 브라우저 보관함 추상화와 직접 연결
+  - read/write/delete/has/describe API를 유지하므로 기존 UI는 브리지 연결 여부만 보고 동작
+- 운영 확인 명령
+  - `npm run desktop:vault:describe`로 현재 플랫폼의 bridge descriptor를 확인
+  - `npm run desktop:vault -- write <key> <utf8-file>` 또는 `read|has|delete <key>`로 데스크톱 런타임에서 수동 점검 가능
+- 검증 범위
+  - Windows DPAPI record 저장 경로, 평문 미저장, Secret Service stdin 전달, 안전하지 않은 key 차단, CLI descriptor를 테스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -506,10 +521,10 @@
 
 ### Phase B: 데스크톱 보안 저장소
 
-- Tauri 또는 Electron 기반 로컬 앱 검토
-- Windows DPAPI, macOS Keychain, Linux Secret Service 브리지 실제 구현
+- Tauri 또는 Electron 기반 로컬 앱 검토: Electron preload 1차 연결 완료
+- Windows DPAPI, macOS Keychain, Linux Secret Service 브리지 실제 구현: 1차 CLI/bridge 구현 완료
 - 보관함 storage backend 추상화와 UI 상태 표시: 1차 구현 완료
-- 브라우저 확장프로그램 영향을 줄이는 독립 실행 환경
+- 브라우저 확장프로그램 영향을 줄이는 독립 실행 환경: Electron preload 기반 1차 경로 구현 완료
 - 자동 잠금, 세션 타임아웃, 복호화 메모리 초기화: 브라우저 보관함 1차 구현 완료
 
 ### Phase C: 기관·전문가 협업
@@ -552,7 +567,7 @@
 - 기관 감사 원장 서버 요약 API: 1차 구현 완료
 - 암호화 보관함 보안 저장소 backend 분리: 1차 구현 완료
 - 기관 계정 관리자 검토 패널: 1차 구현 완료
-- 운영 배포 전 과제: 실제 파트너 공개키 값 등록과 승인 기록 보관, 네이티브 DPAPI/Keychain/Secret Service 브리지 구현, 정식 기관 계정 발급·해지 backend
+- 운영 배포 전 과제: 실제 파트너 공개키 값 등록과 승인 기록 보관, 데스크톱 앱 패키징·서명·자동 업데이트, 정식 기관 계정 발급·해지 backend
 
 ## 공식 경로 기준
 

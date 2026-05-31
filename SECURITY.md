@@ -18,6 +18,7 @@
 - 사용자는 사건을 Markdown으로 내려받거나 브라우저 저장소에서 삭제할 수 있습니다.
 - 암호화 보관함은 WebCrypto 기반 패스프레이즈 암호화를 기본으로 하며, 데스크톱 배포에서는 `window.jiumSecureVault` 보안 저장소 브리지를 통해 Windows DPAPI, macOS Keychain, Linux Secret Service 같은 OS 보호 저장소로 연결할 수 있습니다.
 - 보안 저장소 브리지가 없으면 브라우저 localStorage 암호화 모드로 동작하며, UI가 현재 backend와 OS 보안 저장소 연결 여부를 표시합니다.
+- 데스크톱 bridge 코어는 `scripts/native-secure-vault-bridge.mjs`에 있으며, Electron preload 예시는 `desktop/electron-preload.cjs`에 있습니다. Windows는 DPAPI CurrentUser 보호 blob, macOS는 Keychain, Linux는 Secret Service를 사용합니다.
 
 ## 외부 AI 정책
 

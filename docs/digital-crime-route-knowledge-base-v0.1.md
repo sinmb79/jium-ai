@@ -252,3 +252,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The checklist validates case summary, access path, timestamps, capture method, integrity fingerprints, request history, original media handling, and official-authority boundaries.
 - The submission packet UI now shows a `제출 전 최종 검수` panel and can export the checklist as Markdown.
 - The agency ZIP package now includes `pre-submission-checklist.md` so support workers and officials can see what was checked before handoff.
+
+## Implemented in v3.35
+
+- Added `scripts/native-secure-vault-bridge.mjs` for desktop OS-backed encrypted vault storage.
+- Windows uses DPAPI CurrentUser protected blobs, macOS uses Keychain generic passwords, and Linux uses Secret Service through `secret-tool`.
+- Added `desktop/electron-preload.cjs` so an Electron shell can expose the native bridge as `window.jiumSecureVault`.
+- Added `desktop:vault` and `desktop:vault:describe` scripts for local operational checks.

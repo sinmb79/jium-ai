@@ -140,6 +140,9 @@ npm run build
 - 차단 수준 민감정보가 있으면 요청서·신고서 초안 생성 전 입력 정리
 - 로그에 사용자 입력 원문 저장 금지
 - 피해물 원본 업로드 UI 추가 금지
+- 데스크톱 운영에서는 `npm run desktop:vault:describe`로 Windows DPAPI, macOS Keychain, Linux Secret Service bridge 연결 상태를 확인
+- 수동 저장 점검은 PowerShell 파이프 인코딩을 피하기 위해 `npm run desktop:vault -- write <key> <utf8-file>` 형식을 권장
+- Electron 기반 로컬 앱은 `desktop/electron-preload.cjs`를 preload로 연결해 `window.jiumSecureVault`를 제공
 
 ## 🏷️ 메타
 

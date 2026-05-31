@@ -96,6 +96,9 @@ Implemented mitigation:
 - The safety page lists high-risk device signals and safer preparation steps.
 - The vault storage layer now prefers a desktop secure-storage bridge when `window.jiumSecureVault` is available, and does not copy the encrypted payload back to browser localStorage in that mode.
 - The vault UI shows whether it is using browser localStorage encryption or a desktop secure-storage bridge.
+- A native desktop bridge CLI now exists at `scripts/native-secure-vault-bridge.mjs`.
+- `desktop/electron-preload.cjs` exposes the native bridge as `window.jiumSecureVault` for Electron-based local apps.
+- Windows stores a DPAPI CurrentUser protected blob under the user profile; macOS uses Keychain generic passwords; Linux uses Secret Service through `secret-tool`.
 
 This is intentionally a friction point: if the device is suspicious, the safer answer is not "encrypt harder in the same browser" but "do not open the vault here; use a trusted personal device or ask an official support worker for a safe environment."
 
@@ -110,7 +113,7 @@ This is intentionally a friction point: if the device is suspicious, the safer a
 - Add Content Security Policy headers before public deployment.
 - Add auto-lock and "forget decrypted cases" behavior after inactivity.
 - Add encrypted `.jiumvault` import/export for offline handoff.
-- Implement the native desktop bridge for Windows DPAPI, macOS Keychain, or Linux Secret Service. The browser-side bridge contract is in place, but the native app must still supply the OS-backed provider.
+- Package and sign the desktop app that supplies the native OS-backed provider.
 - Add role-based access control before any restricted partner intelligence feed is introduced.
 - Add evidence-chain fields: collector, device, capture method, hash algorithm, verification timestamp, and handoff recipient.
 
