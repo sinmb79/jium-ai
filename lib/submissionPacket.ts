@@ -2,6 +2,8 @@ import { buildDiscoveryResearchPlan, type DiscoveryResearchPlan } from "@/lib/di
 import { buildEvidenceMetadataFingerprint, formatEvidenceLedgerForDocument, getEvidenceLedger } from "@/lib/evidence";
 import { CASE_TYPE_LABELS, DELETION_CHANCE_LABELS, RISK_LABELS } from "@/lib/labels";
 import { RESOURCE_KIND_LABELS } from "@/lib/publicResources";
+import { buildSafeSearchActions } from "@/lib/searchConnectors";
+import { buildSubmissionConnectorActions, connectorActionsToMarkdown } from "@/lib/submissionConnectors";
 import { buildTraceAnalysis } from "@/lib/traceEngine";
 import type { CaseClassification, CaseInput, EvidenceItem, ResponsePack, ServiceIntegration, TraceAnalysis } from "@/lib/types";
 
@@ -13,6 +15,7 @@ export type SubmissionEvidenceSummary = {
   captureMethod: string;
   metadataFingerprint: string;
   evidenceHash?: string;
+  visualFingerprint?: string;
   missing: string[];
 };
 
@@ -66,6 +69,7 @@ function evidenceSummaries(input: CaseInput): SubmissionEvidenceSummary[] {
     captureMethod: item.captureMethod || "UNKNOWN",
     metadataFingerprint: item.metadataFingerprint || buildEvidenceMetadataFingerprint(item),
     evidenceHash: item.evidenceHash,
+    visualFingerprint: item.visualFingerprint,
     missing: missingEvidenceFields(item),
   }));
 }
@@ -153,6 +157,7 @@ ${packet.evidenceSummaries
    - 기록 방식: ${item.captureMethod}
    - 메타데이터 지문: ${item.metadataFingerprint}
    - 증거 해시: ${item.evidenceHash || "[기관 안내에 따라 필요 시 산출]"}
+   - 이미지/영상 지문: ${item.visualFingerprint || "[미입력]"}
    - 보강 필요: ${item.missing.length ? item.missing.join(", ") : "없음"}`,
   )
   .join("\n\n")}
@@ -173,6 +178,13 @@ ${packet.discoveryPlan.summary}
 공개 확인용 쿼리:
 ${packet.discoveryPlan.safeQueries.map((query) => `- ${query.query}: ${query.purpose}`).join("\n")}
 
+안전 검색 커넥터:
+${buildSafeSearchActions(packet.discoveryPlan)
+  .map((action) => `- ${action.label}: ${action.url}
+  - 목적: ${action.purpose}
+  - 경계: ${action.boundary}`)
+  .join("\n")}
+
 매칭 채널:
 ${packet.discoveryPlan.matchChannels
   .map(
@@ -188,6 +200,10 @@ ${packet.discoveryPlan.matchChannels
 ### 사법기관·전문기관 요청 메모
 
 ${packet.lawfulInvestigationMemo.map((item) => `- ${item}`).join("\n")}
+
+### 공식 제출 커넥터
+
+${connectorActionsToMarkdown(buildSubmissionConnectorActions(packet))}
 
 ### 연결 기관 후보
 

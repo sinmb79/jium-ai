@@ -3,7 +3,7 @@
 import { AlertTriangle, Brain, CheckCircle2, Database, EyeOff, FileText, Lock, RefreshCw, ShieldCheck } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { classifyCase } from "@/lib/classifier";
-import { upsertCase } from "@/lib/caseStorage";
+import { createAuditEntry, upsertCase } from "@/lib/caseStorage";
 import { CASE_TYPE_LABELS } from "@/lib/labels";
 import { detectSensitiveInput, maskSensitiveText } from "@/lib/pii";
 import { generateRequestDraft } from "@/lib/requestTemplates";
@@ -87,6 +87,9 @@ export function JiumApp() {
         item.captureMethod,
         item.evidenceHash,
         item.hashSource,
+        item.visualFingerprint,
+        item.fileName,
+        item.fileMimeType,
         item.submissionTarget,
         item.notes,
         ...(item.requestLogs || []).map((log) => [log.target, log.channel, log.receiptId, log.notes].filter(Boolean).join(" ")),
@@ -136,6 +139,7 @@ export function JiumApp() {
       draft,
       responsePack,
       status: "READY",
+      auditLog: [createAuditEntry("CREATED", "피해자 초기 입력으로 사건 초안 생성", now.toISOString())],
       notes: [],
     };
   }

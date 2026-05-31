@@ -72,6 +72,8 @@ export function buildEvidenceMetadataFingerprint(item: EvidenceItem) {
     trim(item.foundAt),
     trim(item.capturedAt),
     item.captureMethod || "UNKNOWN",
+    trim(item.visualFingerprint),
+    trim(item.evidenceHash),
     trim(item.submissionTarget),
     item.status || "DISCOVERED",
   ].join("|");
@@ -92,6 +94,11 @@ export function createEvidenceItem(seed: Partial<EvidenceItem> = {}): EvidenceIt
     capturedByUser: seed.capturedByUser ?? false,
     evidenceHash: seed.evidenceHash || "",
     hashSource: seed.hashSource || "",
+    visualFingerprint: seed.visualFingerprint || "",
+    fileName: seed.fileName || "",
+    fileSize: seed.fileSize,
+    fileMimeType: seed.fileMimeType || "",
+    fileLastModified: seed.fileLastModified || "",
     submissionTarget: seed.submissionTarget || EVIDENCE_SUBMISSION_TARGETS[0],
     status: seed.status || "DISCOVERED",
     requestLogs: seed.requestLogs || [],
@@ -113,6 +120,8 @@ export function hasEvidenceValue(item: EvidenceItem) {
       trim(item.capturedAt) ||
       trim(item.evidenceHash) ||
       trim(item.hashSource) ||
+      trim(item.visualFingerprint) ||
+      trim(item.fileName) ||
       trim(item.notes) ||
       (item.requestLogs || []).some((log) => trim(log.target) || trim(log.receiptId) || trim(log.notes)) ||
       item.capturedByUser,
@@ -132,6 +141,11 @@ export function normalizeEvidenceItem(item: EvidenceItem): EvidenceItem {
     capturedByUser: Boolean(item.capturedByUser),
     evidenceHash: trim(item.evidenceHash),
     hashSource: trim(item.hashSource),
+    visualFingerprint: trim(item.visualFingerprint),
+    fileName: trim(item.fileName),
+    fileSize: item.fileSize,
+    fileMimeType: trim(item.fileMimeType),
+    fileLastModified: trim(item.fileLastModified),
     submissionTarget: trim(item.submissionTarget) || EVIDENCE_SUBMISSION_TARGETS[0],
     status: item.status || "DISCOVERED",
     requestLogs: (item.requestLogs || []).map(normalizeRequestLog).filter((log) => trim(log.target) || trim(log.receiptId) || trim(log.notes)),
@@ -184,6 +198,9 @@ export function evidenceToSearchText(input: CaseInput) {
         item.submissionTarget,
         item.evidenceHash,
         item.hashSource,
+        item.visualFingerprint,
+        item.fileName,
+        item.fileMimeType,
         item.notes,
         ...(item.requestLogs || []).map((log) => [log.target, log.receiptId, log.notes].filter(Boolean).join(" ")),
       ]
@@ -213,6 +230,8 @@ export function formatEvidenceLedgerForDocument(input: CaseInput) {
         `   - 사용자 캡처 보유: ${item.capturedByUser ? "예" : "아니오 또는 미확인"}`,
         `   - 증거 해시: ${item.evidenceHash || "[기관 안내에 따라 필요한 경우 별도 산출]"}`,
         `   - 해시 출처: ${item.hashSource || "[미입력]"}`,
+        `   - 이미지/영상 지문: ${item.visualFingerprint || "[미입력]"}`,
+        `   - 로컬 파일 메타데이터: ${[item.fileName, item.fileSize ? `${item.fileSize} bytes` : "", item.fileMimeType, item.fileLastModified].filter(Boolean).join(" / ") || "[파일 원본 미첨부]"}`,
         `   - 메타데이터 지문: ${item.metadataFingerprint || buildEvidenceMetadataFingerprint(item)}`,
         `   - 제출 대상: ${item.submissionTarget || EVIDENCE_SUBMISSION_TARGETS[0]}`,
         `   - 처리 상태: ${EVIDENCE_STATUS_LABELS[item.status] || item.status}`,

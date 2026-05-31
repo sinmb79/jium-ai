@@ -53,7 +53,9 @@ function itemSignals(item: EvidenceItem) {
     item.foundAt ? `발견 ${item.foundAt}` : "",
     item.capturedAt ? `기록 ${item.capturedAt}` : "",
     item.evidenceHash ? "증거 해시 보유" : "",
+    item.visualFingerprint ? "이미지/영상 지문 보유" : "",
     item.hashSource || "",
+    item.fileMimeType || "",
     item.notes || "",
   ]).slice(0, 8);
 }
@@ -148,7 +150,7 @@ function buildMatchChannels(input: CaseInput, classification: CaseClassification
       label: "이미지·영상 지문 매칭",
       authority: "SPECIALIST_ONLY",
       severity: "HIGH",
-      inputSignals: evidenceItems.some((item) => item.evidenceHash || item.hashSource) ? evidenceItems.flatMap(itemSignals).slice(0, 8) : ["해시 또는 안전한 시각 지문 미입력"],
+      inputSignals: evidenceItems.some((item) => item.evidenceHash || item.hashSource || item.visualFingerprint) ? evidenceItems.flatMap(itemSignals).slice(0, 8) : ["해시 또는 안전한 시각 지문 미입력"],
       matchingApproach: ["피해물 원본 대신 사용자 기기 또는 기관 안내로 생성한 해시·pHash·썸네일 지문을 사용", "공개 역이미지 검색에 성적 피해물을 업로드하지 않음", "동일·유사 이미지 후보는 기관 또는 플랫폼 신뢰안전팀 권한으로 확인"],
       expectedOutput: ["해시값", "해시 생성 출처", "유사 이미지 후보의 공식 확인 필요성", "반복 유포 여부"],
       officialHandoff: ["중앙디지털성범죄피해자지원센터 삭제지원", "수사기관 포렌식 검토", "플랫폼 신뢰안전팀 해시 매칭"],

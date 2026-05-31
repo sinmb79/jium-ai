@@ -1,7 +1,9 @@
 "use client";
 
-import { Clock, Fingerprint, Link, Plus, Trash2, UserRound } from "lucide-react";
+import { Clock, FileUp, Fingerprint, Link, Loader2, Plus, Trash2, UserRound } from "lucide-react";
+import { useState } from "react";
 import { createEvidenceItem, EVIDENCE_CAPTURE_METHOD_LABELS, EVIDENCE_STATUS_LABELS, EVIDENCE_SUBMISSION_TARGETS } from "@/lib/evidence";
+import { hashLocalEvidenceFile } from "@/lib/localEvidenceHash";
 import type { EvidenceCaptureMethod, EvidenceItem, EvidenceStatus } from "@/lib/types";
 
 type EvidenceLedgerInputProps = {
@@ -10,6 +12,69 @@ type EvidenceLedgerInputProps = {
   onChange: (items: EvidenceItem[]) => void;
   onKeepExactUrlsChange: (value: boolean) => void;
 };
+
+function toDateTimeLocal(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function LocalHashButton({ itemId, onDone }: { itemId: string; onDone: (patch: Partial<EvidenceItem>) => void }) {
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const inputId = `hash-file-${itemId}`;
+
+  async function handleFile(file?: File) {
+    if (!file) {
+      return;
+    }
+    setBusy(true);
+    setMessage("");
+    try {
+      const result = await hashLocalEvidenceFile(file);
+      onDone({
+        evidenceHash: result.sha256,
+        visualFingerprint: result.visualFingerprint || "",
+        fileName: result.fileName,
+        fileSize: result.fileSize,
+        fileMimeType: result.fileMimeType,
+        fileLastModified: result.fileLastModified,
+        hashSource: result.hashSource,
+        capturedAt: toDateTimeLocal(new Date().toISOString()),
+        captureMethod: file.type.startsWith("image/") ? "USER_SCREENSHOT" : "THIRD_PARTY_TIP",
+        capturedByUser: true,
+      });
+      setMessage(result.visualFingerprint ? "SHA-256과 이미지 지문을 산출했습니다." : "SHA-256 해시를 산출했습니다.");
+    } catch {
+      setMessage("이 브라우저에서 파일 해시 산출에 실패했습니다.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="local-hash-tool">
+      <input
+        id={inputId}
+        className="sr-only"
+        type="file"
+        accept="image/*,video/*,application/pdf,text/plain"
+        onChange={(event) => {
+          void handleFile(event.target.files?.[0]);
+          event.currentTarget.value = "";
+        }}
+      />
+      <label className="btn btn-secondary" htmlFor={inputId}>
+        {busy ? <Loader2 size={16} aria-hidden="true" /> : <FileUp size={16} aria-hidden="true" />}
+        로컬 파일 해시 산출
+      </label>
+      <p className="small muted">{message || "파일은 이 브라우저에서만 읽고 저장하지 않습니다. 성적 피해물 원본은 기관 안내 없이 업로드하지 마세요."}</p>
+    </div>
+  );
+}
 
 export function EvidenceLedgerInput({ items, keepExactUrlsForSubmission, onChange, onKeepExactUrlsChange }: EvidenceLedgerInputProps) {
   function updateItem(id: string, patch: Partial<EvidenceItem>) {
@@ -115,6 +180,15 @@ export function EvidenceLedgerInput({ items, keepExactUrlsForSubmission, onChang
                   <input className="input" value={item.hashSource || ""} onChange={(event) => updateItem(item.id, { hashSource: event.target.value })} placeholder="예: 사용자 기기, 상담기관 안내, 포렌식 도구명" />
                 </label>
               </div>
+
+              <LocalHashButton itemId={item.id} onDone={(patch) => updateItem(item.id, patch)} />
+
+              {item.visualFingerprint || item.fileName ? (
+                <div className="evidence-file-meta">
+                  {item.visualFingerprint ? <span>이미지 지문: {item.visualFingerprint}</span> : null}
+                  {item.fileName ? <span>파일 메타: {[item.fileName, item.fileSize ? `${item.fileSize} bytes` : "", item.fileMimeType].filter(Boolean).join(" · ")}</span> : null}
+                </div>
+              ) : null}
 
               <div className="two-col">
                 <label className="field">

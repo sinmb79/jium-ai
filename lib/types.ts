@@ -68,11 +68,33 @@ export type EvidenceItem = {
   capturedByUser: boolean;
   evidenceHash?: string;
   hashSource?: string;
+  visualFingerprint?: string;
+  fileName?: string;
+  fileSize?: number;
+  fileMimeType?: string;
+  fileLastModified?: string;
   metadataFingerprint?: string;
   submissionTarget?: string;
   status: EvidenceStatus;
   requestLogs?: EvidenceRequestLog[];
   notes?: string;
+};
+
+export type CaseAuditAction =
+  | "CREATED"
+  | "STORED"
+  | "STATUS_CHANGED"
+  | "EXPORTED"
+  | "SUBMISSION_PACKET_COPIED"
+  | "SUBMISSION_PACKET_DOWNLOADED"
+  | "READONLY_PACKET_OPENED"
+  | "LEARNING_RECORD_SAVED";
+
+export type CaseAuditEntry = {
+  id: string;
+  at: string;
+  action: CaseAuditAction;
+  summary: string;
 };
 
 export type TraceNodeKind =
@@ -330,5 +352,6 @@ export type SavedCase = {
   responsePack: ResponsePack;
   status: CaseStatus;
   verifiedByUserAt?: string;
+  auditLog?: CaseAuditEntry[];
   notes: string[];
 };

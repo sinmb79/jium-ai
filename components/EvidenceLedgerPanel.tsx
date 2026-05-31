@@ -57,6 +57,14 @@ export function EvidenceLedgerPanel({ input }: { input: CaseInput }) {
                   <dd>{item.evidenceHash || "미입력"}</dd>
                 </div>
                 <div>
+                  <dt>시각 지문</dt>
+                  <dd>{item.visualFingerprint || "미입력"}</dd>
+                </div>
+                <div>
+                  <dt>파일 메타</dt>
+                  <dd>{[item.fileName, item.fileSize ? `${item.fileSize} bytes` : "", item.fileMimeType].filter(Boolean).join(" · ") || "미입력"}</dd>
+                </div>
+                <div>
                   <dt>메타 지문</dt>
                   <dd>{item.metadataFingerprint || "생성 전"}</dd>
                 </div>

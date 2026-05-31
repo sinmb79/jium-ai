@@ -214,6 +214,9 @@ function evidenceText(item: EvidenceItem) {
     item.submissionTarget,
     item.evidenceHash,
     item.hashSource,
+    item.visualFingerprint,
+    item.fileName,
+    item.fileMimeType,
     ...(item.requestLogs || []).map((log) => [log.target, log.channel, log.receiptId, log.notes].filter(Boolean).join(" ")),
   ]
     .filter(Boolean)

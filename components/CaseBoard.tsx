@@ -1,22 +1,26 @@
 "use client";
 
-import { Download, RefreshCw, Trash2 } from "lucide-react";
+import { Download, Eye, RefreshCw, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CASE_TYPE_LABELS, STATUS_LABELS } from "@/lib/labels";
 import type { CaseStatus, SavedCase } from "@/lib/types";
-import { clearCases, deleteCase, loadCases, updateCaseStatus } from "@/lib/caseStorage";
+import { appendCaseAudit, clearCases, deleteCase, loadCases, updateCaseStatus } from "@/lib/caseStorage";
 import { countEvidenceUrls } from "@/lib/evidence";
 import { downloadTextFile, savedCaseToMarkdown } from "@/lib/export";
+import { loadLearningRecords, summarizeLearningRecords, type LearningSummary } from "@/lib/learningStore";
 import { RiskBadge } from "@/components/RiskBadge";
 import { appPath } from "@/lib/navigation";
+import { buildReadOnlyPacketHtml, openReadOnlyPacket } from "@/lib/readOnlyPacket";
 
 const statuses = Object.keys(STATUS_LABELS) as CaseStatus[];
 
 export function CaseBoard() {
   const [cases, setCases] = useState<SavedCase[]>([]);
+  const [learningSummary, setLearningSummary] = useState<LearningSummary | null>(null);
 
   useEffect(() => {
     setCases(loadCases());
+    setLearningSummary(summarizeLearningRecords(loadLearningRecords()));
   }, []);
 
   function removeCase(id: string) {
@@ -57,6 +61,12 @@ export function CaseBoard() {
           <Trash2 size={16} aria-hidden="true" />
           전체 삭제
         </button>
+        {learningSummary?.total ? (
+          <div className="learning-summary">
+            <strong>비식별 학습 기록 {learningSummary.total}건</strong>
+            <span>공식권한 인계 {learningSummary.officialOnlyCount}건 · 전문기관 지문/포렌식 {learningSummary.specialistOnlyCount}건</span>
+          </div>
+        ) : null}
       </div>
       <div className="board-grid">
         {cases.map((item) => (
@@ -94,10 +104,44 @@ export function CaseBoard() {
               ))}
             </ul>
             <p className="small muted">신고·고소 준비자료, 피해 확산 방지 매트릭스, {item.responsePack.legalSupport.title} 포함</p>
+            {item.auditLog?.length ? (
+              <details className="audit-details">
+                <summary>감사로그 {item.auditLog.length}건</summary>
+                <ul className="action-list compact-list">
+                  {item.auditLog.slice(-5).map((entry) => (
+                    <li key={entry.id}>
+                      {new Date(entry.at).toLocaleString("ko-KR")} · {entry.action} · {entry.summary}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
             <div className="button-row">
-              <button className="btn btn-secondary" type="button" onClick={() => downloadTextFile(`jium-ai-${item.id}.md`, savedCaseToMarkdown(item))}>
+              <button
+                className="btn btn-secondary"
+                type="button"
+                onClick={() => {
+                  setCases(appendCaseAudit(item.id, "EXPORTED", "전체 사건 Markdown 내보내기"));
+                  downloadTextFile(`jium-ai-${item.id}.md`, savedCaseToMarkdown(item));
+                }}
+              >
                 <Download size={16} aria-hidden="true" />
                 내보내기
+              </button>
+              <button
+                className="btn btn-secondary"
+                type="button"
+                onClick={() => {
+                  setCases(appendCaseAudit(item.id, "READONLY_PACKET_OPENED", "담당자용 읽기전용 패킷 링크 생성"));
+                  openReadOnlyPacket(item);
+                }}
+              >
+                <Eye size={16} aria-hidden="true" />
+                읽기전용 링크
+              </button>
+              <button className="btn btn-secondary" type="button" onClick={() => downloadTextFile(`jium-ai-readonly-${item.id}.html`, buildReadOnlyPacketHtml(item))}>
+                <Download size={16} aria-hidden="true" />
+                담당자 HTML
               </button>
               <button className="btn btn-ghost" type="button" onClick={() => removeCase(item.id)}>
                 <Trash2 size={16} aria-hidden="true" />

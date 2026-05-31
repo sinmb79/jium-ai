@@ -12,7 +12,7 @@ const input: CaseInput = {
   evidenceItems: [
     {
       id: "evidence-late",
-      url: "https://t.me/example-channel/20",
+      url: "https://example.invalid/telegram-channel-claim",
       platform: "텔레그램 비밀 채널",
       location: "채널 게시글",
       posterId: "alias-a",
@@ -36,7 +36,7 @@ const input: CaseInput = {
     },
     {
       id: "evidence-dark",
-      url: "http://exampleonion.onion/thread",
+      url: "https://example.invalid/onion-claim",
       platform: "다크웹 언급",
       location: "외부 링크 메모",
       posterId: "",
