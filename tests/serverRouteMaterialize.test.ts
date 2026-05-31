@@ -50,6 +50,9 @@ describe("server route materialization", () => {
     const root = await tempRepo();
     const result = materializeServerRoutes({ root, env: routeEnv(root) });
     const loginRoute = path.join(root, "app", "api", "institution", "login", "route.ts");
+    const nextTypesDir = path.join(root, ".next", "types");
+    await mkdir(nextTypesDir, { recursive: true });
+    await writeFile(path.join(nextTypesDir, "validator.ts"), "// stale route cache\n", "utf8");
     const loginText = await readFile(loginRoute, "utf8");
 
     expect(result.profile).toBe("server-routes");
@@ -66,9 +69,11 @@ describe("server route materialization", () => {
     const clean = cleanMaterializedServerRoutes({ root });
     expect(clean.removed).toEqual(result.routeFiles);
     expect(clean.skipped).toEqual([]);
+    expect(clean.removedCaches).toEqual([".next/types"]);
     expect(findAppRouteFiles(root)).toEqual([]);
     expect(existsSync(loginRoute)).toBe(false);
     expect(existsSync(path.join(root, "app", "api"))).toBe(false);
+    expect(existsSync(nextTypesDir)).toBe(false);
   });
 
   it("rejects Pages mode and incomplete server route environments", async () => {

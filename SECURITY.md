@@ -112,6 +112,8 @@ npm run security:deployment
 npm run build:server
 ```
 
+실제 운영 전 최종 승인은 `npm run security:server-readiness` 또는 `npm run build:server:production`으로 확인합니다. 이 검사는 서버 env뿐 아니라 `data/trusted-authorized-feed-keys.json`에 최소 1개의 승인 기관 공개키가 등록되어 있는지도 확인합니다. 현재 공개 저장소의 기본 registry는 비어 있으므로, 파트너 공개키 승인 절차가 끝나기 전에는 이 readiness 검사가 실패해야 정상입니다.
+
 CI는 Node.js 24 런타임을 직접 지원하는 GitHub Actions major 버전을 사용합니다. 향후 Actions 경고가 발생하면 강제 환경변수로 덮지 말고, 해당 공식 action의 최신 major와 보안 공지를 먼저 확인합니다.
 
 ## 신고

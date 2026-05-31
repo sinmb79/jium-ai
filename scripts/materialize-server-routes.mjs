@@ -137,6 +137,7 @@ export function cleanMaterializedServerRoutes({
   const templates = listServerRouteTemplates(templateRoot);
   const removed = [];
   const skipped = [];
+  const removedCaches = [];
 
   for (const template of templates) {
     const targetPath = materializedTarget(root, template);
@@ -159,7 +160,17 @@ export function cleanMaterializedServerRoutes({
     removed.push(relative);
   }
 
-  return { dryRun, removed: removed.sort(), skipped: skipped.sort() };
+  for (const cacheDir of [path.join(root, ".next", "types"), path.join(root, ".next", "dev", "types")]) {
+    if (!existsSync(cacheDir)) {
+      continue;
+    }
+    if (!dryRun) {
+      rmSync(cacheDir, { recursive: true, force: true });
+    }
+    removedCaches.push(posix(path.relative(root, cacheDir)));
+  }
+
+  return { dryRun, removed: removed.sort(), skipped: skipped.sort(), removedCaches: removedCaches.sort() };
 }
 
 if (path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1] || "")) {
@@ -167,9 +178,12 @@ if (path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1
   try {
     if (isClean) {
       const result = cleanMaterializedServerRoutes();
-      console.log(`Server route clean complete: ${result.removed.length} removed, ${result.skipped.length} skipped`);
+      console.log(
+        `Server route clean complete: ${result.removed.length} removed, ${result.skipped.length} skipped, ${result.removedCaches.length} cache dir(s) cleaned`,
+      );
       result.removed.forEach((file) => console.log(`- removed ${file}`));
       result.skipped.forEach((file) => console.log(`- skipped non-generated ${file}`));
+      result.removedCaches.forEach((file) => console.log(`- cleaned ${file}`));
     } else {
       const result = materializeServerRoutes();
       console.log(`Server route materialization complete: ${result.routeFiles.length} files`);

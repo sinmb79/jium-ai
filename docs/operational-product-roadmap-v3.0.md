@@ -348,6 +348,25 @@
 - 검증 범위
   - 템플릿 목록, materialize 결과, clean 결과, Pages 모드 거부, 누락 env 거부, 비생성 Route 덮어쓰기 거부를 테스트
 
+## v3.26 서버 운영 readiness 가드
+
+- 운영 readiness 검사
+  - `npm run security:server-readiness` 스크립트를 추가
+  - `JIUM_SERVER_ROUTES=true` 서버 프로필과 `GITHUB_PAGES=false` 운영 조건을 확인
+  - `INSTITUTION_SESSION_SECRET`, `INSTITUTION_ALLOWED_ORIGINS`, `INSTITUTION_AUDIT_LEDGER_DIR` 등 deployment profile guard 결과를 함께 반영
+- 기관 공개키 승인 조건
+  - `data/trusted-authorized-feed-keys.json`의 schema를 재검증
+  - 실제 운영 readiness에서는 최소 1개의 승인 기관 공개키가 필요
+  - 현재 공개 저장소의 빈 registry 상태에서는 readiness가 실패해야 정상
+- 서버 Route 템플릿 조건
+  - login/session/logout Route 템플릿이 모두 존재하는지 확인
+  - `server:routes:clean`이 stale `.next/types`와 `.next/dev/types` cache도 제거해, 서버 빌드 후 정적 타입체크가 흔들리지 않게 함
+- 운영 빌드 명령
+  - `npm run build:server`는 기술적 서버 빌드 확인용
+  - `npm run build:server:production`은 materialize 후 readiness까지 통과해야 Next server build를 진행
+- 검증 범위
+  - trusted key registry 있음/없음, Pages 모드 충돌, 누락 env, Route 템플릿 누락, CLI 실행을 테스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -398,7 +417,8 @@
 - 기관 로그인 Next 서버 Route adapter: 1차 구현 완료
 - 배포 프로필 가드: 1차 구현 완료
 - 서버 Route materialize 흐름: 1차 구현 완료
-- 운영 배포 전 과제: 실제 파트너 공개키 승인·교체 절차, 서버/데스크톱 보안 저장소 연동, 기관 감사 로그 조회 UI
+- 서버 운영 readiness 가드: 1차 구현 완료
+- 운영 배포 전 과제: 실제 파트너 공개키 승인·교체 UI, 서버/데스크톱 보안 저장소 연동, 기관 감사 로그 조회 UI
 
 ## 공식 경로 기준
 

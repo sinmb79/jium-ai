@@ -14,6 +14,7 @@ export type ServerRouteCleanResult = {
   dryRun: boolean;
   removed: string[];
   skipped: string[];
+  removedCaches: string[];
 };
 
 export const SERVER_ROUTE_TEMPLATE_ROOT: string;

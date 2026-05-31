@@ -331,6 +331,13 @@ v3.25 서버 Route materialize 흐름에서 추가 반영한 항목:
 - 덮어쓰기 방지: 사용자가 직접 만든 비생성 Route 파일은 자동으로 덮어쓰지 않는다.
 - 검증 연결: materialize/clean, Pages 충돌, 누락 env, 비생성 Route 보호를 회귀 테스트에 포함한다.
 
+v3.26 서버 운영 readiness 가드에서 추가 반영한 항목:
+
+- 운영 승인 분리: 기술적 서버 build와 실제 운영 readiness를 분리해, 공개키 없는 서버 배포가 운영 완료로 오인되지 않게 한다.
+- 기관 공개키 조건: 실제 운영 readiness는 최소 1개의 승인 기관 공개키 registry를 요구한다.
+- Route 템플릿 조건: login/session/logout 템플릿이 모두 있어야 운영 준비로 판단한다.
+- 캐시 정리: 서버 Route clean 시 stale `.next` 타입 캐시도 제거해 정적 검증으로 되돌아갈 수 있게 한다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

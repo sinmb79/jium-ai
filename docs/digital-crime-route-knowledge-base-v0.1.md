@@ -189,3 +189,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Added `server:routes:materialize`, `server:routes:clean`, and `build:server` scripts for server-runtime deployments.
 - Materialization refuses GitHub Pages mode, missing server-route env, and non-generated route overwrites.
 - Generated `app/api/institution/*/route.ts` files are ignored by git and can be removed with the clean command before static export work.
+
+## Implemented in v3.26
+
+- Added `security:server-readiness` and `build:server:production` for production server readiness checks.
+- Server readiness requires server-route mode, safe deployment env, all institution route templates, and at least one trusted institution public key.
+- The default public registry is intentionally empty, so production readiness must fail until an approved partner key is registered.
+- Server route cleanup now removes stale `.next/types` caches so static typechecks are not polluted by a previous server build.

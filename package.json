@@ -16,9 +16,11 @@
     "security:auth": "npm test -- --run tests/institutionAuth.test.ts tests/institutionSessionToken.test.ts tests/institutionSessionCookie.test.ts tests/institutionLogin.test.ts tests/institutionLoginHttp.test.ts tests/institutionAuditLog.test.ts tests/institutionAuditLedger.test.ts tests/serverInstitutionAuditLedgerStore.test.ts tests/institutionServerRoutes.test.ts tests/authorizedOperatorCredential.test.ts",
     "security:feeds": "npm run security:feed-keys && npm test -- --run tests/authorizedFeedAccess.test.ts tests/authorizedIntelligenceFeed.test.ts tests/authorizedFeedSignature.test.ts tests/authorizedFeedKeyRegistryScript.test.ts tests/AuthorizedFeedPanel.test.tsx tests/digitalCrimeRouteKnowledge.test.ts tests/promotionSurfaceIntelligence.test.ts tests/learningStore.test.ts",
     "security:deployment": "node scripts/check-deployment-profile.mjs",
+    "security:server-readiness": "node scripts/check-server-readiness.mjs",
     "server:routes:materialize": "node scripts/materialize-server-routes.mjs",
     "server:routes:clean": "node scripts/materialize-server-routes.mjs --clean",
     "build:server": "npm run server:routes:materialize && npm run security:deployment && next build",
+    "build:server:production": "npm run server:routes:materialize && npm run security:server-readiness && next build",
     "security:secrets": "node scripts/secret-scan.mjs",
     "security:audit": "npm audit --audit-level=moderate",
     "ci:verify": "npm run security:headers && npm run security:xss && npm run security:auth && npm run security:feeds && npm run security:deployment && npm run security:secrets && npm run security:audit && npm run typecheck && npm test && npm run build"
