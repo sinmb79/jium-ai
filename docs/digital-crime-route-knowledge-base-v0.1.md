@@ -161,3 +161,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Each ledger record stores the previous record digest, event digest, and record digest so tampering or deletion can be detected.
 - The HTTP institution login handler can attach a ledger sink without storing raw credentials, session tokens, or actual Origin URLs.
 - Regression tests cover valid chains, tampered events, broken chain links, and token/origin non-exposure in ledger records.
+
+## Implemented in v3.22
+
+- Added a server/desktop JSONL file store for append-only institution audit ledger records.
+- The file store verifies the existing ledger before each append and refuses to add records when tampering is detected.
+- Ledger file paths are constrained to a configured base directory and simple `.jsonl` file names.
+- Regression tests cover append/read/verify, tamper refusal, path traversal refusal, and token/origin non-exposure.
