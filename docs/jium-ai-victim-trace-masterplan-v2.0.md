@@ -202,6 +202,13 @@ v3.6 운영 보안 게이트 보강에서 추가 반영한 항목:
 - PR 품질 게이트: Pull Request에서 secret scan, audit, typecheck, test, build를 자동 검증한다.
 - Pages 배포 게이트: main 배포 전에도 같은 보안·품질 검사를 통과해야 정적 산출물 업로드와 배포가 진행된다.
 
+v3.7 CSP Enforcement·정적 호스팅 헤더 보강에서 추가 반영한 항목:
+
+- CSP Enforcement: `Content-Security-Policy`를 실제 차단 헤더로 추가하고, 같은 정책을 Report-Only에도 유지한다.
+- 헤더 중앙화: Next 런타임 헤더와 정적 `_headers` 파일이 같은 보안 헤더 정의를 사용한다.
+- 정적 호스팅 준비: Netlify와 Cloudflare Pages가 읽을 수 있는 `public/_headers`를 생성하고 동기화 테스트로 고정한다.
+- 운영 한계: GitHub Pages는 `_headers`를 응답 헤더로 강제하지 않으므로, 강제 보안 헤더 운영은 헤더 지원 호스팅으로 이전해야 한다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

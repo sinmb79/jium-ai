@@ -45,6 +45,12 @@ npm run build
 
 `npm run ci:verify`는 위 검사를 한 번에 실행합니다. GitHub Actions의 Pull Request 품질 게이트와 Pages 배포 워크플로도 같은 검사를 사용합니다.
 
+정적 호스팅 보안 헤더는 아래 명령으로 `public/_headers`에 생성합니다. Netlify와 Cloudflare Pages는 배포 산출물의 `_headers` 파일을 커스텀 응답 헤더 설정으로 사용할 수 있습니다. GitHub Pages는 이 파일을 제공만 하고 응답 헤더로 강제하지 않으므로, 강제 보안 헤더가 필요한 운영 배포는 Netlify/Cloudflare Pages/Vercel 같은 헤더 지원 호스팅을 우선합니다.
+
+```bash
+npm run security:headers
+```
+
 ## 신고
 
 보안 문제는 GitHub issue에 민감정보를 쓰지 말고, 재현 조건과 영향만 최소한으로 남겨 주세요.

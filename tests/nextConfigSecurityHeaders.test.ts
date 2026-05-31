@@ -11,6 +11,8 @@ describe("Next.js security headers", () => {
     expect(headers.get("X-Frame-Options")).toBe("DENY");
     expect(headers.get("Referrer-Policy")).toBe("no-referrer");
     expect(headers.get("Permissions-Policy")).toContain("camera=()");
+    expect(headers.get("Content-Security-Policy")).toContain("default-src 'self'");
+    expect(headers.get("Content-Security-Policy")).toContain("script-src 'self'");
     expect(headers.get("Content-Security-Policy-Report-Only")).toContain("frame-ancestors 'none'");
     expect(headers.get("Content-Security-Policy-Report-Only")).toContain("object-src 'none'");
   });

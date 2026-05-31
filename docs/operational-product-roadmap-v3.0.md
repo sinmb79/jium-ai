@@ -98,6 +98,17 @@
   - 실제 키는 `.env`, GitHub Secrets, 배포 플랫폼 secret store에만 두고 저장소에는 빈 예시값만 유지
   - secret scan은 고신뢰 패턴 중심의 1차 방어선이며, 외부 전문 스캐너 도입 전까지 로컬·CI 기본 게이트로 사용
 
+## v3.7 CSP Enforcement·정적 호스팅 헤더 보강
+
+- 보안 헤더 중앙화
+  - Next 런타임 헤더와 정적 `_headers` 파일이 같은 `SECURITY_HEADERS` 정의를 사용
+  - `Content-Security-Policy`를 Enforcement로 추가하고 기존 `Content-Security-Policy-Report-Only`도 동일 정책으로 유지
+- 정적 호스팅 지원
+  - `npm run security:headers`로 Netlify/Cloudflare Pages 호환 `public/_headers` 파일 생성
+  - PR/배포 CI에서 `_headers` 생성과 동기화 테스트를 실행
+- 운영 한계 명시
+  - GitHub Pages는 `_headers` 파일을 응답 헤더로 강제하지 않으므로, 강제 보안 헤더가 필요한 운영 배포는 Netlify/Cloudflare Pages/Vercel 등 헤더 지원 호스팅으로 이전 필요
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -124,8 +135,8 @@
 
 ### Phase D: 운영 보안
 
-- CSP Report-Only 결과 확인 후 단계적 Enforcement 전환
-- 보안 헤더가 정적 호스팅에서도 적용되도록 Netlify/Cloudflare/Vercel별 설정
+- CSP Report-Only 결과 확인 후 단계적 Enforcement 전환: 1차 Enforcement 병행 완료
+- 보안 헤더가 정적 호스팅에서도 적용되도록 Netlify/Cloudflare/Vercel별 설정: Netlify/Cloudflare `_headers` 1차 구현 완료
 - SAST, dependency audit, secret scan CI: secret scan과 dependency audit CI 1차 구현 완료
 - 민감정보 테스트 케이스와 XSS 회귀 테스트
 
