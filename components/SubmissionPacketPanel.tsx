@@ -9,6 +9,7 @@ import { buildSafeSearchActions } from "@/lib/searchConnectors";
 import { buildSubmissionConnectorActions } from "@/lib/submissionConnectors";
 import { buildPrintableSubmissionHtml, buildSubmissionPackageZip } from "@/lib/submissionPackage";
 import { buildSubmissionPacket, submissionPacketWithEvidenceToMarkdown } from "@/lib/submissionPacket";
+import { RegionalSupportRouterPanel } from "@/components/RegionalSupportRouterPanel";
 import {
   buildSubmissionPacketSnapshot,
   compareSubmissionPacketSnapshots,
@@ -150,6 +151,10 @@ export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
           ))}
         </div>
       </section>
+
+      {savedCase.classification.caseType === "DIGITAL_SEX_CRIME" ? (
+        <RegionalSupportRouterPanel caseType={savedCase.classification.caseType} urgent={savedCase.input.urgent} />
+      ) : null}
 
       <section className="trace-section" aria-labelledby="promotion-surface-title">
         <h3 id="promotion-surface-title">비공개방 유입면·홍보글 루트</h3>

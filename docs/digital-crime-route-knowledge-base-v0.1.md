@@ -231,3 +231,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Added the `window.jiumSecureVault` bridge contract for future Windows DPAPI, macOS Keychain, or Linux Secret Service providers.
 - When the bridge is present, encrypted vault payloads are written to the bridge and removed from browser localStorage.
 - The vault UI now shows the active storage backend and whether an OS-protected provider is connected.
+
+## Implemented in v3.32
+
+- Added an institution account admin review core and dashboard panel for server institution sessions.
+- The account review checks role, capability, MFA, expiry, high-risk capabilities, and raw identifier exposure without issuing accounts.
+- Added a regional digital-sex-crime support router based on the official D4U regional-center status page.
+- The submission packet can now show regional center candidates, 1366, and the central D4U path while preserving the no-auto-submit boundary.
