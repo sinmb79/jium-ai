@@ -1,6 +1,6 @@
 "use client";
 
-import { Brain, Clipboard, Download, ExternalLink, FileCheck2, Search, ShieldCheck } from "lucide-react";
+import { Brain, Clipboard, Download, ExternalLink, FileCheck2, GitCompareArrows, Save, Search, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { appendCaseAudit } from "@/lib/caseStorage";
 import { downloadBytesFile, downloadFile, downloadTextFile } from "@/lib/export";
@@ -9,11 +9,21 @@ import { buildSafeSearchActions } from "@/lib/searchConnectors";
 import { buildSubmissionConnectorActions } from "@/lib/submissionConnectors";
 import { buildPrintableSubmissionHtml, buildSubmissionPackageZip } from "@/lib/submissionPackage";
 import { buildSubmissionPacket, submissionPacketWithEvidenceToMarkdown } from "@/lib/submissionPacket";
+import {
+  buildSubmissionPacketSnapshot,
+  compareSubmissionPacketSnapshots,
+  latestSubmissionPacketSnapshot,
+  saveSubmissionPacketSnapshot,
+  submissionPacketDiffToMarkdown,
+  type SubmissionPacketDiff,
+} from "@/lib/submissionVersioning";
 import type { SavedCase } from "@/lib/types";
 
 export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
   const [copied, setCopied] = useState(false);
   const [learned, setLearned] = useState(false);
+  const [versionMessage, setVersionMessage] = useState("");
+  const [versionDiff, setVersionDiff] = useState<SubmissionPacketDiff | null>(null);
   const packet = useMemo(
     () => buildSubmissionPacket(savedCase.input, savedCase.classification, savedCase.responsePack),
     [savedCase.classification, savedCase.input, savedCase.responsePack],
@@ -22,6 +32,29 @@ export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
   const searchActions = useMemo(() => buildSafeSearchActions(packet.discoveryPlan).slice(0, 6), [packet.discoveryPlan]);
   const connectorActions = useMemo(() => buildSubmissionConnectorActions(packet).slice(0, 4), [packet]);
   const officialOnlyCount = packet.discoveryPlan.matchChannels.filter((channel) => channel.authority === "OFFICIAL_ONLY" || channel.authority === "SPECIALIST_ONLY").length;
+
+  function currentSnapshot() {
+    return buildSubmissionPacketSnapshot(savedCase, packet);
+  }
+
+  function saveVersionSnapshot() {
+    const snapshot = saveSubmissionPacketSnapshot(currentSnapshot());
+    appendCaseAudit(savedCase.id, "SUBMISSION_VERSION_SAVED", `제출 패킷 버전 저장: ${snapshot.packetFingerprint}`);
+    setVersionMessage(`제출 버전을 저장했습니다: ${snapshot.packetFingerprint}`);
+  }
+
+  function compareWithPreviousSnapshot() {
+    const previous = latestSubmissionPacketSnapshot(savedCase.id);
+    if (!previous) {
+      setVersionDiff(null);
+      setVersionMessage("비교할 이전 제출 버전이 없습니다. 먼저 현재 버전을 저장하세요.");
+      return;
+    }
+    const diff = compareSubmissionPacketSnapshots(previous, currentSnapshot());
+    appendCaseAudit(savedCase.id, "SUBMISSION_VERSION_COMPARED", `제출 패킷 버전 비교: ${diff.status}`);
+    setVersionDiff(diff);
+    setVersionMessage(diff.status === "UNCHANGED" ? "직전 저장본과 변경된 항목이 없습니다." : `직전 저장본과 ${diff.changes.length}개 항목이 다릅니다.`);
+  }
 
   return (
     <div className="panel panel-tight submission-panel">
@@ -145,6 +178,25 @@ export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
         </div>
       </div>
 
+      <section className="trace-section" aria-labelledby="submission-version-title">
+        <h3 id="submission-version-title">제출 버전 관리</h3>
+        <p className="muted small">현재 패킷을 스냅샷으로 저장하고, 다음 제출 전에 직전 버전과 달라진 증거·기관 후보·보강 항목을 비교합니다. 스냅샷에는 원문 URL과 피해물 원본을 저장하지 않습니다.</p>
+        {versionMessage ? <p className="small muted">{versionMessage}</p> : null}
+        {versionDiff ? (
+          <ul className="action-list compact-list">
+            {versionDiff.changes.length ? (
+              versionDiff.changes.slice(0, 6).map((change) => (
+                <li key={`${change.field}-${change.label}`}>
+                  [{change.severity}] {change.label}: {change.before} → {change.after}
+                </li>
+              ))
+            ) : (
+              <li>변경된 제출 패킷 항목이 없습니다.</li>
+            )}
+          </ul>
+        ) : null}
+      </section>
+
       <div className="button-row">
         <button
           className="btn btn-primary"
@@ -192,6 +244,20 @@ export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
           <Download size={17} aria-hidden="true" />
           제출 ZIP
         </button>
+        <button className="btn btn-secondary" type="button" onClick={saveVersionSnapshot}>
+          <Save size={17} aria-hidden="true" />
+          제출 버전 저장
+        </button>
+        <button className="btn btn-secondary" type="button" onClick={compareWithPreviousSnapshot}>
+          <GitCompareArrows size={17} aria-hidden="true" />
+          직전 버전 비교
+        </button>
+        {versionDiff ? (
+          <button className="btn btn-secondary" type="button" onClick={() => downloadTextFile(`jium-ai-submission-diff-${savedCase.id}.md`, submissionPacketDiffToMarkdown(versionDiff))}>
+            <Download size={17} aria-hidden="true" />
+            비교 결과 내려받기
+          </button>
+        ) : null}
         <button
           className="btn btn-secondary"
           type="button"

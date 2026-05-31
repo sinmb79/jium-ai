@@ -1,5 +1,6 @@
 import { buildReadOnlyPacketHtml } from "@/lib/readOnlyPacket";
 import { buildSubmissionPacket, submissionPacketWithEvidenceToMarkdown, type SubmissionPacket } from "@/lib/submissionPacket";
+import { buildSubmissionPacketSnapshot } from "@/lib/submissionVersioning";
 import { createStoredZip, type ZipTextFile } from "@/lib/zip";
 import type { SavedCase } from "@/lib/types";
 
@@ -97,6 +98,7 @@ export function buildSubmissionPackageFiles(savedCase: SavedCase): ZipTextFile[]
   const packet = buildSubmissionPacket(savedCase.input, savedCase.classification, savedCase.responsePack);
   const markdown = submissionPacketWithEvidenceToMarkdown(savedCase.input, packet);
   const manifest = buildEvidenceChainManifest(savedCase, packet);
+  const versionSnapshot = buildSubmissionPacketSnapshot(savedCase, packet);
   const prefix = filenameSafe(`${savedCase.id}-${packet.evidenceChain.manifestFingerprint}`);
 
   return [
@@ -120,6 +122,10 @@ export function buildSubmissionPackageFiles(savedCase: SavedCase): ZipTextFile[]
     {
       name: `${prefix}/evidence-chain-manifest.json`,
       content: JSON.stringify(manifest, null, 2),
+    },
+    {
+      name: `${prefix}/submission-version-snapshot.json`,
+      content: JSON.stringify(versionSnapshot, null, 2),
     },
     {
       name: `${prefix}/trace-diagram.mmd`,

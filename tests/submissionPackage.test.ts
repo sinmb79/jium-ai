@@ -80,11 +80,13 @@ describe("submission package", () => {
         expect.stringContaining("printable-submission.html"),
         expect.stringContaining("officer-readonly.html"),
         expect.stringContaining("evidence-chain-manifest.json"),
+        expect.stringContaining("submission-version-snapshot.json"),
         expect.stringContaining("trace-diagram.mmd"),
         expect.stringContaining("checklist.txt"),
       ]),
     );
     expect(zipText).toContain("evidence-chain-manifest.json");
+    expect(zipText).toContain("submission-version-snapshot.json");
     expect(zipText).toContain("submission-packet.md");
   });
 });
