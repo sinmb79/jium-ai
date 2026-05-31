@@ -963,6 +963,27 @@ h1 {
   font-size: 0.85rem;
 }
 
+.authorized-feed-panel {
+  display: grid;
+  gap: 0.8rem;
+  border-color: #c9c7e6;
+  background: #fbfaff;
+}
+
+.authorized-feed-summary,
+.authorized-feed-gate {
+  display: grid;
+  gap: 0.65rem;
+  border: 1px solid var(--soft-line);
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 0.8rem;
+}
+
+.authorized-feed-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .device-safety-box {
   display: grid;
   gap: 0.65rem;
@@ -1058,6 +1079,7 @@ h1 {
 @media (max-width: 900px) {
   .hero,
   .result-grid,
+  .authorized-feed-summary,
   .device-safety-grid {
     grid-template-columns: 1fr;
   }

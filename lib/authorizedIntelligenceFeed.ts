@@ -1,5 +1,6 @@
 import { DIGITAL_CRIME_ROUTE_PATTERNS } from "@/lib/digitalCrimeRouteKnowledge";
 import { PROMOTION_SURFACE_PATTERNS } from "@/lib/promotionSurfaceIntelligence";
+import { canUseAuthorizedFeedCapability, type AuthorizedFeedOperatorSession } from "@/lib/authorizedFeedAccess";
 import type { TraceSignalSeverity } from "@/lib/types";
 
 const AUTHORIZED_FEED_STORAGE_KEY = "jium-ai.authorized-intel-feed.v1";
@@ -223,6 +224,26 @@ export function importAuthorizedFeedBundle(bundle: AuthorizedFeedBundle, importe
     }
     return normalizeAuthorizedFeedIndicator(fullIndicator);
   });
+}
+
+export function mergeAuthorizedFeedIndicators(existing: AuthorizedFeedIndicator[], incoming: AuthorizedFeedIndicator[]) {
+  const byId = new Map<string, AuthorizedFeedIndicator>();
+  existing.forEach((indicator) => byId.set(indicator.id, normalizeAuthorizedFeedIndicator(indicator)));
+  incoming.forEach((indicator) => byId.set(indicator.id, normalizeAuthorizedFeedIndicator(indicator)));
+  return Array.from(byId.values()).sort((a, b) => b.lastCheckedAt.localeCompare(a.lastCheckedAt));
+}
+
+export function importAuthorizedFeedBundleForOperator(
+  bundle: AuthorizedFeedBundle,
+  session: AuthorizedFeedOperatorSession | null | undefined,
+  existing: AuthorizedFeedIndicator[] = [],
+  importedAt = new Date().toISOString(),
+  now = Date.now(),
+) {
+  if (!canUseAuthorizedFeedCapability(session, "AUTHORIZED_FEED_IMPORT", now)) {
+    throw new Error("Authorized operator session is required to import restricted intelligence feeds");
+  }
+  return mergeAuthorizedFeedIndicators(existing, importAuthorizedFeedBundle(bundle, importedAt));
 }
 
 export function purgeExpiredAuthorizedIndicators(indicators: AuthorizedFeedIndicator[], now = new Date().toISOString()) {

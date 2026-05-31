@@ -17,5 +17,7 @@ describe("CaseBoard", () => {
     expect(screen.getByText("아직 저장한 사건이 없습니다.")).toBeInTheDocument();
     expect(screen.getByText("암호화 보관함")).toBeInTheDocument();
     expect(screen.getByText(".jiumcase 가져오기")).toBeInTheDocument();
+    expect(screen.getByText("제한 지능 피드")).toBeInTheDocument();
+    expect(screen.getByText("제한 피드 가져오기")).toBeDisabled();
   });
 });

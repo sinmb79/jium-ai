@@ -69,6 +69,8 @@ npm run security:xss
 npm run security:feeds
 ```
 
+제한 피드 가져오기는 로컬 운영자 세션을 요구합니다. 이 세션은 정적 앱 안의 실수 방지 장치이며, 조직 인증·수사권한·서버 RBAC를 대신하지 않습니다. 운영 배포 전에는 기관 계정 기반 인증과 서명된 피드 검증을 추가해야 합니다.
+
 CI는 Node.js 24 런타임을 직접 지원하는 GitHub Actions major 버전을 사용합니다. 향후 Actions 경고가 발생하면 강제 환경변수로 덮지 말고, 해당 공식 action의 최신 major와 보안 공지를 먼저 확인합니다.
 
 ## 신고

@@ -89,3 +89,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Pre-vetted indicators must use route pattern IDs, promotion-surface IDs, or non-raw `sha256-*` / `ahash-*` digests.
 - Each indicator carries source date, last checked date, retention deadline, access level, confidence, allowed uses, prohibited uses, official handoff, and import audit logs.
 - `npm run security:feeds` verifies the restricted feed model together with route knowledge, promotion surfaces, and anonymized learning storage.
+
+## Implemented in v3.12
+
+- Restricted feed import now requires a short local operator session with explicit capabilities.
+- The local session is a guardrail, not organizational identity or legal authority.
+- The dashboard exposes only aggregate counts by route pattern, promotion surface, source type, access level, and retention status.
+- Feed import and expired-indicator purge are disabled until the operator session is opened.
+- UI regression tests confirm that individual indicator labels are not displayed after import.

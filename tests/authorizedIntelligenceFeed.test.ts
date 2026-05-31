@@ -3,13 +3,16 @@ import {
   buildAuthorizedFeedSummary,
   clearAuthorizedFeedIndicators,
   importAuthorizedFeedBundle,
+  importAuthorizedFeedBundleForOperator,
   loadAuthorizedFeedIndicators,
+  mergeAuthorizedFeedIndicators,
   saveAuthorizedFeedIndicators,
   unsafeAuthorizedFeedStorageMarkers,
   validateAuthorizedFeedIndicator,
   type AuthorizedFeedBundle,
   type AuthorizedFeedIndicator,
 } from "@/lib/authorizedIntelligenceFeed";
+import { openAuthorizedFeedOperatorSession } from "@/lib/authorizedFeedAccess";
 
 const digest = "sha256-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
@@ -90,5 +93,28 @@ describe("authorized intelligence feed", () => {
     expect(summary.byPromotionSurface["platform-migration-signal"]).toBe(1);
     expect(summary.byAccessLevel.AUTHORIZED_INTEL_ONLY).toBe(1);
     expect(summary.expiringWithin30Days).toBe(1);
+  });
+
+  it("requires an operator session for restricted bundle import and merges by indicator id", () => {
+    const { auditLog, sourceName, sourceType, ...bundleIndicator } = indicator({ id: "merge-feed", lastCheckedAt: "2026-05-30T00:00:00.000Z" });
+    const bundle: AuthorizedFeedBundle = {
+      version: "jium-authorized-feed-v1",
+      generatedAt: "2026-05-31T00:00:00.000Z",
+      sourceName: "Authorized NGO Partner",
+      sourceType: "AUTHORIZED_PARTNER_FEED",
+      authorizationRef: "MOU-2026-05-PARTNER",
+      indicators: [{ ...bundleIndicator, lastCheckedAt: "2026-05-31T00:00:00.000Z" }],
+    };
+
+    expect(() => importAuthorizedFeedBundleForOperator(bundle, null, [], "2026-05-31T01:00:00.000Z", 1_000)).toThrow("operator session");
+
+    const session = openAuthorizedFeedOperatorSession("authorized feed passphrase", 1_000);
+    const imported = importAuthorizedFeedBundleForOperator(bundle, session, [indicator({ id: "merge-feed", lastCheckedAt: "2026-05-29T00:00:00.000Z" })], "2026-05-31T01:00:00.000Z", 1_001);
+    const merged = mergeAuthorizedFeedIndicators([indicator({ id: "older-feed", lastCheckedAt: "2026-05-01T00:00:00.000Z" })], imported);
+
+    expect(imported).toHaveLength(1);
+    expect(imported[0]?.id).toBe("merge-feed");
+    expect(imported[0]?.lastCheckedAt).toBe("2026-05-31T00:00:00.000Z");
+    expect(merged.map((item) => item.id)).toEqual(["merge-feed", "older-feed"]);
   });
 });
