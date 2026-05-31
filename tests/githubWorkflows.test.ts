@@ -13,6 +13,7 @@ describe("GitHub Actions security gates", () => {
     expect(auditIndex).toBeGreaterThan(secretIndex);
     expect(typecheckIndex).toBeGreaterThan(auditIndex);
     expect(buildIndex).toBeGreaterThan(typecheckIndex);
+    expect(workflow).toContain("enablement: true");
   });
 
   it("has a pull request quality gate with the same security checks", () => {
