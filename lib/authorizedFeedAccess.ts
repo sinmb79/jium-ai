@@ -3,6 +3,21 @@ export const AUTHORIZED_FEED_SESSION_MS = 10 * 60 * 1000;
 
 export type AuthorizedFeedCapability = "AUTHORIZED_FEED_IMPORT" | "AUTHORIZED_FEED_SUMMARY" | "AUTHORIZED_FEED_PURGE";
 
+export const AUTHORIZED_FEED_CAPABILITIES: AuthorizedFeedCapability[] = [
+  "AUTHORIZED_FEED_IMPORT",
+  "AUTHORIZED_FEED_SUMMARY",
+  "AUTHORIZED_FEED_PURGE",
+];
+
+export type AuthorizedFeedOperatorIdentity = {
+  credentialId: string;
+  subjectId: string;
+  issuerName: string;
+  keyId: string;
+  credentialExpiresAt: string;
+  authenticatedAt: string;
+};
+
 export type AuthorizedFeedOperatorSession = {
   role: "AUTHORIZED_OPERATOR";
   openedAt: number;
@@ -10,7 +25,12 @@ export type AuthorizedFeedOperatorSession = {
   expiresAt: number;
   capabilityIds: AuthorizedFeedCapability[];
   limitations: string[];
+  identity?: AuthorizedFeedOperatorIdentity;
 };
+
+export function isAuthorizedFeedCapability(value: unknown): value is AuthorizedFeedCapability {
+  return typeof value === "string" && AUTHORIZED_FEED_CAPABILITIES.includes(value as AuthorizedFeedCapability);
+}
 
 export function authorizedFeedAccessBoundaryText() {
   return "로컬 운영자 세션은 조직 인증이나 수사권한을 대신하지 않습니다. 승인된 비식별 피드 수입과 집계 확인만 허용합니다.";
@@ -26,7 +46,7 @@ export function openAuthorizedFeedOperatorSession(passphrase: string, now = Date
     openedAt: now,
     lastActivityAt: now,
     expiresAt: now + AUTHORIZED_FEED_SESSION_MS,
-    capabilityIds: ["AUTHORIZED_FEED_IMPORT", "AUTHORIZED_FEED_SUMMARY", "AUTHORIZED_FEED_PURGE"],
+    capabilityIds: AUTHORIZED_FEED_CAPABILITIES,
     limitations: [
       "조직 인증을 대신하지 않음",
       "원문 URL·초대링크·계정 핸들 저장 금지",

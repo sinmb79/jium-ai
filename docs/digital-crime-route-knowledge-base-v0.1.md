@@ -111,3 +111,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Trusted authorized feed public keys are loaded from `data/trusted-authorized-feed-keys.json`.
 - `npm run security:feed-keys` rejects private JWK fields, private key usages, PEM private key material, duplicate key IDs, and invalid validity windows.
 - The key-registry check is included in `npm run security:feeds`, so feed safety tests cover both signed bundles and the key registry.
+
+## Implemented in v3.15
+
+- Restricted feed operator sessions can be opened with signed `jium-authorized-operator-credential-signed-v1` credentials.
+- Operator credentials are verified with the same pinned trusted public key model used for authorized feeds.
+- Credential subject IDs must be pseudonymous and cannot contain raw URLs, handles, invite links, phone numbers, or onion addresses.
+- Credential tests reject tampering, expiry, unsupported capabilities, and missing trusted signing keys.

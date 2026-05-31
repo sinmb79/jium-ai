@@ -12,6 +12,12 @@ import {
   type SignedAuthorizedFeedPayload,
   type TrustedAuthorizedFeedKey,
 } from "@/lib/authorizedFeedSignature";
+import {
+  SIGNED_AUTHORIZED_OPERATOR_CREDENTIAL_VERSION,
+  authorizedOperatorCredentialSigningPayload,
+  type SignedAuthorizedOperatorCredential,
+  type SignedAuthorizedOperatorCredentialPayload,
+} from "@/lib/authorizedOperatorCredential";
 import type { AuthorizedFeedBundle } from "@/lib/authorizedIntelligenceFeed";
 
 const digest = "sha256-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
@@ -45,7 +51,7 @@ const bundle: AuthorizedFeedBundle = {
   ],
 };
 
-async function signBundle(): Promise<{ signed: SignedAuthorizedFeedBundle; trustedKey: TrustedAuthorizedFeedKey }> {
+async function generateTrustedKey(): Promise<{ privateKey: CryptoKey; trustedKey: TrustedAuthorizedFeedKey }> {
   const pair = (await crypto.subtle.generateKey(
     {
       name: AUTHORIZED_FEED_SIGNATURE_ALGORITHM,
@@ -56,6 +62,19 @@ async function signBundle(): Promise<{ signed: SignedAuthorizedFeedBundle; trust
     true,
     ["sign", "verify"],
   )) as CryptoKeyPair;
+
+  return {
+    privateKey: pair.privateKey,
+    trustedKey: {
+      keyId: "authorized-partner-ui-key",
+      issuerName: "Authorized NGO Partner",
+      algorithm: AUTHORIZED_FEED_SIGNATURE_ALGORITHM,
+      publicKeyJwk: await crypto.subtle.exportKey("jwk", pair.publicKey),
+    },
+  };
+}
+
+async function signBundle(privateKey: CryptoKey): Promise<SignedAuthorizedFeedBundle> {
   const envelope: SignedAuthorizedFeedPayload = {
     version: SIGNED_AUTHORIZED_FEED_VERSION,
     keyId: "authorized-partner-ui-key",
@@ -64,19 +83,35 @@ async function signBundle(): Promise<{ signed: SignedAuthorizedFeedBundle; trust
   };
   const signature = await crypto.subtle.sign(
     { name: AUTHORIZED_FEED_SIGNATURE_ALGORITHM },
-    pair.privateKey,
+    privateKey,
     new TextEncoder().encode(authorizedFeedSigningPayload(envelope)),
   );
 
-  return {
-    signed: { ...envelope, signature: bytesToBase64Url(signature) },
-    trustedKey: {
-      keyId: envelope.keyId,
+  return { ...envelope, signature: bytesToBase64Url(signature) };
+}
+
+async function signCredential(privateKey: CryptoKey): Promise<SignedAuthorizedOperatorCredential> {
+  const envelope: SignedAuthorizedOperatorCredentialPayload = {
+    version: SIGNED_AUTHORIZED_OPERATOR_CREDENTIAL_VERSION,
+    keyId: "authorized-partner-ui-key",
+    signedAt: "2026-05-31T00:00:01.000Z",
+    credential: {
+      credentialId: "cred-ui-operator-001",
+      subjectId: "operator:ui-caseworker",
       issuerName: "Authorized NGO Partner",
-      algorithm: AUTHORIZED_FEED_SIGNATURE_ALGORITHM,
-      publicKeyJwk: await crypto.subtle.exportKey("jwk", pair.publicKey),
+      issuedAt: "2026-05-31T00:00:00.000Z",
+      expiresAt: "2026-06-01T00:00:00.000Z",
+      capabilityIds: ["AUTHORIZED_FEED_IMPORT", "AUTHORIZED_FEED_SUMMARY", "AUTHORIZED_FEED_PURGE"],
+      limitations: ["비식별 승인 피드 수입", "피해자 화면에는 집계만 표시"],
     },
   };
+  const signature = await crypto.subtle.sign(
+    { name: AUTHORIZED_FEED_SIGNATURE_ALGORITHM },
+    privateKey,
+    new TextEncoder().encode(authorizedOperatorCredentialSigningPayload(envelope)),
+  );
+
+  return { ...envelope, signature: bytesToBase64Url(signature) };
 }
 
 describe("AuthorizedFeedPanel", () => {
@@ -85,7 +120,8 @@ describe("AuthorizedFeedPanel", () => {
   });
 
   it("imports restricted feed bundles only after a local operator session is opened", async () => {
-    const { signed, trustedKey } = await signBundle();
+    const { privateKey, trustedKey } = await generateTrustedKey();
+    const signed = await signBundle(privateKey);
 
     render(<AuthorizedFeedPanel trustedFeedKeys={[trustedKey]} />);
 
@@ -93,7 +129,7 @@ describe("AuthorizedFeedPanel", () => {
     expect(screen.getByText("제한 지표 0건")).toBeInTheDocument();
     expect(screen.getByText("제한 피드 가져오기")).toBeDisabled();
 
-    fireEvent.change(screen.getByPlaceholderText("승인 피드 담당자 확인용 긴 문장"), {
+    fireEvent.change(screen.getByPlaceholderText("네트워크 없는 현장 확인용 긴 문장"), {
       target: { value: "authorized feed passphrase" },
     });
     fireEvent.click(screen.getByText("운영자 세션 열기"));
@@ -106,5 +142,25 @@ describe("AuthorizedFeedPanel", () => {
     expect(screen.getByText("encrypted-private-room: 1건")).toBeInTheDocument();
     expect(screen.getByText("platform-migration-signal: 1건")).toBeInTheDocument();
     expect(screen.queryByText("비공개방 유도 반복 패턴")).not.toBeInTheDocument();
+  });
+
+  it("opens a restricted feed session from a signed operator credential", async () => {
+    const { privateKey, trustedKey } = await generateTrustedKey();
+    const signed = await signBundle(privateKey);
+    const credential = await signCredential(privateKey);
+
+    render(<AuthorizedFeedPanel trustedFeedKeys={[trustedKey]} />);
+
+    fireEvent.change(screen.getByPlaceholderText(/jium-authorized-operator-credential-signed-v1/), {
+      target: { value: JSON.stringify(credential) },
+    });
+    fireEvent.click(screen.getByText("서명 credential 확인"));
+    await waitFor(() => expect(screen.getByText(/Authorized NGO Partner credential 확인/)).toBeInTheDocument());
+    fireEvent.change(screen.getByPlaceholderText(/jium-authorized-feed-signed-v1/), {
+      target: { value: JSON.stringify(signed) },
+    });
+    fireEvent.click(screen.getByText("제한 피드 가져오기"));
+
+    await waitFor(() => expect(screen.getByText("제한 지표 1건")).toBeInTheDocument());
   });
 });

@@ -22,6 +22,10 @@ import {
   openAuthorizedFeedOperatorSession,
   type AuthorizedFeedOperatorSession,
 } from "@/lib/authorizedFeedAccess";
+import {
+  isSignedAuthorizedOperatorCredential,
+  openAuthorizedFeedOperatorSessionFromCredential,
+} from "@/lib/authorizedOperatorCredential";
 import { TRUSTED_AUTHORIZED_FEED_KEYS, authorizedFeedTrustedKeyStatus } from "@/lib/authorizedFeedTrustedKeys";
 
 function countEntries(values: Record<string, number>) {
@@ -42,6 +46,7 @@ export function AuthorizedFeedPanel({
   const [indicators, setIndicators] = useState<AuthorizedFeedIndicator[]>([]);
   const [session, setSession] = useState<AuthorizedFeedOperatorSession | null>(null);
   const [passphrase, setPassphrase] = useState("");
+  const [credentialText, setCredentialText] = useState("");
   const [bundleText, setBundleText] = useState("");
   const [message, setMessage] = useState("");
 
@@ -63,9 +68,25 @@ export function AuthorizedFeedPanel({
     }
   }
 
+  async function openCredentialSession() {
+    try {
+      const parsed = JSON.parse(credentialText) as unknown;
+      if (!isSignedAuthorizedOperatorCredential(parsed)) {
+        throw new Error("운영자 credential은 서명된 jium-authorized-operator-credential-signed-v1 envelope이어야 합니다.");
+      }
+      const nextSession = await openAuthorizedFeedOperatorSessionFromCredential(parsed, trustedFeedKeys);
+      setSession(nextSession);
+      setCredentialText("");
+      setMessage(`${nextSession.identity?.issuerName || "승인 기관"} credential 확인으로 운영자 세션을 열었습니다.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "서명 credential을 확인하지 못했습니다.");
+    }
+  }
+
   function lockSession() {
     setSession(null);
     setPassphrase("");
+    setCredentialText("");
     setMessage("제한 피드 운영자 세션을 잠갔습니다.");
   }
 
@@ -144,14 +165,31 @@ export function AuthorizedFeedPanel({
       <div className="authorized-feed-gate">
         <label className="field">
           <span className="label-row">
-            운영자 확인 문장 <span className="hint">16자 이상</span>
+            운영자 credential JSON <span className="hint">기관·파트너 서명</span>
+          </span>
+          <textarea
+            className="textarea textarea-compact"
+            value={credentialText}
+            onChange={(event) => setCredentialText(event.target.value)}
+            placeholder='{"version":"jium-authorized-operator-credential-signed-v1","keyId":"...","credential":{"credentialId":"..."},"signature":"..."}'
+          />
+        </label>
+        <div className="button-row">
+          <button className="btn btn-secondary" type="button" disabled={!credentialText.trim() || !trustedFeedKeys.length} onClick={openCredentialSession}>
+            <ShieldCheck size={16} aria-hidden="true" />
+            서명 credential 확인
+          </button>
+        </div>
+        <label className="field">
+          <span className="label-row">
+            오프라인 확인 문장 <span className="hint">16자 이상</span>
           </span>
           <input
             className="input"
             type="password"
             value={passphrase}
             onChange={(event) => setPassphrase(event.target.value)}
-            placeholder="승인 피드 담당자 확인용 긴 문장"
+            placeholder="네트워크 없는 현장 확인용 긴 문장"
             autoComplete="off"
           />
         </label>

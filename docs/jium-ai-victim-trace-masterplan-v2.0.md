@@ -254,6 +254,13 @@ v3.14 신뢰 공개키 레지스트리·등록 검증에서 추가 반영한 항
 - 개인키 유입 차단: 공개키 레지스트리에 private JWK 필드나 private key usage가 섞이면 CI가 실패한다.
 - 운영 감사 단서: keyId, issuerName, 유효기간을 구조화해 향후 파트너 키 교체·폐기 절차의 기준으로 삼는다.
 
+v3.15 서명된 운영자 credential 세션에서 추가 반영한 항목:
+
+- 기관/파트너 credential: `jium-authorized-operator-credential-signed-v1`을 공개키로 검증해 제한 피드 운영자 세션을 열 수 있다.
+- 가명 운영자 ID: credential subjectId에는 이메일, 전화번호, URL, 초대링크 같은 원문 식별자를 넣지 못하게 한다.
+- capability 제한: credential이 부여한 `AUTHORIZED_FEED_IMPORT`, `AUTHORIZED_FEED_SUMMARY`, `AUTHORIZED_FEED_PURGE` 범위 안에서만 세션 권한을 연다.
+- 현장 보조 경로: 기존 로컬 확인 문장은 네트워크 없는 현장용 보조 장치로 남기되, 운영 기준은 서명 credential 또는 서버 기반 기관 계정 인증으로 이동한다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

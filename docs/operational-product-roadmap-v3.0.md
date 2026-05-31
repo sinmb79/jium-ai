@@ -191,6 +191,18 @@
   - private key는 기관/파트너 서명 환경에만 보관
   - keyId, issuerName, validFrom, validUntil을 운영 감사 기준으로 남김
 
+## v3.15 서명된 운영자 credential 세션
+
+- credential 기반 운영자 세션
+  - 기관·파트너가 발급한 `jium-authorized-operator-credential-signed-v1` envelope를 검증해 운영자 세션을 열 수 있음
+  - credential에는 credentialId, 가명 subjectId, issuerName, 유효기간, capabilityIds, 운영 한계가 포함됨
+- 안전 제한
+  - subjectId와 issuerName에는 이메일, 전화번호, URL, 초대링크, onion 주소 같은 원문 식별자를 넣지 못하게 검증
+  - credential 만료, 변조, 미등록/만료 공개키, 지원하지 않는 capability를 거부
+- UI 운영 게이트
+  - 대시보드 제한 피드 패널에서 서명 credential JSON으로 세션을 열 수 있음
+  - 기존 16자 확인 문장은 네트워크 없는 현장용 보조 장치로 남기고, 운영 배포에서는 서명 credential 또는 서버 기반 기관 계정 인증을 우선함
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -230,7 +242,8 @@
 - 비식별 통계만 학습 저장: 승인 피드 집계 요약과 대시보드 표시 1차 구현 완료
 - 서명된 피드 검증: 1차 구현 완료
 - 실제 파트너 공개키 등록 검증: 1차 구현 완료
-- 운영 배포 전 과제: 기관 계정 기반 인증, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
+- 서명된 운영자 credential 세션: 1차 구현 완료
+- 운영 배포 전 과제: 서버 기반 기관 계정 인증, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
 
 ## 공식 경로 기준
 
