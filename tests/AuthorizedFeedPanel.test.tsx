@@ -3,10 +3,20 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { AuthorizedFeedPanel } from "@/components/AuthorizedFeedPanel";
 import { clearAuthorizedFeedIndicators } from "@/lib/authorizedIntelligenceFeed";
+import {
+  AUTHORIZED_FEED_SIGNATURE_ALGORITHM,
+  SIGNED_AUTHORIZED_FEED_VERSION,
+  authorizedFeedSigningPayload,
+  bytesToBase64Url,
+  type SignedAuthorizedFeedBundle,
+  type SignedAuthorizedFeedPayload,
+  type TrustedAuthorizedFeedKey,
+} from "@/lib/authorizedFeedSignature";
+import type { AuthorizedFeedBundle } from "@/lib/authorizedIntelligenceFeed";
 
 const digest = "sha256-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
-const bundle = {
+const bundle: AuthorizedFeedBundle = {
   version: "jium-authorized-feed-v1",
   generatedAt: "2026-05-31T00:00:00.000Z",
   sourceName: "Authorized NGO Partner",
@@ -35,13 +45,49 @@ const bundle = {
   ],
 };
 
+async function signBundle(): Promise<{ signed: SignedAuthorizedFeedBundle; trustedKey: TrustedAuthorizedFeedKey }> {
+  const pair = (await crypto.subtle.generateKey(
+    {
+      name: AUTHORIZED_FEED_SIGNATURE_ALGORITHM,
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: "SHA-256",
+    },
+    true,
+    ["sign", "verify"],
+  )) as CryptoKeyPair;
+  const envelope: SignedAuthorizedFeedPayload = {
+    version: SIGNED_AUTHORIZED_FEED_VERSION,
+    keyId: "authorized-partner-ui-key",
+    signedAt: "2026-05-31T00:00:00.000Z",
+    bundle,
+  };
+  const signature = await crypto.subtle.sign(
+    { name: AUTHORIZED_FEED_SIGNATURE_ALGORITHM },
+    pair.privateKey,
+    new TextEncoder().encode(authorizedFeedSigningPayload(envelope)),
+  );
+
+  return {
+    signed: { ...envelope, signature: bytesToBase64Url(signature) },
+    trustedKey: {
+      keyId: envelope.keyId,
+      issuerName: "Authorized NGO Partner",
+      algorithm: AUTHORIZED_FEED_SIGNATURE_ALGORITHM,
+      publicKeyJwk: await crypto.subtle.exportKey("jwk", pair.publicKey),
+    },
+  };
+}
+
 describe("AuthorizedFeedPanel", () => {
   beforeEach(() => {
     clearAuthorizedFeedIndicators();
   });
 
   it("imports restricted feed bundles only after a local operator session is opened", async () => {
-    render(<AuthorizedFeedPanel />);
+    const { signed, trustedKey } = await signBundle();
+
+    render(<AuthorizedFeedPanel trustedFeedKeys={[trustedKey]} />);
 
     expect(screen.getByText("제한 지능 피드")).toBeInTheDocument();
     expect(screen.getByText("제한 지표 0건")).toBeInTheDocument();
@@ -51,8 +97,8 @@ describe("AuthorizedFeedPanel", () => {
       target: { value: "authorized feed passphrase" },
     });
     fireEvent.click(screen.getByText("운영자 세션 열기"));
-    fireEvent.change(screen.getByPlaceholderText('{"version":"jium-authorized-feed-v1","sourceName":"...","indicators":[]}'), {
-      target: { value: JSON.stringify(bundle) },
+    fireEvent.change(screen.getByPlaceholderText(/jium-authorized-feed-signed-v1/), {
+      target: { value: JSON.stringify(signed) },
     });
     fireEvent.click(screen.getByText("제한 피드 가져오기"));
 

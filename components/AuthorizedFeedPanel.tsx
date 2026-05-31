@@ -11,12 +11,18 @@ import {
   type AuthorizedFeedIndicator,
 } from "@/lib/authorizedIntelligenceFeed";
 import {
+  importSignedAuthorizedFeedBundleForOperator,
+  isSignedAuthorizedFeedBundle,
+  type TrustedAuthorizedFeedKey,
+} from "@/lib/authorizedFeedSignature";
+import {
   authorizedFeedAccessBoundaryText,
   authorizedFeedSessionStatus,
   canUseAuthorizedFeedCapability,
   openAuthorizedFeedOperatorSession,
   type AuthorizedFeedOperatorSession,
 } from "@/lib/authorizedFeedAccess";
+import { TRUSTED_AUTHORIZED_FEED_KEYS, authorizedFeedTrustedKeyStatus } from "@/lib/authorizedFeedTrustedKeys";
 
 function countEntries(values: Record<string, number>) {
   return Object.entries(values)
@@ -24,7 +30,15 @@ function countEntries(values: Record<string, number>) {
     .slice(0, 5);
 }
 
-export function AuthorizedFeedPanel() {
+type AuthorizedFeedPanelProps = {
+  trustedFeedKeys?: TrustedAuthorizedFeedKey[];
+  allowUnsignedBundles?: boolean;
+};
+
+export function AuthorizedFeedPanel({
+  trustedFeedKeys = TRUSTED_AUTHORIZED_FEED_KEYS,
+  allowUnsignedBundles = false,
+}: AuthorizedFeedPanelProps = {}) {
   const [indicators, setIndicators] = useState<AuthorizedFeedIndicator[]>([]);
   const [session, setSession] = useState<AuthorizedFeedOperatorSession | null>(null);
   const [passphrase, setPassphrase] = useState("");
@@ -37,6 +51,7 @@ export function AuthorizedFeedPanel() {
 
   const summary = useMemo(() => buildAuthorizedFeedSummary(indicators), [indicators]);
   const canImport = canUseAuthorizedFeedCapability(session, "AUTHORIZED_FEED_IMPORT");
+  const canVerifyFeed = trustedFeedKeys.length > 0 || allowUnsignedBundles;
 
   function openSession() {
     try {
@@ -54,10 +69,16 @@ export function AuthorizedFeedPanel() {
     setMessage("제한 피드 운영자 세션을 잠갔습니다.");
   }
 
-  function importBundle() {
+  async function importBundle() {
     try {
-      const parsed = JSON.parse(bundleText) as AuthorizedFeedBundle;
-      const next = importAuthorizedFeedBundleForOperator(parsed, session, indicators);
+      const parsed = JSON.parse(bundleText) as unknown;
+      const next = isSignedAuthorizedFeedBundle(parsed)
+        ? await importSignedAuthorizedFeedBundleForOperator(parsed, trustedFeedKeys, session, indicators)
+        : allowUnsignedBundles
+          ? importAuthorizedFeedBundleForOperator(parsed as AuthorizedFeedBundle, session, indicators)
+          : (() => {
+              throw new Error("운영 승인 피드는 서명된 jium-authorized-feed-signed-v1 envelope이어야 합니다.");
+            })();
       const saved = saveAuthorizedFeedIndicators(next);
       setIndicators(saved);
       setBundleText("");
@@ -86,6 +107,7 @@ export function AuthorizedFeedPanel() {
         <span className={canImport ? "badge badge-green" : "badge badge-low"}>{authorizedFeedSessionStatus(session)}</span>
       </div>
       <p className="small muted">{authorizedFeedAccessBoundaryText()}</p>
+      <p className="small muted">{authorizedFeedTrustedKeyStatus(trustedFeedKeys)}</p>
 
       <div className="submission-summary-grid">
         <div className="submission-summary-item">제한 지표 {summary.total}건</div>
@@ -147,18 +169,18 @@ export function AuthorizedFeedPanel() {
 
       <label className="field">
         <span className="label-row">
-          승인 피드 JSON <span className="hint">원문 URL·초대링크 저장 금지</span>
+          승인 피드 JSON <span className="hint">서명 envelope · 원문 URL·초대링크 저장 금지</span>
         </span>
         <textarea
           className="textarea textarea-compact"
           value={bundleText}
           onChange={(event) => setBundleText(event.target.value)}
-          placeholder='{"version":"jium-authorized-feed-v1","sourceName":"...","indicators":[]}'
+          placeholder='{"version":"jium-authorized-feed-signed-v1","keyId":"...","bundle":{"version":"jium-authorized-feed-v1","indicators":[]},"signature":"..."}'
         />
       </label>
 
       <div className="button-row">
-        <button className="btn btn-primary" type="button" disabled={!canImport || !bundleText.trim()} onClick={importBundle}>
+        <button className="btn btn-primary" type="button" disabled={!canImport || !bundleText.trim() || !canVerifyFeed} onClick={importBundle}>
           <Upload size={16} aria-hidden="true" />
           제한 피드 가져오기
         </button>

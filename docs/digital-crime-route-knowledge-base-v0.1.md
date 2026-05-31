@@ -97,3 +97,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The dashboard exposes only aggregate counts by route pattern, promotion surface, source type, access level, and retention status.
 - Feed import and expired-indicator purge are disabled until the operator session is opened.
 - UI regression tests confirm that individual indicator labels are not displayed after import.
+
+## Implemented in v3.13
+
+- Authorized feed import now supports signed `jium-authorized-feed-signed-v1` envelopes.
+- The signature payload uses canonical JSON so object key ordering does not change the verification result.
+- Restricted imports must pass RSA-SHA256 WebCrypto verification against pinned trusted public keys.
+- The default dashboard rejects unsigned feed JSON and stays closed until a trusted public key is registered.
+- Regression tests reject tampered bundles, unknown or inactive keys, and imports without an operator session.
