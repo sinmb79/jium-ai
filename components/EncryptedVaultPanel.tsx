@@ -1,12 +1,13 @@
 "use client";
 
-import { Download, Eye, Lock, ShieldCheck, Trash2, Unlock, Upload } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { Clock3, Download, Eye, Lock, ShieldCheck, Trash2, Unlock, Upload } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { clearEncryptedVault, hasEncryptedVault, loadEncryptedVault, upsertEncryptedCase } from "@/lib/encryptedCaseStorage";
 import { downloadFile, downloadTextFile, savedCaseToMarkdown } from "@/lib/export";
 import { openReadOnlyPacket } from "@/lib/readOnlyPacket";
 import { compromisedDeviceRisks, deviceSafetyWarningText, safeDeviceChecklist } from "@/lib/deviceSafety";
 import { buildJiumCaseArchive, importJiumCaseArchiveToVault, serializeJiumCaseArchive } from "@/lib/jiumCaseFile";
+import { formatVaultRemainingTime, shouldAutoLockVault, vaultAutoLockPolicyText, vaultRemainingLockMs, type VaultSessionState } from "@/lib/vaultSessionSecurity";
 import type { SavedCase } from "@/lib/types";
 
 type EncryptedVaultPanelProps = {
@@ -19,9 +20,63 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
   const [cases, setCases] = useState<SavedCase[]>([]);
   const [busy, setBusy] = useState(false);
   const [deviceChecked, setDeviceChecked] = useState(false);
+  const [session, setSession] = useState<VaultSessionState>({});
+  const [remainingMs, setRemainingMs] = useState(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const vaultExists = useMemo(() => hasEncryptedVault(), [message, cases.length]);
   const canUsePassphrase = passphrase.length >= 12;
+  const isUnlocked = cases.length > 0 && Boolean(session.unlockedAt);
+
+  const markActivity = useCallback(() => {
+    setSession((current) => (current.unlockedAt ? { ...current, lastActivityAt: Date.now() } : current));
+  }, []);
+
+  const lockVault = useCallback((reason = "암호화 보관함을 잠갔습니다. 복호화 목록과 패스프레이즈 입력값을 지웠습니다.") => {
+    setCases([]);
+    setPassphrase("");
+    setSession({});
+    setRemainingMs(0);
+    setMessage(reason);
+  }, []);
+
+  useEffect(() => {
+    if (!session.unlockedAt) {
+      return undefined;
+    }
+
+    const tick = () => {
+      if (shouldAutoLockVault(session)) {
+        lockVault("활동이 없어 암호화 보관함을 자동으로 잠갔습니다. 다시 열려면 패스프레이즈를 입력하세요.");
+        return;
+      }
+      setRemainingMs(vaultRemainingLockMs(session));
+    };
+
+    tick();
+    const timer = window.setInterval(tick, 1000);
+    return () => window.clearInterval(timer);
+  }, [lockVault, session]);
+
+  useEffect(() => {
+    if (!session.unlockedAt) {
+      return undefined;
+    }
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        lockVault("탭이 숨겨져 암호화 보관함을 잠갔습니다. 공용 화면 노출을 줄이기 위한 보호 조치입니다.");
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [lockVault, session.unlockedAt]);
+
+  function unlockSession(stateCases: SavedCase[], openedMessage: string) {
+    const now = Date.now();
+    setCases(stateCases);
+    setSession({ unlockedAt: now, lastActivityAt: now });
+    setRemainingMs(vaultRemainingLockMs({ unlockedAt: now, lastActivityAt: now }));
+    setMessage(openedMessage);
+  }
 
   async function saveCurrentCase() {
     if (!deviceChecked) {
@@ -35,8 +90,7 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
     setBusy(true);
     try {
       const state = await upsertEncryptedCase(currentCase, passphrase);
-      setCases(state.cases);
-      setMessage("암호화 보관함에 저장했습니다. 패스프레이즈는 저장하지 않았습니다.");
+      unlockSession(state.cases, "암호화 보관함에 저장하고 잠시 열었습니다. 패스프레이즈는 저장하지 않습니다.");
     } catch {
       setMessage("암호화 저장에 실패했습니다. 패스프레이즈와 브라우저 보안 환경을 확인하세요.");
     } finally {
@@ -56,10 +110,18 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
     setBusy(true);
     try {
       const state = await loadEncryptedVault(passphrase);
-      setCases(state.cases);
-      setMessage(state.cases.length ? `암호화 보관함 ${state.cases.length}건을 열었습니다.` : "암호화 보관함이 비어 있습니다.");
+      if (state.cases.length) {
+        unlockSession(state.cases, `암호화 보관함 ${state.cases.length}건을 열었습니다.`);
+      } else {
+        setCases([]);
+        setSession({});
+        setRemainingMs(0);
+        setMessage("암호화 보관함이 비어 있습니다.");
+      }
     } catch {
       setCases([]);
+      setSession({});
+      setRemainingMs(0);
       setMessage("복호화에 실패했습니다. 패스프레이즈가 다르거나 저장본이 손상됐을 수 있습니다.");
     } finally {
       setBusy(false);
@@ -72,8 +134,7 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
       return;
     }
     clearEncryptedVault();
-    setCases([]);
-    setMessage("암호화 보관함을 삭제했습니다.");
+    lockVault("암호화 보관함을 삭제했습니다.");
   }
 
   async function exportVaultFile() {
@@ -91,6 +152,7 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
       const archive = await buildJiumCaseArchive(state.cases, passphrase);
       const day = new Date().toISOString().slice(0, 10);
       downloadFile(`jium-ai-${day}.jiumcase`, serializeJiumCaseArchive(archive), "application/vnd.jium.case+json;charset=utf-8");
+      markActivity();
       setMessage("암호화 사건 파일(.jiumcase)을 내려받았습니다.");
     } catch {
       setMessage("암호화 사건 파일을 만들지 못했습니다. 패스프레이즈를 확인하세요.");
@@ -113,8 +175,7 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
     setBusy(true);
     try {
       const state = await importJiumCaseArchiveToVault(await file.text(), passphrase);
-      setCases(state.cases);
-      setMessage(`암호화 사건 파일에서 ${state.cases.length}건을 보관함에 반영했습니다.`);
+      unlockSession(state.cases, `암호화 사건 파일에서 ${state.cases.length}건을 보관함에 반영했습니다.`);
     } catch {
       setMessage(".jiumcase 파일을 열지 못했습니다. 파일 형식과 패스프레이즈를 확인하세요.");
     } finally {
@@ -126,7 +187,7 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
   }
 
   return (
-    <div className="panel panel-tight encrypted-vault-panel">
+    <div className="panel panel-tight encrypted-vault-panel" onPointerDown={markActivity} onKeyDown={markActivity} onFocus={markActivity}>
       <div className="trace-header">
         <span className="eyebrow">
           <Lock size={15} aria-hidden="true" /> 암호화 보관함
@@ -136,6 +197,13 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
       <p className="small muted">
         Web Crypto API의 PBKDF2-SHA-256과 AES-GCM으로 이 브라우저 localStorage에 암호화 저장합니다. 패스프레이즈는 저장하지 않으므로 잊으면 복구할 수 없습니다.
       </p>
+      <div className="vault-session-box" role="status">
+        <Clock3 size={17} aria-hidden="true" />
+        <div>
+          <strong>{isUnlocked ? `열림 · 자동 잠금까지 ${formatVaultRemainingTime(remainingMs)}` : "잠김 · 복호화 목록 없음"}</strong>
+          <span>{vaultAutoLockPolicyText()}</span>
+        </div>
+      </div>
       <div className="device-safety-box" role="note">
         <strong>{deviceSafetyWarningText()}</strong>
         <div className="device-safety-grid">
@@ -189,6 +257,12 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
             암호화본 삭제
           </button>
         ) : null}
+        {isUnlocked ? (
+          <button className="btn btn-secondary" type="button" disabled={busy} onClick={() => lockVault()}>
+            <Lock size={17} aria-hidden="true" />
+            지금 잠금
+          </button>
+        ) : null}
         <button className="btn btn-secondary" type="button" disabled={busy || !deviceChecked} onClick={() => void exportVaultFile()}>
           <Download size={17} aria-hidden="true" />
           .jiumcase 내보내기
@@ -213,11 +287,25 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
               <strong>{item.input.title || "제목 없음"}</strong>
               <span>{new Date(item.updatedAt).toLocaleString("ko-KR")} · {item.classification.caseType}</span>
               <div className="button-row">
-                <button className="btn btn-secondary" type="button" onClick={() => downloadTextFile(`jium-ai-encrypted-opened-${item.id}.md`, savedCaseToMarkdown(item))}>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => {
+                    markActivity();
+                    downloadTextFile(`jium-ai-encrypted-opened-${item.id}.md`, savedCaseToMarkdown(item));
+                  }}
+                >
                   <Download size={15} aria-hidden="true" />
                   복호화 내보내기
                 </button>
-                <button className="btn btn-secondary" type="button" onClick={() => openReadOnlyPacket(item)}>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => {
+                    markActivity();
+                    openReadOnlyPacket(item);
+                  }}
+                >
                   <Eye size={15} aria-hidden="true" />
                   읽기전용 보기
                 </button>

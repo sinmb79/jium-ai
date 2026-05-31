@@ -917,6 +917,33 @@ h1 {
   background: #f8fffc;
 }
 
+.vault-session-box {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  border: 1px solid rgba(15, 107, 87, 0.22);
+  border-radius: 0.75rem;
+  background: #eef9f5;
+  padding: 0.75rem;
+  color: #123c33;
+}
+
+.vault-session-box svg {
+  flex: 0 0 auto;
+  margin-top: 0.1rem;
+}
+
+.vault-session-box strong,
+.vault-session-box span {
+  display: block;
+}
+
+.vault-session-box span {
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 .encrypted-case-list {
   display: grid;
   gap: 0.65rem;
