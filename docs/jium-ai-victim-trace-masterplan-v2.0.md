@@ -275,6 +275,13 @@ v3.17 서버 기관 세션 토큰 코어에서 추가 반영한 항목:
 - secret 기준: 서버 전용 32바이트 이상 HMAC secret만 허용하고, 약한 secret은 토큰 발급을 거부한다.
 - 운영 연결: 실제 API Route를 붙이기 전에도 서버 로그인/세션 발급의 보안 불변식을 테스트할 수 있게 했다.
 
+v3.18 기관 로그인 코어·HttpOnly 쿠키 정책에서 추가 반영한 항목:
+
+- 로그인 코어: signed operator credential을 서버 기관 세션 토큰과 Set-Cookie 헤더로 바꾸는 코어를 추가했다.
+- 쿠키 보안: 운영 세션은 `__Host-jium_institution_session` host-only 쿠키로 발급하고, `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`를 강제한다.
+- 권한 재검증: 서버 역할이 credential capability를 허용하지 않으면 쿠키를 발급하지 않는다.
+- 정적 배포 보존: GitHub Pages export를 깨지 않도록 실제 Route 파일 대신 서버 배포에서 호출할 수 있는 코어로 먼저 고정했다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

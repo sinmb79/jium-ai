@@ -133,3 +133,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Session token verification rejects tampered payloads, weak secrets, inactive keys, expired sessions, and local signed-credential sessions.
 - `INSTITUTION_SESSION_SECRET` is documented as a server-only 32-byte minimum secret.
 - `npm run security:auth` now covers RBAC, signed operator credentials, and server session token invariants.
+
+## Implemented in v3.18
+
+- Added a server login core that verifies signed operator credentials and issues server institution session tokens.
+- Production institution session cookies use `__Host-jium_institution_session` with HttpOnly, Secure, SameSite=Strict, and Path=/.
+- Login tests ensure role escalation is rejected before Set-Cookie is issued.
+- Cookie tests ensure production cookies do not use a Domain attribute and do not expose the server session secret.

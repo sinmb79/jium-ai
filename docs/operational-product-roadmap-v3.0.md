@@ -230,6 +230,19 @@
   - 토큰 변조, 만료된 기관 세션, LOCAL_SIGNED_CREDENTIAL 세션의 서버 토큰 발급, 약한 secret, 미등록/비활성 key를 거부
   - `security:auth` 게이트에 세션 토큰 회귀 테스트 포함
 
+## v3.18 기관 로그인 코어·HttpOnly 쿠키 정책
+
+- 로그인 코어
+  - 기관·파트너 signed operator credential을 검증해 서버 기관 세션과 HMAC 세션 토큰을 발급하는 코어 추가
+  - role/capability matrix를 다시 검증해 credential 권한이 서버 역할을 초과하지 못하게 함
+- 쿠키 정책
+  - 운영 쿠키는 `__Host-jium_institution_session` 이름으로 `HttpOnly; Secure; SameSite=Strict; Path=/` 적용
+  - 운영 쿠키에 `Domain`을 붙이지 않아 host-only 쿠키로 제한
+  - 로컬 HTTP 개발 환경에서만 `jium_institution_session_dev` 이름을 사용
+- 검증 범위
+  - Set-Cookie 헤더에 secret이 들어가지 않는지, HttpOnly/Secure/SameSite/Path가 붙는지, clear cookie가 안전한지 테스트
+  - role escalation credential은 쿠키 발급 전에 거부
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -272,7 +285,8 @@
 - 서명된 운영자 credential 세션: 1차 구현 완료
 - 서버 기관 계정 RBAC 공통 모델: 1차 구현 완료
 - 서버 기관 세션 토큰 코어: 1차 구현 완료
-- 운영 배포 전 과제: 실제 서버 로그인 라우트, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
+- 기관 로그인 코어·HttpOnly 쿠키 정책: 1차 구현 완료
+- 운영 배포 전 과제: 실제 Next 서버 Route 연결, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
 
 ## 공식 경로 기준
 

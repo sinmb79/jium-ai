@@ -89,6 +89,8 @@ npm run security:auth
 
 서버 배포에서 기관 계정 세션 토큰을 발급할 때는 `INSTITUTION_SESSION_SECRET` 같은 서버 전용 HMAC secret을 사용해야 합니다. 이 값은 32바이트 이상 고엔트로피 secret이어야 하며, `NEXT_PUBLIC_*`, 브라우저 번들, 저장소, 클라이언트 JSON에 넣지 않습니다. 토큰 검증 코어는 변조, 만료, 약한 secret, 비활성 key를 거부합니다.
 
+기관 세션 쿠키는 운영 환경에서 `__Host-jium_institution_session` 이름의 `HttpOnly; Secure; SameSite=Strict; Path=/` 쿠키로만 발급합니다. 개발용 HTTP 환경에서만 별도 dev 쿠키 이름을 사용하며, 운영 쿠키에는 `Domain`을 붙이지 않습니다.
+
 CI는 Node.js 24 런타임을 직접 지원하는 GitHub Actions major 버전을 사용합니다. 향후 Actions 경고가 발생하면 강제 환경변수로 덮지 말고, 해당 공식 action의 최신 major와 보안 공지를 먼저 확인합니다.
 
 ## 신고
