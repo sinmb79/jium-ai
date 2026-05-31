@@ -64,6 +64,7 @@ Implemented:
   - lets the victim open the vault with the passphrase
   - lets the victim export a decrypted copy only after unlocking
   - lets the victim delete the encrypted vault
+  - requires a device-safety acknowledgement before saving or opening encrypted evidence
 
 - `lib/caseStorage.ts`
   - the normal local case board now always redacts URL paths and high-risk storage details
@@ -83,6 +84,18 @@ It does not protect against:
 - browser localStorage quota or browser profile deletion
 
 For court-grade evidence handling, the encrypted vault should be treated as a victim-support convenience layer, not as a full forensic evidence locker.
+
+## Compromised Device Handling
+
+Yes, a victim's own browser may already be unsafe. Malicious extensions, remote-control tools, screen-sharing sessions, keyloggers, or stealer malware can read what appears on the page or capture the passphrase while the user types it. Local encryption cannot solve that once the device is compromised.
+
+Implemented mitigation:
+
+- The encrypted vault now warns that plaintext and passphrases can be exposed on a compromised device.
+- The vault save/open buttons remain disabled until the user confirms a device-safety check.
+- The safety page lists high-risk device signals and safer preparation steps.
+
+This is intentionally a friction point: if the device is suspicious, the safer answer is not "encrypt harder in the same browser" but "do not open the vault here; use a trusted personal device or ask an official support worker for a safe environment."
 
 ## Security References
 

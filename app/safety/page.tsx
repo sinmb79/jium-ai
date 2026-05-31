@@ -2,6 +2,7 @@ import { AlertTriangle, CheckCircle2, Phone, ShieldAlert } from "lucide-react";
 import { HomeLink, QuickExit } from "@/components/QuickExit";
 import { appPath } from "@/lib/navigation";
 import { ExternalSafeLink } from "@/components/ExternalSafeLink";
+import { compromisedDeviceRisks, deviceSafetyWarningText, safeDeviceChecklist } from "@/lib/deviceSafety";
 
 export default function SafetyPage() {
   return (
@@ -66,6 +67,29 @@ export default function SafetyPage() {
               <a className="btn btn-secondary" href={appPath("/")}>
                 최소 정보만 정리하기
               </a>
+            </div>
+          </div>
+        </div>
+        <div className="panel panel-tight">
+          <span className="eyebrow">기기 안전</span>
+          <h2>암호화보다 먼저 확인할 것은 이 기기입니다.</h2>
+          <p className="muted">{deviceSafetyWarningText()}</p>
+          <div className="device-safety-grid">
+            <div className="device-safety-box">
+              <strong>위험 신호</strong>
+              <ul className="action-list compact-list">
+                {compromisedDeviceRisks.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="device-safety-box">
+              <strong>진행 전 확인</strong>
+              <ul className="action-list compact-list">
+                {safeDeviceChecklist.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { clearEncryptedVault, hasEncryptedVault, loadEncryptedVault, upsertEncryptedCase } from "@/lib/encryptedCaseStorage";
 import { downloadTextFile, savedCaseToMarkdown } from "@/lib/export";
 import { openReadOnlyPacket } from "@/lib/readOnlyPacket";
+import { compromisedDeviceRisks, deviceSafetyWarningText, safeDeviceChecklist } from "@/lib/deviceSafety";
 import type { SavedCase } from "@/lib/types";
 
 type EncryptedVaultPanelProps = {
@@ -16,10 +17,15 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
   const [message, setMessage] = useState("");
   const [cases, setCases] = useState<SavedCase[]>([]);
   const [busy, setBusy] = useState(false);
+  const [deviceChecked, setDeviceChecked] = useState(false);
   const vaultExists = useMemo(() => hasEncryptedVault(), [message, cases.length]);
   const canUsePassphrase = passphrase.length >= 12;
 
   async function saveCurrentCase() {
+    if (!deviceChecked) {
+      setMessage("패스프레이즈를 입력하기 전에 이 기기의 확장프로그램·원격제어·악성코드 위험을 먼저 확인하세요.");
+      return;
+    }
     if (!currentCase || !canUsePassphrase) {
       setMessage("12자 이상의 패스프레이즈가 필요합니다.");
       return;
@@ -37,6 +43,10 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
   }
 
   async function openVault() {
+    if (!deviceChecked) {
+      setMessage("복호화하면 평문 사건 정보가 화면에 나타납니다. 이 기기가 안전한지 먼저 확인하세요.");
+      return;
+    }
     if (!canUsePassphrase) {
       setMessage("12자 이상의 패스프레이즈가 필요합니다.");
       return;
@@ -75,6 +85,31 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
       <p className="small muted">
         Web Crypto API의 PBKDF2-SHA-256과 AES-GCM으로 이 브라우저 localStorage에 암호화 저장합니다. 패스프레이즈는 저장하지 않으므로 잊으면 복구할 수 없습니다.
       </p>
+      <div className="device-safety-box" role="note">
+        <strong>{deviceSafetyWarningText()}</strong>
+        <div className="device-safety-grid">
+          <div>
+            <span className="hint">위험 신호</span>
+            <ul className="action-list compact-list">
+              {compromisedDeviceRisks.slice(0, 3).map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <span className="hint">진행 전 확인</span>
+            <ul className="action-list compact-list">
+              {safeDeviceChecklist.slice(0, 3).map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <label className="check-pill">
+          <input type="checkbox" checked={deviceChecked} onChange={(event) => setDeviceChecked(event.target.checked)} />
+          이 기기의 확장프로그램·원격제어·악성코드 위험을 확인했습니다
+        </label>
+      </div>
       <label className="field">
         <span className="label-row">패스프레이즈 <span className="hint">12자 이상</span></span>
         <input
@@ -88,12 +123,12 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
       </label>
       <div className="button-row">
         {currentCase ? (
-          <button className="btn btn-primary" type="button" disabled={busy} onClick={() => void saveCurrentCase()}>
+          <button className="btn btn-primary" type="button" disabled={busy || !deviceChecked} onClick={() => void saveCurrentCase()}>
             <ShieldCheck size={17} aria-hidden="true" />
             암호화 보관
           </button>
         ) : null}
-        <button className="btn btn-secondary" type="button" disabled={busy} onClick={() => void openVault()}>
+        <button className="btn btn-secondary" type="button" disabled={busy || !deviceChecked} onClick={() => void openVault()}>
           <Unlock size={17} aria-hidden="true" />
           보관함 열기
         </button>

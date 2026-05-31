@@ -377,6 +377,12 @@ h1 {
   outline: none;
 }
 
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
 .btn-primary {
   background: var(--green);
   color: #fff;
@@ -895,6 +901,25 @@ h1 {
   font-size: 0.85rem;
 }
 
+.device-safety-box {
+  display: grid;
+  gap: 0.65rem;
+  border: 1px solid rgba(160, 51, 40, 0.18);
+  border-radius: 0.75rem;
+  background: #fffaf2;
+  padding: 0.8rem;
+}
+
+.device-safety-box strong {
+  color: #5e1d17;
+}
+
+.device-safety-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
 .resource-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -970,7 +995,8 @@ h1 {
 
 @media (max-width: 900px) {
   .hero,
-  .result-grid {
+  .result-grid,
+  .device-safety-grid {
     grid-template-columns: 1fr;
   }
 
