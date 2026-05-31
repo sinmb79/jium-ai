@@ -36,6 +36,9 @@ jobs:
       - name: XSS regression tests
         run: npm run security:xss
 
+      - name: Institution auth tests
+        run: npm run security:auth
+
       - name: Authorized feed safety tests
         run: npm run security:feeds
 

@@ -19,6 +19,7 @@ import {
   type SignedAuthorizedOperatorCredentialPayload,
 } from "@/lib/authorizedOperatorCredential";
 import type { AuthorizedFeedBundle } from "@/lib/authorizedIntelligenceFeed";
+import type { InstitutionAccountSession } from "@/lib/institutionAuth";
 
 const digest = "sha256-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
@@ -114,6 +115,24 @@ async function signCredential(privateKey: CryptoKey): Promise<SignedAuthorizedOp
   return { ...envelope, signature: bytesToBase64Url(signature) };
 }
 
+function institutionSession(): InstitutionAccountSession {
+  return {
+    sessionId: "srv-session-ui-001",
+    organizationId: "org-authorized-ngo",
+    organizationName: "Authorized NGO Partner",
+    subjectId: "operator:ui-caseworker",
+    role: "PLATFORM_TRUST_SAFETY",
+    assuranceLevel: "SERVER_SESSION_MFA",
+    issuedAt: "2026-05-31T00:00:00.000Z",
+    authenticatedAt: new Date(Date.now() - 60_000).toISOString(),
+    expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+    mfaVerifiedAt: new Date(Date.now() - 30_000).toISOString(),
+    capabilityIds: ["AUTHORIZED_FEED_IMPORT", "AUTHORIZED_FEED_SUMMARY", "AUTHORIZED_FEED_PURGE"],
+    evidenceAccessScope: "ASSIGNED_CASE_REDACTED",
+    limitations: ["비식별 제한 피드 처리", "배정 사건의 비식별 제출자료 검토"],
+  };
+}
+
 describe("AuthorizedFeedPanel", () => {
   beforeEach(() => {
     clearAuthorizedFeedIndicators();
@@ -156,6 +175,21 @@ describe("AuthorizedFeedPanel", () => {
     });
     fireEvent.click(screen.getByText("서명 credential 확인"));
     await waitFor(() => expect(screen.getByText(/Authorized NGO Partner credential 확인/)).toBeInTheDocument());
+    fireEvent.change(screen.getByPlaceholderText(/jium-authorized-feed-signed-v1/), {
+      target: { value: JSON.stringify(signed) },
+    });
+    fireEvent.click(screen.getByText("제한 피드 가져오기"));
+
+    await waitFor(() => expect(screen.getByText("제한 지표 1건")).toBeInTheDocument());
+  });
+
+  it("accepts a server institution session as the restricted feed operator gate", async () => {
+    const { privateKey, trustedKey } = await generateTrustedKey();
+    const signed = await signBundle(privateKey);
+
+    render(<AuthorizedFeedPanel trustedFeedKeys={[trustedKey]} institutionSession={institutionSession()} />);
+
+    await waitFor(() => expect(screen.getByText(/Authorized NGO Partner 서버 세션/)).toBeInTheDocument());
     fireEvent.change(screen.getByPlaceholderText(/jium-authorized-feed-signed-v1/), {
       target: { value: JSON.stringify(signed) },
     });

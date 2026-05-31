@@ -27,6 +27,10 @@ import {
   openAuthorizedFeedOperatorSessionFromCredential,
 } from "@/lib/authorizedOperatorCredential";
 import { TRUSTED_AUTHORIZED_FEED_KEYS, authorizedFeedTrustedKeyStatus } from "@/lib/authorizedFeedTrustedKeys";
+import {
+  institutionSessionToAuthorizedFeedOperatorSession,
+  type InstitutionAccountSession,
+} from "@/lib/institutionAuth";
 
 function countEntries(values: Record<string, number>) {
   return Object.entries(values)
@@ -37,11 +41,13 @@ function countEntries(values: Record<string, number>) {
 type AuthorizedFeedPanelProps = {
   trustedFeedKeys?: TrustedAuthorizedFeedKey[];
   allowUnsignedBundles?: boolean;
+  institutionSession?: InstitutionAccountSession | null;
 };
 
 export function AuthorizedFeedPanel({
   trustedFeedKeys = TRUSTED_AUTHORIZED_FEED_KEYS,
   allowUnsignedBundles = false,
+  institutionSession = null,
 }: AuthorizedFeedPanelProps = {}) {
   const [indicators, setIndicators] = useState<AuthorizedFeedIndicator[]>([]);
   const [session, setSession] = useState<AuthorizedFeedOperatorSession | null>(null);
@@ -53,6 +59,20 @@ export function AuthorizedFeedPanel({
   useEffect(() => {
     setIndicators(loadAuthorizedFeedIndicators());
   }, []);
+
+  useEffect(() => {
+    if (!institutionSession) {
+      return;
+    }
+    try {
+      const nextSession = institutionSessionToAuthorizedFeedOperatorSession(institutionSession);
+      setSession(nextSession);
+      setMessage(`${nextSession.identity?.issuerName || "기관 계정"} 서버 세션으로 운영자 권한을 확인했습니다.`);
+    } catch (error) {
+      setSession(null);
+      setMessage(error instanceof Error ? error.message : "기관 계정 세션을 확인하지 못했습니다.");
+    }
+  }, [institutionSession]);
 
   const summary = useMemo(() => buildAuthorizedFeedSummary(indicators), [indicators]);
   const canImport = canUseAuthorizedFeedCapability(session, "AUTHORIZED_FEED_IMPORT");

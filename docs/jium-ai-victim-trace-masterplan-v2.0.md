@@ -261,6 +261,13 @@ v3.15 서명된 운영자 credential 세션에서 추가 반영한 항목:
 - capability 제한: credential이 부여한 `AUTHORIZED_FEED_IMPORT`, `AUTHORIZED_FEED_SUMMARY`, `AUTHORIZED_FEED_PURGE` 범위 안에서만 세션 권한을 연다.
 - 현장 보조 경로: 기존 로컬 확인 문장은 네트워크 없는 현장용 보조 장치로 남기되, 운영 기준은 서명 credential 또는 서버 기반 기관 계정 인증으로 이동한다.
 
+v3.16 서버 기관 계정 RBAC 공통 모델에서 추가 반영한 항목:
+
+- 기관 계정 세션: 서버가 발급할 수 있는 `InstitutionAccountSession` 모델을 추가했다.
+- 역할 기반 권한: 피해지원 담당자, 수사기관 연락관, 플랫폼 신뢰·안전 담당자, 프로그램 관리자별 capability matrix를 분리했다.
+- MFA 요구: 신뢰 공개키 검토 같은 고위험 권한은 `SERVER_SESSION_MFA`와 `mfaVerifiedAt`을 요구한다.
+- 제한 피드 adapter: 서버 기관 계정 세션을 제한 피드 운영자 세션으로 변환해, 향후 실제 로그인 세션이 제한 피드 UI를 열 수 있게 했다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

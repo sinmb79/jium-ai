@@ -13,10 +13,11 @@
     "security:headers:check": "node scripts/check-security-headers.mjs",
     "security:xss": "npm test -- --run tests/readOnlyPacket.test.ts tests/submissionPackage.test.ts",
     "security:feed-keys": "node scripts/check-authorized-feed-keys.mjs",
-    "security:feeds": "npm run security:feed-keys && npm test -- --run tests/authorizedFeedAccess.test.ts tests/authorizedIntelligenceFeed.test.ts tests/authorizedFeedSignature.test.ts tests/authorizedOperatorCredential.test.ts tests/authorizedFeedKeyRegistryScript.test.ts tests/AuthorizedFeedPanel.test.tsx tests/digitalCrimeRouteKnowledge.test.ts tests/promotionSurfaceIntelligence.test.ts tests/learningStore.test.ts",
+    "security:auth": "npm test -- --run tests/institutionAuth.test.ts tests/authorizedOperatorCredential.test.ts",
+    "security:feeds": "npm run security:feed-keys && npm test -- --run tests/authorizedFeedAccess.test.ts tests/authorizedIntelligenceFeed.test.ts tests/authorizedFeedSignature.test.ts tests/authorizedFeedKeyRegistryScript.test.ts tests/AuthorizedFeedPanel.test.tsx tests/digitalCrimeRouteKnowledge.test.ts tests/promotionSurfaceIntelligence.test.ts tests/learningStore.test.ts",
     "security:secrets": "node scripts/secret-scan.mjs",
     "security:audit": "npm audit --audit-level=moderate",
-    "ci:verify": "npm run security:headers && npm run security:xss && npm run security:feeds && npm run security:secrets && npm run security:audit && npm run typecheck && npm test && npm run build"
+    "ci:verify": "npm run security:headers && npm run security:xss && npm run security:auth && npm run security:feeds && npm run security:secrets && npm run security:audit && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

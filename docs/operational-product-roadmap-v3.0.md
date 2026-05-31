@@ -203,6 +203,21 @@
   - 대시보드 제한 피드 패널에서 서명 credential JSON으로 세션을 열 수 있음
   - 기존 16자 확인 문장은 네트워크 없는 현장용 보조 장치로 남기고, 운영 배포에서는 서명 credential 또는 서버 기반 기관 계정 인증을 우선함
 
+## v3.16 서버 기관 계정 RBAC 공통 모델
+
+- 기관 세션 모델
+  - `InstitutionAccountSession`으로 organizationId, 가명 subjectId, role, assuranceLevel, capabilityIds, evidenceAccessScope, 만료시각을 구조화
+  - 이메일·전화번호·URL·초대링크 같은 원문 식별자는 계정 식별자에 넣지 못하게 검증
+- 역할 기반 권한
+  - VICTIM_SUPPORT_CASEWORKER, LAW_ENFORCEMENT_LIAISON, PLATFORM_TRUST_SAFETY, PROGRAM_ADMIN별 capability matrix를 추가
+  - role이 허용하지 않는 capability를 포함하면 세션을 거부
+  - TRUSTED_KEY_REVIEW 같은 고위험 권한은 `SERVER_SESSION_MFA`와 `mfaVerifiedAt`을 요구
+- 제한 피드 연동
+  - 서버 기관 계정 세션을 제한 피드 운영자 세션으로 변환하는 adapter 추가
+  - 대시보드 제한 피드 패널은 서버 세션이 주입되면 passphrase 없이 제한 피드 권한을 확인할 수 있음
+- CI 게이트
+  - `npm run security:auth`를 추가하고 PR/배포 게이트에 연결
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -243,7 +258,8 @@
 - 서명된 피드 검증: 1차 구현 완료
 - 실제 파트너 공개키 등록 검증: 1차 구현 완료
 - 서명된 운영자 credential 세션: 1차 구현 완료
-- 운영 배포 전 과제: 서버 기반 기관 계정 인증, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
+- 서버 기관 계정 RBAC 공통 모델: 1차 구현 완료
+- 운영 배포 전 과제: 실제 서버 로그인/세션 발급, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
 
 ## 공식 경로 기준
 

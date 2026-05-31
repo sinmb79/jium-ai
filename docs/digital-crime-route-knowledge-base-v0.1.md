@@ -118,3 +118,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Operator credentials are verified with the same pinned trusted public key model used for authorized feeds.
 - Credential subject IDs must be pseudonymous and cannot contain raw URLs, handles, invite links, phone numbers, or onion addresses.
 - Credential tests reject tampering, expiry, unsupported capabilities, and missing trusted signing keys.
+
+## Implemented in v3.16
+
+- Added an `InstitutionAccountSession` RBAC model for future server-issued institution accounts.
+- Role matrices prevent caseworkers, platform operators, law-enforcement liaisons, and admins from inheriting each other's restricted capabilities.
+- Trusted-key review requires MFA-backed server sessions.
+- The authorized feed panel can accept a server institution session and convert valid feed capabilities into a restricted operator session.
+- `npm run security:auth` is included in PR and deploy gates.
