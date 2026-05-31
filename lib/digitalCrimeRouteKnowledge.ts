@@ -83,6 +83,51 @@ export const DIGITAL_CRIME_ROUTE_PATTERNS: DigitalCrimeRoutePattern[] = [
     handoffQuestion: "Is there a threat, invite claim, or room name already shown to the victim that can be recorded without joining?",
   },
   {
+    id: "discord-private-server",
+    label: "Discord/private server route",
+    routeKind: "PRIVATE_OR_SEMI_PRIVATE_SERVER",
+    riskLevel: "CRITICAL",
+    publicDescriptor: "Private servers, invite-only voice/text rooms, role-gated channels, or platform migration claims.",
+    safeSignals: ["discord", "server invite", "role gated", "private server", "voice room", "server room", "디스코드", "서버 초대", "비공개 서버"],
+    evidenceToRecord: ["Already-visible server or channel name", "Invite claim text", "Threat or transaction message", "Reporter/source of the claim"],
+    doNotDo: ["Do not join servers", "Do not request invites", "Do not record private voice rooms", "Do not download or forward abuse material"],
+    officialHandoff: ["D4U urgent consultation", "ECRM/police handoff", "Platform trust-and-safety report"],
+    allowedIndicatorSources: ["VICTIM_PROVIDED", "AUTHORIZED_PARTNER_FEED", "OFFICIAL_PUBLIC_NOTICE"],
+    accessLevel: "AUTHORIZED_INTEL_ONLY",
+    intelligenceValue: "Platform-migration signals help investigators ask for preservation of server, account, and report logs through lawful channels.",
+    handoffQuestion: "Was the Discord/private-server claim already shown to the victim, and is there a threat, payment, or invite trace to preserve?",
+  },
+  {
+    id: "crypto-payment-trade",
+    label: "Crypto/payment trade route",
+    routeKind: "PAYMENT_AND_MARKET_SIGNAL",
+    riskLevel: "CRITICAL",
+    publicDescriptor: "Cryptocurrency, gift-card, paid-room, or marketplace-like payment demands connected to distribution or access.",
+    safeSignals: ["crypto", "bitcoin", "btc", "usdt", "wallet", "coin", "gift card", "payment", "paid access", "암호화폐", "코인", "지갑", "결제", "유료방"],
+    evidenceToRecord: ["Payment demand text", "Wallet/address only if already received", "Amount and currency", "Message time", "Threat or access context"],
+    doNotDo: ["Do not pay", "Do not transact for proof", "Do not contact wallet owners", "Do not publish payment identifiers"],
+    officialHandoff: ["ECRM/police handoff", "Financial-crime or cyber-investigation review", "Legal counsel when extortion exists"],
+    allowedIndicatorSources: ["VICTIM_PROVIDED", "AUTHORIZED_PARTNER_FEED", "OFFICIAL_PUBLIC_NOTICE"],
+    accessLevel: "AUTHORIZED_INTEL_ONLY",
+    intelligenceValue: "Payment indicators can support lawful preservation and transaction-tracing requests without the victim entering criminal marketplaces.",
+    handoffQuestion: "Is the payment identifier already in a threat message or report, and can it be preserved without sending money?",
+  },
+  {
+    id: "visual-hash-match",
+    label: "Image/video fingerprint matching route",
+    routeKind: "VISUAL_MATCHING_SIGNAL",
+    riskLevel: "HIGH",
+    publicDescriptor: "User-held screenshot hash, perceptual hash, thumbnail similarity, or image/video fingerprint evidence prepared for authorized matching.",
+    safeSignals: ["phash", "perceptual hash", "image hash", "video hash", "thumbnail", "fingerprint", "이미지 해시", "영상 해시", "썸네일", "시각 지문"],
+    evidenceToRecord: ["Hash value if safely generated", "Hash tool/source", "Capture time", "What file or screenshot the hash represents without uploading the content"],
+    doNotDo: ["Do not upload sexual abuse material to public search engines", "Do not send victim media to unverified tools", "Do not create public reverse-image traces"],
+    officialHandoff: ["D4U deletion support", "Police or authorized analyst matching", "Platform trust-and-safety hash matching"],
+    allowedIndicatorSources: ["VICTIM_PROVIDED", "AUTHORIZED_PARTNER_FEED", "PLATFORM_TRANSPARENCY"],
+    accessLevel: "RESTRICTED_CASE_INDICATOR",
+    intelligenceValue: "Visual fingerprints let authorized teams compare material while reducing repeated victim exposure and unnecessary media transfer.",
+    handoffQuestion: "Can the victim provide a safely generated hash or screenshot metadata instead of repeatedly sharing the image/video itself?",
+  },
+  {
     id: "cloud-file-share",
     label: "Cloud/file-share link route",
     routeKind: "FILE_SHARING",
@@ -160,7 +205,20 @@ export const DIGITAL_CRIME_ROUTE_PATTERNS: DigitalCrimeRoutePattern[] = [
 ];
 
 function evidenceText(item: EvidenceItem) {
-  return [item.url, item.platform, item.location, item.posterId, item.notes, item.submissionTarget].filter(Boolean).join(" ").toLowerCase();
+  return [
+    item.url,
+    item.platform,
+    item.location,
+    item.posterId,
+    item.notes,
+    item.submissionTarget,
+    item.evidenceHash,
+    item.hashSource,
+    ...(item.requestLogs || []).map((log) => [log.target, log.channel, log.receiptId, log.notes].filter(Boolean).join(" ")),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
 }
 
 export function detectDigitalCrimeRoutePatterns(evidenceItems: EvidenceItem[]): DigitalCrimeRouteMatch[] {

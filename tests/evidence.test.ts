@@ -17,9 +17,22 @@ const input: CaseInput = {
       location: "피해 게시판",
       posterId: "suspect-id",
       foundAt: "2026-05-06T13:30",
+      capturedAt: "2026-05-06T13:35",
+      captureMethod: "USER_SCREENSHOT",
       capturedByUser: true,
+      evidenceHash: "sha256-placeholder",
+      hashSource: "사용자 기기",
       submissionTarget: "중앙디지털성범죄피해자지원센터",
       status: "DISCOVERED",
+      requestLogs: [
+        {
+          id: "request-1",
+          target: "플랫폼 신고함",
+          requestedAt: "2026-05-06T14:00",
+          status: "SENT",
+          receiptId: "R-123",
+        },
+      ],
       notes: "첫 발견",
     },
   ],
@@ -36,6 +49,10 @@ describe("evidence ledger", () => {
     expect(document).toContain("피해 게시판");
     expect(document).toContain("중앙디지털성범죄피해자지원센터");
     expect(document).toContain("사용자 캡처 보유: 예");
+    expect(document).toContain("기록 방식: 사용자 캡처");
+    expect(document).toContain("증거 해시: sha256-placeholder");
+    expect(document).toContain("메타데이터 지문: JIUM-META-");
+    expect(document).toContain("플랫폼 신고함");
   });
 
   it("증거목록이 없으면 기본 URL 입력값으로 접근경로를 만든다", () => {
@@ -44,5 +61,7 @@ describe("evidence ledger", () => {
     expect(ledger).toHaveLength(1);
     expect(ledger[0]?.url).toBe("https://example.com/post/1");
     expect(ledger[0]?.posterId).toBe("suspect-id");
+    expect(ledger[0]?.captureMethod).toBe("URL_ONLY");
+    expect(ledger[0]?.metadataFingerprint).toContain("JIUM-META-");
   });
 });

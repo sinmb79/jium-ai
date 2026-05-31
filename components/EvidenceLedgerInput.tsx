@@ -1,8 +1,8 @@
 "use client";
 
-import { Clock, Link, Plus, Trash2, UserRound } from "lucide-react";
-import { createEvidenceItem, EVIDENCE_STATUS_LABELS, EVIDENCE_SUBMISSION_TARGETS } from "@/lib/evidence";
-import type { EvidenceItem, EvidenceStatus } from "@/lib/types";
+import { Clock, Fingerprint, Link, Plus, Trash2, UserRound } from "lucide-react";
+import { createEvidenceItem, EVIDENCE_CAPTURE_METHOD_LABELS, EVIDENCE_STATUS_LABELS, EVIDENCE_SUBMISSION_TARGETS } from "@/lib/evidence";
+import type { EvidenceCaptureMethod, EvidenceItem, EvidenceStatus } from "@/lib/types";
 
 type EvidenceLedgerInputProps = {
   items: EvidenceItem[];
@@ -81,6 +81,38 @@ export function EvidenceLedgerInput({ items, keepExactUrlsForSubmission, onChang
                     발견 일시 <Clock size={15} aria-hidden="true" />
                   </span>
                   <input className="input" type="datetime-local" value={item.foundAt || ""} onChange={(event) => updateItem(item.id, { foundAt: event.target.value })} />
+                </label>
+              </div>
+
+              <div className="two-col">
+                <label className="field">
+                  <span className="label-row">
+                    기록 방식 <Fingerprint size={15} aria-hidden="true" />
+                  </span>
+                  <select className="select" value={item.captureMethod || "UNKNOWN"} onChange={(event) => updateItem(item.id, { captureMethod: event.target.value as EvidenceCaptureMethod })}>
+                    {(Object.keys(EVIDENCE_CAPTURE_METHOD_LABELS) as EvidenceCaptureMethod[]).map((method) => (
+                      <option key={method} value={method}>
+                        {EVIDENCE_CAPTURE_METHOD_LABELS[method]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field">
+                  <span className="label-row">
+                    캡처/기록 일시 <Clock size={15} aria-hidden="true" />
+                  </span>
+                  <input className="input" type="datetime-local" value={item.capturedAt || ""} onChange={(event) => updateItem(item.id, { capturedAt: event.target.value })} />
+                </label>
+              </div>
+
+              <div className="two-col">
+                <label className="field">
+                  <span className="label-row">증거 해시</span>
+                  <input className="input" value={item.evidenceHash || ""} onChange={(event) => updateItem(item.id, { evidenceHash: event.target.value })} placeholder="기관·도구에서 만든 파일/이미지 해시" />
+                </label>
+                <label className="field">
+                  <span className="label-row">해시 출처</span>
+                  <input className="input" value={item.hashSource || ""} onChange={(event) => updateItem(item.id, { hashSource: event.target.value })} placeholder="예: 사용자 기기, 상담기관 안내, 포렌식 도구명" />
                 </label>
               </div>
 

@@ -20,6 +20,19 @@ const evidence: EvidenceItem[] = [
     notes: "Victim received a threat mentioning a Telegram private room and paid invite access.",
   },
   {
+    id: "ev-discord-crypto",
+    url: "https://example.invalid/official-placeholder",
+    platform: "Discord claim",
+    location: "private server invite claim",
+    posterId: "alias-only",
+    foundAt: "2026-05-31T09:30:00+09:00",
+    capturedByUser: true,
+    status: "DISCOVERED",
+    evidenceHash: "JIUM-HASH-PLACEHOLDER",
+    hashSource: "image hash prepared by victim-side evidence tool",
+    notes: "The threat message mentions a Discord private server, crypto wallet payment, and thumbnail fingerprint matching.",
+  },
+  {
     id: "ev-reupload",
     url: "https://example.invalid/reupload",
     platform: "file board",
@@ -44,9 +57,10 @@ describe("digital crime route knowledge base", () => {
     const ids = matches.map((match) => match.id);
 
     expect(ids).toEqual(
-      expect.arrayContaining(["encrypted-private-room", "search-cache-archive", "p2p-webhard-reupload"]),
+      expect.arrayContaining(["encrypted-private-room", "discord-private-server", "crypto-payment-trade", "visual-hash-match", "search-cache-archive", "p2p-webhard-reupload"]),
     );
     expect(matches.find((match) => match.id === "encrypted-private-room")?.accessLevel).toBe("AUTHORIZED_INTEL_ONLY");
+    expect(matches.find((match) => match.id === "crypto-payment-trade")?.doNotDo.join(" ")).toContain("Do not pay");
     expect(matches.find((match) => match.id === "p2p-webhard-reupload")?.doNotDo.join(" ")).toContain("Do not download");
   });
 });

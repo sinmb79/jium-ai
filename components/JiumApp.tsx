@@ -19,6 +19,7 @@ import { ResponsePackPanel } from "@/components/ResponsePackPanel";
 import { EvidenceLedgerInput } from "@/components/EvidenceLedgerInput";
 import { EvidenceLedgerPanel } from "@/components/EvidenceLedgerPanel";
 import { TraceGraphPanel } from "@/components/TraceGraphPanel";
+import { SubmissionPacketPanel } from "@/components/SubmissionPacketPanel";
 
 const situationChoices = [
   {
@@ -75,7 +76,24 @@ export function JiumApp() {
   const [stored, setStored] = useState(false);
   const [blockedSubmit, setBlockedSubmit] = useState(false);
   const evidenceText = (input.evidenceItems || [])
-    .map((item) => [item.url, item.platform, item.location, item.posterId, item.foundAt, item.submissionTarget, item.notes].filter(Boolean).join(" "))
+    .map((item) =>
+      [
+        item.url,
+        item.platform,
+        item.location,
+        item.posterId,
+        item.foundAt,
+        item.capturedAt,
+        item.captureMethod,
+        item.evidenceHash,
+        item.hashSource,
+        item.submissionTarget,
+        item.notes,
+        ...(item.requestLogs || []).map((log) => [log.target, log.channel, log.receiptId, log.notes].filter(Boolean).join(" ")),
+      ]
+        .filter(Boolean)
+        .join(" "),
+    )
     .join("\n");
   const combinedText = [input.title, input.description, input.targetUrl, input.platform, input.keywords, evidenceText, input.exposedInfo.join(" ")].join("\n");
   const findings = useMemo(() => detectSensitiveInput(combinedText), [combinedText]);
@@ -365,6 +383,7 @@ export function JiumApp() {
             <div className="card-stack">
               <EvidenceLedgerPanel input={savedCase.input} />
               <TraceGraphPanel input={savedCase.input} />
+              <SubmissionPacketPanel savedCase={savedCase} />
 
               <div className="panel panel-tight">
                 <span className="eyebrow">증거 정리</span>

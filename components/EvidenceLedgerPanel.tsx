@@ -1,5 +1,5 @@
 import { ClipboardList, Link } from "lucide-react";
-import { countEvidenceUrls, EVIDENCE_STATUS_LABELS, getEvidenceLedger } from "@/lib/evidence";
+import { countEvidenceUrls, EVIDENCE_CAPTURE_METHOD_LABELS, EVIDENCE_STATUS_LABELS, getEvidenceLedger } from "@/lib/evidence";
 import type { CaseInput } from "@/lib/types";
 
 export function EvidenceLedgerPanel({ input }: { input: CaseInput }) {
@@ -45,10 +45,35 @@ export function EvidenceLedgerPanel({ input }: { input: CaseInput }) {
                   <dd>{item.foundAt || "미입력"}</dd>
                 </div>
                 <div>
+                  <dt>기록 일시</dt>
+                  <dd>{item.capturedAt || "미입력"}</dd>
+                </div>
+                <div>
+                  <dt>기록 방식</dt>
+                  <dd>{EVIDENCE_CAPTURE_METHOD_LABELS[item.captureMethod || "UNKNOWN"]}</dd>
+                </div>
+                <div>
+                  <dt>증거 해시</dt>
+                  <dd>{item.evidenceHash || "미입력"}</dd>
+                </div>
+                <div>
+                  <dt>메타 지문</dt>
+                  <dd>{item.metadataFingerprint || "생성 전"}</dd>
+                </div>
+                <div>
                   <dt>제출 대상</dt>
                   <dd>{item.submissionTarget || "전문기관 상담 후 결정"}</dd>
                 </div>
               </dl>
+              {item.requestLogs?.length ? (
+                <ul className="action-list compact-list" aria-label="요청 이력">
+                  {item.requestLogs.map((log) => (
+                    <li key={log.id}>
+                      {log.target || "대상 미입력"} · {log.receiptId || "접수번호 없음"} · {log.requestedAt || "시각 미입력"}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
               {item.notes ? <p className="small muted">{item.notes}</p> : null}
             </article>
           ))}

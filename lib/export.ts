@@ -1,10 +1,12 @@
 import { CASE_TYPE_LABELS, DELETION_CHANCE_LABELS, RISK_LABELS, STATUS_LABELS } from "@/lib/labels";
 import { formatEvidenceLedgerForDocument } from "@/lib/evidence";
 import { RESOURCE_KIND_LABELS } from "@/lib/publicResources";
+import { buildSubmissionPacket, submissionPacketToMarkdown } from "@/lib/submissionPacket";
 import type { SavedCase } from "@/lib/types";
 
 export function savedCaseToMarkdown(savedCase: SavedCase) {
   const { input, classification, draft } = savedCase;
+  const submissionPacket = buildSubmissionPacket(input, classification, savedCase.responsePack);
   return `# 지움AI 사건 정리
 
 생성일: ${new Date(savedCase.createdAt).toLocaleString("ko-KR")}
@@ -36,6 +38,8 @@ ${classification.evidenceChecklist.map((item) => `- ${item}`).join("\n")}
 ## 접근경로 증거목록
 
 ${formatEvidenceLedgerForDocument(input)}
+
+${submissionPacketToMarkdown(submissionPacket)}
 
 ## 요청서 초안
 

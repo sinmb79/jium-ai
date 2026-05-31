@@ -757,6 +757,37 @@ h1 {
   margin: 0;
 }
 
+.compact-list {
+  gap: 0.4rem;
+}
+
+.compact-list li {
+  align-items: flex-start;
+  min-height: auto;
+}
+
+.submission-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.submission-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.submission-summary-item {
+  border: 1px solid var(--soft-line);
+  border-radius: 0.7rem;
+  background: #fff;
+  padding: 0.75rem;
+  color: #2d3833;
+  font-size: 0.9rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
 .resource-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -863,7 +894,8 @@ h1 {
   .choice-grid,
   .checkbox-grid,
   .two-col,
-  .evidence-summary dl div {
+  .evidence-summary dl div,
+  .submission-summary-grid {
     grid-template-columns: 1fr;
   }
 

@@ -36,6 +36,26 @@ export type StorageMode = "LOCAL_FIRST" | "SERVER_OPT_IN";
 
 export type EvidenceStatus = "DISCOVERED" | "SUBMITTED" | "IN_REVIEW" | "REMOVED" | "REAPPEARED";
 
+export type EvidenceCaptureMethod =
+  | "UNKNOWN"
+  | "URL_ONLY"
+  | "USER_SCREENSHOT"
+  | "SEARCH_RESULT"
+  | "PLATFORM_REPORT"
+  | "THIRD_PARTY_TIP";
+
+export type EvidenceRequestStatus = "DRAFTED" | "SENT" | "RECEIVED" | "REJECTED" | "ESCALATED";
+
+export type EvidenceRequestLog = {
+  id: string;
+  target: string;
+  requestedAt?: string;
+  channel?: string;
+  status: EvidenceRequestStatus;
+  receiptId?: string;
+  notes?: string;
+};
+
 export type EvidenceItem = {
   id: string;
   url: string;
@@ -43,9 +63,15 @@ export type EvidenceItem = {
   location?: string;
   posterId?: string;
   foundAt?: string;
+  capturedAt?: string;
+  captureMethod?: EvidenceCaptureMethod;
   capturedByUser: boolean;
+  evidenceHash?: string;
+  hashSource?: string;
+  metadataFingerprint?: string;
   submissionTarget?: string;
   status: EvidenceStatus;
+  requestLogs?: EvidenceRequestLog[];
   notes?: string;
 };
 

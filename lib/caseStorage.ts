@@ -2,7 +2,7 @@ import type { CaseInput, CaseStatus, SavedCase } from "@/lib/types";
 import { generateResponsePack } from "@/lib/responsePack";
 import { generateRequestDraft } from "@/lib/requestTemplates";
 import { maskSensitiveText } from "@/lib/pii";
-import { hasEvidenceValue, normalizeEvidenceItem } from "@/lib/evidence";
+import { evidenceToSearchText, hasEvidenceValue, normalizeEvidenceItem } from "@/lib/evidence";
 
 const STORAGE_KEY = "jium-ai.local-cases.v1";
 const HIDDEN_URL_VALUE = "[URL 원문은 로컬 저장하지 않음]";
@@ -32,6 +32,14 @@ export function sanitizeCaseInputForStorage(input: CaseInput): CaseInput {
       platform: item.platform ? maskSensitiveText(item.platform) : item.platform,
       location: item.location ? maskSensitiveText(item.location) : item.location,
       posterId: item.posterId ? maskSensitiveText(item.posterId) : item.posterId,
+      hashSource: item.hashSource ? maskSensitiveText(item.hashSource) : item.hashSource,
+      requestLogs: (item.requestLogs || []).map((log) => ({
+        ...log,
+        target: log.target ? maskSensitiveText(log.target) : log.target,
+        channel: log.channel ? maskSensitiveText(log.channel) : log.channel,
+        receiptId: log.receiptId ? maskSensitiveText(log.receiptId) : log.receiptId,
+        notes: log.notes ? maskSensitiveText(log.notes) : log.notes,
+      })),
       notes: item.notes ? maskSensitiveText(item.notes) : item.notes,
     }));
 
@@ -58,7 +66,7 @@ export function prepareCaseForStorage(savedCase: SavedCase): SavedCase {
   const input = sanitizeCaseInputForStorage(savedCase.input);
   const draft = generateRequestDraft(input, savedCase.classification);
   const responsePack = generateResponsePack(input, savedCase.classification);
-  const redactedPreview = maskSensitiveText([input.title, input.description, input.targetUrl, input.platform, input.keywords, input.exposedInfo.join(" ")].filter(Boolean).join("\n"));
+  const redactedPreview = maskSensitiveText([input.title, input.description, input.targetUrl, input.platform, input.keywords, evidenceToSearchText(input), input.exposedInfo.join(" ")].filter(Boolean).join("\n"));
   const notes = savedCase.notes.includes(STORAGE_NOTE) ? savedCase.notes : [...savedCase.notes, STORAGE_NOTE];
 
   return {

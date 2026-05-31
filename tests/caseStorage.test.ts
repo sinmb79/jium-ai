@@ -20,9 +20,24 @@ const input: CaseInput = {
       location: "피해 게시판",
       posterId: "test@example.com",
       foundAt: "2026-05-06T13:30",
+      capturedAt: "2026-05-06T13:35",
+      captureMethod: "USER_SCREENSHOT",
       capturedByUser: true,
+      evidenceHash: "sha256-placeholder",
+      hashSource: "010-1234-5678이 포함된 스크린샷 해시",
       submissionTarget: "KISA 개인정보침해 신고센터",
       status: "DISCOVERED",
+      requestLogs: [
+        {
+          id: "request-storage-test",
+          target: "Example Board 010-1234-5678",
+          channel: "test@example.com",
+          requestedAt: "2026-05-06T14:00",
+          status: "SENT",
+          receiptId: "010-1234-5678",
+          notes: "test@example.com으로 회신 요청",
+        },
+      ],
       notes: "010-1234-5678이 보임",
     },
   ],
@@ -70,6 +85,10 @@ describe("caseStorage", () => {
     expect(stored.input.evidenceItems?.[0]?.url).toBe("https://example.com/[경로 숨김]");
     expect(stored.input.evidenceItems?.[0]?.posterId).toContain("[이메일 가림]");
     expect(stored.input.evidenceItems?.[0]?.notes).toContain("[전화번호 가림]");
+    expect(stored.input.evidenceItems?.[0]?.hashSource).toContain("[전화번호 가림]");
+    expect(stored.input.evidenceItems?.[0]?.requestLogs?.[0]?.target).toContain("[전화번호 가림]");
+    expect(stored.input.evidenceItems?.[0]?.requestLogs?.[0]?.channel).toContain("[이메일 가림]");
+    expect(stored.input.evidenceItems?.[0]?.requestLogs?.[0]?.receiptId).toContain("[전화번호 가림]");
     expect(stored.input.description).toContain("[전화번호 가림]");
     expect(stored.input.keywords).toContain("[이메일 가림]");
     expect(stored.draft.body).not.toContain("010-1234-5678");
