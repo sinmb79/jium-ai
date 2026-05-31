@@ -31,6 +31,7 @@ export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
         <div className="badge-row">
           <span className="badge badge-low">증거 {packet.evidenceSummaries.length}건</span>
           <span className="badge badge-medium">인계 {officialOnlyCount}건</span>
+          <span className="badge badge-green">{packet.evidenceChain.manifestFingerprint}</span>
         </div>
       </div>
 
@@ -61,6 +62,21 @@ export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
             <li key={gap}>{gap}</li>
           ))}
         </ul>
+      </section>
+
+      <section className="trace-section" aria-labelledby="evidence-chain-title">
+        <h3 id="evidence-chain-title">증거 체인·인계 이력</h3>
+        <p className="muted small">체인 매니페스트: {packet.evidenceChain.manifestFingerprint}</p>
+        <ul className="action-list compact-list">
+          {packet.evidenceChain.events.slice(0, 5).map((event) => (
+            <li key={event.id}>
+              {event.at ? new Date(event.at).toLocaleString("ko-KR") : "시각 미입력"} · {event.action} · {event.summary}
+            </li>
+          ))}
+        </ul>
+        {packet.evidenceChain.missingForOperationalUse.length ? (
+          <p className="small muted">운영 보강: {packet.evidenceChain.missingForOperationalUse.join(", ")}</p>
+        ) : null}
       </section>
 
       <section className="trace-section" aria-labelledby="promotion-surface-title">

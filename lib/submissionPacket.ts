@@ -1,4 +1,5 @@
 import { buildDiscoveryResearchPlan, type DiscoveryResearchPlan } from "@/lib/discoveryResearchEngine";
+import { buildEvidenceChain, evidenceChainToMarkdown, type EvidenceChainSummary } from "@/lib/evidenceChain";
 import { buildEvidenceMetadataFingerprint, formatEvidenceLedgerForDocument, getEvidenceLedger } from "@/lib/evidence";
 import { CASE_TYPE_LABELS, DELETION_CHANCE_LABELS, RISK_LABELS } from "@/lib/labels";
 import { buildPromotionSurfacePlan, type PromotionSurfacePlan } from "@/lib/promotionSurfaceIntelligence";
@@ -24,6 +25,7 @@ export type SubmissionPacket = {
   generatedAt: string;
   caseSummary: string[];
   evidenceSummaries: SubmissionEvidenceSummary[];
+  evidenceChain: EvidenceChainSummary;
   evidenceGaps: string[];
   traceMermaid: string;
   agencyTargets: ServiceIntegration[];
@@ -115,6 +117,7 @@ export function buildSubmissionPacket(input: CaseInput, classification: CaseClas
   const summaries = evidenceSummaries(input);
   const discoveryPlan = buildDiscoveryResearchPlan(input, classification, generatedAt);
   const promotionSurfacePlan = buildPromotionSurfacePlan(input);
+  const evidenceChain = buildEvidenceChain(input, generatedAt);
   const missing = Array.from(new Set(summaries.flatMap((item) => item.missing)));
 
   return {
@@ -127,6 +130,7 @@ export function buildSubmissionPacket(input: CaseInput, classification: CaseClas
       `판단 이유: ${classification.reason}`,
     ],
     evidenceSummaries: summaries,
+    evidenceChain,
     evidenceGaps: missing.length ? missing.map((item) => `${item} 보강 필요`) : ["기관 제출용 기본 증거 필드가 입력되어 있습니다."],
     traceMermaid: traceAnalysisToMermaid(analysis),
     agencyTargets: agencyTargets(responsePack),
@@ -169,6 +173,8 @@ ${packet.evidenceSummaries
 
 보강 항목:
 ${packet.evidenceGaps.map((item) => `- ${item}`).join("\n")}
+
+${evidenceChainToMarkdown(packet.evidenceChain)}
 
 ### 추격 다이어그램
 

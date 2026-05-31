@@ -47,6 +47,8 @@ describe("submission packet", () => {
     expect(markdown).toContain("IP, 가입자 정보");
     expect(markdown).toContain("디스코드");
     expect(markdown).toContain("sha256-placeholder");
+    expect(markdown).toContain("증거 체인");
+    expect(markdown).toContain("JIUM-CHAIN-");
     expect(markdown).toContain("비공개방 유입면");
     expect(markdown).toContain("홍보면 후보");
     expect(markdown).not.toContain("직접 잠입");
