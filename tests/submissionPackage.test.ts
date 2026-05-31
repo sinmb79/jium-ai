@@ -81,12 +81,16 @@ describe("submission package", () => {
         expect.stringContaining("officer-readonly.html"),
         expect.stringContaining("evidence-chain-manifest.json"),
         expect.stringContaining("submission-version-snapshot.json"),
+        expect.stringContaining("agency-workflow-plan.json"),
+        expect.stringContaining("agency-workflow-checklist.txt"),
         expect.stringContaining("trace-diagram.mmd"),
         expect.stringContaining("checklist.txt"),
       ]),
     );
     expect(zipText).toContain("evidence-chain-manifest.json");
     expect(zipText).toContain("submission-version-snapshot.json");
+    expect(zipText).toContain("agency-workflow-plan.json");
+    expect(zipText).toContain("agency-workflow-checklist.txt");
     expect(zipText).toContain("submission-packet.md");
   });
 });

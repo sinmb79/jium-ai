@@ -1,3 +1,4 @@
+import { agencyWorkflowPlanToMarkdown } from "@/lib/agencyWorkflowProfiles";
 import { buildReadOnlyPacketHtml } from "@/lib/readOnlyPacket";
 import { buildSubmissionPacket, submissionPacketWithEvidenceToMarkdown, type SubmissionPacket } from "@/lib/submissionPacket";
 import { buildSubmissionPacketSnapshot } from "@/lib/submissionVersioning";
@@ -30,6 +31,7 @@ export function buildEvidenceChainManifest(savedCase: SavedCase, packet: Submiss
     evidenceGaps: packet.evidenceGaps,
     safetyBoundaries: packet.safetyBoundaries,
     lawfulInvestigationMemo: packet.lawfulInvestigationMemo,
+    agencyWorkflowPlan: packet.agencyWorkflowPlan,
     note: "피해물 원본 파일은 포함하지 않습니다. URL, 게시 위치, 발견·캡처 시각, 해시와 제출 이력 중심의 제출 패키지입니다.",
   };
 }
@@ -126,6 +128,14 @@ export function buildSubmissionPackageFiles(savedCase: SavedCase): ZipTextFile[]
     {
       name: `${prefix}/submission-version-snapshot.json`,
       content: JSON.stringify(versionSnapshot, null, 2),
+    },
+    {
+      name: `${prefix}/agency-workflow-plan.json`,
+      content: JSON.stringify(packet.agencyWorkflowPlan, null, 2),
+    },
+    {
+      name: `${prefix}/agency-workflow-checklist.txt`,
+      content: agencyWorkflowPlanToMarkdown(packet.agencyWorkflowPlan),
     },
     {
       name: `${prefix}/trace-diagram.mmd`,

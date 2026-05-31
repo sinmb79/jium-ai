@@ -1,3 +1,4 @@
+import { agencyWorkflowPlanToMarkdown, buildAgencyWorkflowPlan, type AgencyWorkflowPlan } from "@/lib/agencyWorkflowProfiles";
 import { buildDiscoveryResearchPlan, type DiscoveryResearchPlan } from "@/lib/discoveryResearchEngine";
 import { buildEvidenceChain, evidenceChainToMarkdown, type EvidenceChainSummary } from "@/lib/evidenceChain";
 import { buildEvidenceMetadataFingerprint, formatEvidenceLedgerForDocument, getEvidenceLedger } from "@/lib/evidence";
@@ -29,6 +30,7 @@ export type SubmissionPacket = {
   evidenceGaps: string[];
   traceMermaid: string;
   agencyTargets: ServiceIntegration[];
+  agencyWorkflowPlan: AgencyWorkflowPlan;
   discoveryPlan: DiscoveryResearchPlan;
   promotionSurfacePlan: PromotionSurfacePlan;
   lawfulInvestigationMemo: string[];
@@ -118,6 +120,7 @@ export function buildSubmissionPacket(input: CaseInput, classification: CaseClas
   const discoveryPlan = buildDiscoveryResearchPlan(input, classification, generatedAt);
   const promotionSurfacePlan = buildPromotionSurfacePlan(input);
   const evidenceChain = buildEvidenceChain(input, generatedAt);
+  const agencyWorkflowPlan = buildAgencyWorkflowPlan(input, classification, responsePack, generatedAt);
   const missing = Array.from(new Set(summaries.flatMap((item) => item.missing)));
 
   return {
@@ -134,6 +137,7 @@ export function buildSubmissionPacket(input: CaseInput, classification: CaseClas
     evidenceGaps: missing.length ? missing.map((item) => `${item} 보강 필요`) : ["기관 제출용 기본 증거 필드가 입력되어 있습니다."],
     traceMermaid: traceAnalysisToMermaid(analysis),
     agencyTargets: agencyTargets(responsePack),
+    agencyWorkflowPlan,
     discoveryPlan,
     promotionSurfacePlan,
     lawfulInvestigationMemo: [
@@ -239,6 +243,8 @@ ${packet.promotionSurfacePlan.officialEscalationTriggers.map((item) => `- ${item
 ### 사법기관·전문기관 요청 메모
 
 ${packet.lawfulInvestigationMemo.map((item) => `- ${item}`).join("\n")}
+
+${agencyWorkflowPlanToMarkdown(packet.agencyWorkflowPlan)}
 
 ### 공식 제출 커넥터
 

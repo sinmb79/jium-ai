@@ -826,6 +826,41 @@ h1 {
   overflow-wrap: anywhere;
 }
 
+.agency-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.agency-workflow-card {
+  display: grid;
+  gap: 0.65rem;
+  border: 1px solid var(--soft-line);
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 0.8rem;
+}
+
+.agency-workflow-head,
+.agency-workflow-meta {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.agency-workflow-head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.agency-workflow-meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
 .connector-list {
   display: grid;
   gap: 0.5rem;
@@ -1028,6 +1063,7 @@ h1 {
   .checkbox-grid,
   .two-col,
   .evidence-summary dl div,
+  .agency-workflow-grid,
   .submission-summary-grid {
     grid-template-columns: 1fr;
   }

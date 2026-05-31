@@ -49,6 +49,8 @@ describe("submission packet", () => {
     expect(markdown).toContain("sha256-placeholder");
     expect(markdown).toContain("증거 체인");
     expect(markdown).toContain("JIUM-CHAIN-");
+    expect(markdown).toContain("기관별 제출 워크플로");
+    expect(markdown).toContain("중앙디지털성범죄피해자지원센터");
     expect(markdown).toContain("비공개방 유입면");
     expect(markdown).toContain("홍보면 후보");
     expect(markdown).not.toContain("직접 잠입");

@@ -1,6 +1,6 @@
 "use client";
 
-import { Brain, Clipboard, Download, ExternalLink, FileCheck2, GitCompareArrows, Save, Search, ShieldCheck } from "lucide-react";
+import { Brain, Clipboard, Download, ExternalLink, FileCheck2, GitCompareArrows, Landmark, Save, Search, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { appendCaseAudit } from "@/lib/caseStorage";
 import { downloadBytesFile, downloadFile, downloadTextFile } from "@/lib/export";
@@ -31,6 +31,7 @@ export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
   const markdown = useMemo(() => submissionPacketWithEvidenceToMarkdown(savedCase.input, packet), [packet, savedCase.input]);
   const searchActions = useMemo(() => buildSafeSearchActions(packet.discoveryPlan).slice(0, 6), [packet.discoveryPlan]);
   const connectorActions = useMemo(() => buildSubmissionConnectorActions(packet).slice(0, 4), [packet]);
+  const agencyRecommendations = useMemo(() => packet.agencyWorkflowPlan.recommendations.slice(0, 4), [packet.agencyWorkflowPlan.recommendations]);
   const officialOnlyCount = packet.discoveryPlan.matchChannels.filter((channel) => channel.authority === "OFFICIAL_ONLY" || channel.authority === "SPECIALIST_ONLY").length;
 
   function currentSnapshot() {
@@ -111,6 +112,43 @@ export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
         {packet.evidenceChain.missingForOperationalUse.length ? (
           <p className="small muted">운영 보강: {packet.evidenceChain.missingForOperationalUse.join(", ")}</p>
         ) : null}
+      </section>
+
+      <section className="trace-section" aria-labelledby="agency-workflow-title">
+        <h3 id="agency-workflow-title">
+          <Landmark size={17} aria-hidden="true" /> 기관별 제출 준비도
+        </h3>
+        <p className="muted small">{packet.agencyWorkflowPlan.summary}</p>
+        <div className="agency-workflow-grid">
+          {agencyRecommendations.map(({ profile, readiness }) => (
+            <article className="agency-workflow-card" key={profile.id}>
+              <div className="agency-workflow-head">
+                <strong>{profile.name}</strong>
+                <span className={`badge ${readiness.status === "READY_TO_SUBMIT" ? "badge-green" : readiness.status === "MISSING_CORE" ? "badge-high" : "badge-medium"}`}>
+                  {readiness.score}점
+                </span>
+              </div>
+              <p className="small muted">{readiness.nextAction}</p>
+              <div className="agency-workflow-meta">
+                <span>{profile.phone || "온라인 접수"}</span>
+                <span>{readiness.status}</span>
+              </div>
+              <ul className="action-list compact-list">
+                {(readiness.missingItems.length ? readiness.missingItems : readiness.reviewItems.slice(0, 2)).slice(0, 3).map((item) => (
+                  <li key={`${profile.id}-${item.id}`}>
+                    {item.label}: {item.detail}
+                  </li>
+                ))}
+                {!readiness.missingItems.length && !readiness.reviewItems.length ? <li>핵심 보강 항목 없음</li> : null}
+              </ul>
+              <a className="connector-link" href={profile.url} target="_blank" rel="noreferrer">
+                <span>공식 경로 열기</span>
+                <small>{profile.sourceNote}</small>
+                <ExternalLink size={15} aria-hidden="true" />
+              </a>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="trace-section" aria-labelledby="promotion-surface-title">
