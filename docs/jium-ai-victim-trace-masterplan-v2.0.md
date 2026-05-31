@@ -296,6 +296,13 @@ v3.20 기관 인증 비식별 감사 로그에서 추가 반영한 항목:
 - Origin 처리: 실제 Origin 값은 저장하지 않고 허용, 거부, 누락, 미설정으로만 분류한다.
 - HTTP 연동: 기관 로그인 HTTP 핸들러가 선택적 audit sink를 통해 비식별 감사 이벤트를 남길 수 있게 했다.
 
+v3.21 기관 인증 감사 해시 체인 원장에서 추가 반영한 항목:
+
+- 해시 체인: 기관 인증 감사 이벤트를 append-only 레코드로 만들고 각 레코드가 이전 recordDigest를 참조하게 했다.
+- 변조 탐지: 이벤트 변경, recordDigest 불일치, 이전 digest 연결 오류, sequence 오류를 검증에서 잡는다.
+- 운영 연동: 기관 로그인 HTTP 핸들러 audit sink에 바로 연결 가능한 ledger sink를 추가했다.
+- 비노출 유지: 원장에도 credential 원문, 서버 세션 토큰, 실제 Origin URL은 저장하지 않는다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

@@ -95,6 +95,8 @@ npm run security:auth
 
 기관 인증 감사 로그는 credential 원문, 세션 토큰, 원문 URL, 초대링크, 계정 핸들, onion 주소, 이메일, 전화번호를 저장하지 않습니다. 감사 이벤트에는 성공/거부 결과, reason code, Origin의 허용/거부/누락 분류, 기관명, 가명 subjectId, role, capability, 만료시각 같은 운영 확인 정보만 남깁니다.
 
+기관 인증 감사 원장은 `jium-institution-audit-ledger-v1` 해시 체인으로 기록할 수 있습니다. 각 기록은 이전 기록 digest, 이벤트 digest, 기록 digest를 포함하며, 중간 이벤트 수정이나 삭제가 있으면 검증에서 드러납니다. 원장에도 credential 원문, 세션 토큰, 실제 Origin URL은 저장하지 않습니다.
+
 CI는 Node.js 24 런타임을 직접 지원하는 GitHub Actions major 버전을 사용합니다. 향후 Actions 경고가 발생하면 강제 환경변수로 덮지 말고, 해당 공식 action의 최신 major와 보안 공지를 먼저 확인합니다.
 
 ## 신고

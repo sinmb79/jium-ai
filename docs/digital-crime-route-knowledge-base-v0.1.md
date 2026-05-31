@@ -154,3 +154,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - HTTP login, session verification, and logout handlers can now emit audit events for success and denial outcomes.
 - Audit events do not store raw credentials, server session tokens, URLs, invite links, handles, onion addresses, emails, or phone numbers.
 - Request origins are recorded only as ALLOWED, REJECTED, MISSING, or NOT_CONFIGURED classifications.
+
+## Implemented in v3.21
+
+- Added a hash-chained institution audit ledger for privacy-minimized authentication events.
+- Each ledger record stores the previous record digest, event digest, and record digest so tampering or deletion can be detected.
+- The HTTP institution login handler can attach a ledger sink without storing raw credentials, session tokens, or actual Origin URLs.
+- Regression tests cover valid chains, tampered events, broken chain links, and token/origin non-exposure in ledger records.

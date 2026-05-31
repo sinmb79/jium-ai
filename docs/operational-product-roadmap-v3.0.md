@@ -272,6 +272,21 @@
 - 검증 범위
   - 안전한 감사 이벤트 생성, raw indicator 차단, Origin 분류, requestId 정규화, HTTP 핸들러 audit sink 연동을 테스트
 
+## v3.21 기관 인증 감사 해시 체인 원장
+
+- append-only 원장 코어
+  - `jium-institution-audit-ledger-v1` 레코드를 추가
+  - 각 레코드는 sequence, recordedAt, previousRecordDigest, eventDigest, recordDigest, 비식별 audit event를 포함
+  - 첫 기록은 `GENESIS`에서 시작하고, 이후 기록은 직전 recordDigest에 연결
+- 무결성 검증
+  - 이벤트 변경, 이전 digest 변경, record digest 불일치, sequence 오류를 검출
+  - 표준 WebCrypto SHA-256과 canonical JSON을 사용해 런타임별 JSON key 순서 차이를 줄임
+- HTTP 연동
+  - `createInstitutionAuditLedgerSink`를 통해 기관 로그인 HTTP 핸들러의 audit sink에 바로 붙일 수 있음
+  - 원장에도 credential 원문, 서버 세션 토큰, 실제 Origin URL은 저장하지 않음
+- 검증 범위
+  - 정상 체인 검증, 변조 탐지, chain link 오류 탐지, HTTP login handler 연동, token/origin 비노출을 테스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -317,6 +332,7 @@
 - 기관 로그인 코어·HttpOnly 쿠키 정책: 1차 구현 완료
 - 기관 로그인 HTTP 핸들러 코어: 1차 구현 완료
 - 기관 인증 비식별 감사 로그: 1차 구현 완료
+- 기관 인증 감사 해시 체인 원장: 1차 구현 완료
 - 운영 배포 전 과제: 실제 Next 서버 Route 연결, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
 
 ## 공식 경로 기준
