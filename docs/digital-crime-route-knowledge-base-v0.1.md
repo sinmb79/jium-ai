@@ -126,3 +126,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Trusted-key review requires MFA-backed server sessions.
 - The authorized feed panel can accept a server institution session and convert valid feed capabilities into a restricted operator session.
 - `npm run security:auth` is included in PR and deploy gates.
+
+## Implemented in v3.17
+
+- Added an HMAC-signed `jium-institution-session-token-v1` token core for future server-issued institution account sessions.
+- Session token verification rejects tampered payloads, weak secrets, inactive keys, expired sessions, and local signed-credential sessions.
+- `INSTITUTION_SESSION_SECRET` is documented as a server-only 32-byte minimum secret.
+- `npm run security:auth` now covers RBAC, signed operator credentials, and server session token invariants.

@@ -268,6 +268,13 @@ v3.16 서버 기관 계정 RBAC 공통 모델에서 추가 반영한 항목:
 - MFA 요구: 신뢰 공개키 검토 같은 고위험 권한은 `SERVER_SESSION_MFA`와 `mfaVerifiedAt`을 요구한다.
 - 제한 피드 adapter: 서버 기관 계정 세션을 제한 피드 운영자 세션으로 변환해, 향후 실제 로그인 세션이 제한 피드 UI를 열 수 있게 했다.
 
+v3.17 서버 기관 세션 토큰 코어에서 추가 반영한 항목:
+
+- 서버 세션 토큰: `jium-institution-session-token-v1` HMAC 서명 토큰을 발급·검증하는 공통 코어를 추가했다.
+- 변조 방지: canonical JSON signing input으로 payload 변조를 검증 실패 처리한다.
+- secret 기준: 서버 전용 32바이트 이상 HMAC secret만 허용하고, 약한 secret은 토큰 발급을 거부한다.
+- 운영 연결: 실제 API Route를 붙이기 전에도 서버 로그인/세션 발급의 보안 불변식을 테스트할 수 있게 했다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

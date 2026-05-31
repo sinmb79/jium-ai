@@ -218,6 +218,18 @@
 - CI 게이트
   - `npm run security:auth`를 추가하고 PR/배포 게이트에 연결
 
+## v3.17 서버 기관 세션 토큰 코어
+
+- HMAC 서명 토큰
+  - 서버 배포에서 기관 계정 세션을 `jium-institution-session-token-v1` 토큰으로 발급·검증할 수 있는 코어 추가
+  - header/payload/signature 3분할 토큰과 canonical JSON signing input을 사용
+- secret 위생
+  - `INSTITUTION_SESSION_SECRET`는 서버 전용 32바이트 이상 고엔트로피 secret으로만 사용
+  - token payload나 저장소, 브라우저 번들, `NEXT_PUBLIC_*`에 secret이 노출되지 않도록 문서화
+- 검증 범위
+  - 토큰 변조, 만료된 기관 세션, LOCAL_SIGNED_CREDENTIAL 세션의 서버 토큰 발급, 약한 secret, 미등록/비활성 key를 거부
+  - `security:auth` 게이트에 세션 토큰 회귀 테스트 포함
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -259,7 +271,8 @@
 - 실제 파트너 공개키 등록 검증: 1차 구현 완료
 - 서명된 운영자 credential 세션: 1차 구현 완료
 - 서버 기관 계정 RBAC 공통 모델: 1차 구현 완료
-- 운영 배포 전 과제: 실제 서버 로그인/세션 발급, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
+- 서버 기관 세션 토큰 코어: 1차 구현 완료
+- 운영 배포 전 과제: 실제 서버 로그인 라우트, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
 
 ## 공식 경로 기준
 
