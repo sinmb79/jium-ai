@@ -62,6 +62,10 @@ function interventionLabel(category: ResponsePack["interventionChoices"][number]
   return "하지 말아야 할 일";
 }
 
+function listKey(scope: string, item: string, index: number) {
+  return `${scope}-${index}-${item}`;
+}
+
 export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
   return (
     <div className="panel panel-tight card-stack">
@@ -81,16 +85,16 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
           <div>
             <strong>안전 검색어</strong>
             <ul className="action-list">
-              {pack.monitoringPlan.safeQueries.map((query) => (
-                <li key={query}>{query}</li>
+              {pack.monitoringPlan.safeQueries.map((query, index) => (
+                <li key={listKey("safe-query", query, index)}>{query}</li>
               ))}
             </ul>
           </div>
           <div>
             <strong>재확인 주기</strong>
             <ul className="action-list">
-              {pack.monitoringPlan.cadence.map((item) => (
-                <li key={item}>{item}</li>
+              {pack.monitoringPlan.cadence.map((item, index) => (
+                <li key={listKey("cadence", item, index)}>{item}</li>
               ))}
             </ul>
           </div>
@@ -103,8 +107,8 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
           <FileWarning size={18} aria-hidden="true" /> 삭제 요청 순서
         </h3>
         <ul className="action-list">
-          {pack.takedownSequence.map((step) => (
-            <li key={step}>{step}</li>
+          {pack.takedownSequence.map((step, index) => (
+            <li key={listKey("takedown", step, index)}>{step}</li>
           ))}
         </ul>
       </section>
@@ -134,8 +138,8 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
               <div>
                 <strong>사용자가 할 일</strong>
                 <ul className="action-list small">
-                  {step.userAction.map((item) => (
-                    <li key={item}>{item}</li>
+                  {step.userAction.map((item, index) => (
+                    <li key={listKey(`victim-step-${step.id}-action`, item, index)}>{item}</li>
                   ))}
                 </ul>
               </div>
@@ -152,16 +156,16 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
           <div>
             <strong>공식기관으로 올릴 신호</strong>
             <ul className="action-list small">
-              {pack.victimDeletionPlan.escalationTriggers.map((item) => (
-                <li key={item}>{item}</li>
+              {pack.victimDeletionPlan.escalationTriggers.map((item, index) => (
+                <li key={listKey("escalation", item, index)}>{item}</li>
               ))}
             </ul>
           </div>
           <div>
             <strong>기록 원칙</strong>
             <ul className="action-list small">
-              {pack.victimDeletionPlan.recordKeeping.map((item) => (
-                <li key={item}>{item}</li>
+              {pack.victimDeletionPlan.recordKeeping.map((item, index) => (
+                <li key={listKey("record", item, index)}>{item}</li>
               ))}
             </ul>
           </div>
@@ -187,8 +191,8 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
               <div>
                 <strong>{choice.category === "PROHIBITED" ? "사용자가 피할 일" : "사용자가 할 일"}</strong>
                 <ul className="action-list small">
-                  {choice.userAction.map((item) => (
-                    <li key={item}>
+                  {choice.userAction.map((item, index) => (
+                    <li key={listKey(`intervention-${choice.id}-action`, item, index)}>
                       {choice.category === "PROHIBITED" ? <Ban size={14} aria-hidden="true" /> : null}
                       {item}
                     </li>
@@ -212,16 +216,16 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
           <div>
             <strong>기록할 수 있는 단서</strong>
             <ul className="action-list">
-              {pack.attributionGuidance.whatYouCanRecord.map((item) => (
-                <li key={item}>{item}</li>
+              {pack.attributionGuidance.whatYouCanRecord.map((item, index) => (
+                <li key={listKey("recordable", item, index)}>{item}</li>
               ))}
             </ul>
           </div>
           <div>
             <strong>하지 말아야 할 일</strong>
             <ul className="action-list">
-              {pack.attributionGuidance.whatNotToDo.map((item) => (
-                <li key={item}>{item}</li>
+              {pack.attributionGuidance.whatNotToDo.map((item, index) => (
+                <li key={listKey("attribution-do-not", item, index)}>{item}</li>
               ))}
             </ul>
           </div>
@@ -248,16 +252,16 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
                   <div>
                     <strong>처리 원칙</strong>
                     <ul className="action-list small">
-                      {lesson.responsePrinciples.map((item) => (
-                        <li key={item}>{item}</li>
+                      {lesson.responsePrinciples.map((item, index) => (
+                        <li key={listKey(`lesson-${lesson.id}-principle`, item, index)}>{item}</li>
                       ))}
                     </ul>
                   </div>
                   <div>
                     <strong>피해자 구제</strong>
                     <ul className="action-list small">
-                      {lesson.rescueActions.map((item) => (
-                        <li key={item}>{item}</li>
+                      {lesson.rescueActions.map((item, index) => (
+                        <li key={listKey(`lesson-${lesson.id}-rescue`, item, index)}>{item}</li>
                       ))}
                     </ul>
                   </div>
@@ -266,16 +270,16 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
                   <div>
                     <strong>재발 방지</strong>
                     <ul className="action-list small">
-                      {lesson.preventionActions.map((item) => (
-                        <li key={item}>{item}</li>
+                      {lesson.preventionActions.map((item, index) => (
+                        <li key={listKey(`lesson-${lesson.id}-prevention`, item, index)}>{item}</li>
                       ))}
                     </ul>
                   </div>
                   <div>
                     <strong>하지 말아야 할 일</strong>
                     <ul className="action-list small">
-                      {lesson.doNotDo.map((item) => (
-                        <li key={item}>{item}</li>
+                      {lesson.doNotDo.map((item, index) => (
+                        <li key={listKey(`lesson-${lesson.id}-do-not`, item, index)}>{item}</li>
                       ))}
                     </ul>
                   </div>
@@ -294,16 +298,16 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
                 <div>
                   <strong>이 유형이면 필요한 조치</strong>
                   <ul className="action-list small">
-                    {pattern.requiredMeasures.map((item) => (
-                      <li key={item}>{item}</li>
+                    {pattern.requiredMeasures.map((item, index) => (
+                      <li key={listKey(`pattern-${pattern.id}-measure`, item, index)}>{item}</li>
                     ))}
                   </ul>
                 </div>
                 <div>
                   <strong>이렇게 대응</strong>
                   <ul className="action-list small">
-                    {pattern.responseSteps.map((item) => (
-                      <li key={item}>{item}</li>
+                    {pattern.responseSteps.map((item, index) => (
+                      <li key={listKey(`pattern-${pattern.id}-response`, item, index)}>{item}</li>
                     ))}
                   </ul>
                 </div>
@@ -312,16 +316,16 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
                 <div>
                   <strong>보관할 최소 단서</strong>
                   <ul className="action-list small">
-                    {pattern.evidenceToKeep.map((item) => (
-                      <li key={item}>{item}</li>
+                    {pattern.evidenceToKeep.map((item, index) => (
+                      <li key={listKey(`pattern-${pattern.id}-evidence`, item, index)}>{item}</li>
                     ))}
                   </ul>
                 </div>
                 <div>
                   <strong>도와주는 사람이 할 일</strong>
                   <ul className="action-list small">
-                    {pattern.helperActions.map((item) => (
-                      <li key={item}>{item}</li>
+                    {pattern.helperActions.map((item, index) => (
+                      <li key={listKey(`pattern-${pattern.id}-helper`, item, index)}>{item}</li>
                     ))}
                   </ul>
                 </div>
@@ -339,16 +343,16 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
           <div>
             <strong>피해자를 도울 때</strong>
             <ul className="action-list small">
-              {pack.preventionGuidance.survivorSupportProtocol.map((item) => (
-                <li key={item}>{item}</li>
+              {pack.preventionGuidance.survivorSupportProtocol.map((item, index) => (
+                <li key={listKey("survivor-support", item, index)}>{item}</li>
               ))}
             </ul>
           </div>
           <div>
             <strong>추가 피해자를 막기 위해</strong>
             <ul className="action-list small">
-              {pack.preventionGuidance.communityPrevention.map((item) => (
-                <li key={item}>{item}</li>
+              {pack.preventionGuidance.communityPrevention.map((item, index) => (
+                <li key={listKey("community-prevention", item, index)}>{item}</li>
               ))}
             </ul>
           </div>
@@ -387,8 +391,8 @@ export function ResponsePackPanel({ pack }: { pack: ResponsePack }) {
                 <strong>연계 방식:</strong> {service.handoffMode}
               </p>
               <ul className="action-list small">
-                {service.prepItems.map((item) => (
-                  <li key={item}>{item}</li>
+                {service.prepItems.map((item, index) => (
+                  <li key={listKey(`service-${service.id}-prep`, item, index)}>{item}</li>
                 ))}
               </ul>
               <p className="small">

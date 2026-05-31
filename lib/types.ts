@@ -49,6 +49,85 @@ export type EvidenceItem = {
   notes?: string;
 };
 
+export type TraceNodeKind =
+  | "CASE"
+  | "EVIDENCE"
+  | "PLATFORM"
+  | "ACTOR_ALIAS"
+  | "INFRASTRUCTURE_SIGNAL"
+  | "OFFICIAL_ROUTE";
+
+export type TraceEdgeKind =
+  | "HAS_EVIDENCE"
+  | "HOSTED_ON"
+  | "POSTED_BY_ALIAS"
+  | "TIME_SEQUENCE"
+  | "SHARED_ALIAS"
+  | "HAS_SIGNAL"
+  | "ESCALATE_TO";
+
+export type TraceConfidence = "OBSERVED" | "INFERRED" | "NEEDS_REVIEW";
+
+export type TraceSignalSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+export type TraceNode = {
+  id: string;
+  kind: TraceNodeKind;
+  label: string;
+  detail?: string;
+  occurredAt?: string;
+  sourceEvidenceIds: string[];
+};
+
+export type TraceEdge = {
+  id: string;
+  from: string;
+  to: string;
+  kind: TraceEdgeKind;
+  label: string;
+  confidence: TraceConfidence;
+  reason: string;
+  sourceEvidenceIds: string[];
+};
+
+export type TraceTimelineEntry = {
+  id: string;
+  title: string;
+  at?: string;
+  summary: string;
+  evidenceId?: string;
+  confidence: TraceConfidence;
+};
+
+export type TraceLearningSignal = {
+  id: string;
+  label: string;
+  severity: TraceSignalSeverity;
+  matchedEvidenceIds: string[];
+  whyItMatters: string;
+  nextAction: string;
+  learningNote: string;
+};
+
+export type TracePatternDefinition = {
+  id: string;
+  label: string;
+  description: string;
+  safeSignals: string[];
+  prohibitedActions: string[];
+  officialHandoff: string[];
+};
+
+export type TraceAnalysis = {
+  nodes: TraceNode[];
+  edges: TraceEdge[];
+  timeline: TraceTimelineEntry[];
+  learningSignals: TraceLearningSignal[];
+  patternDefinitions: TracePatternDefinition[];
+  boundaries: string[];
+  nextQuestions: string[];
+};
+
 export type CaseInput = {
   situation: string;
   title: string;

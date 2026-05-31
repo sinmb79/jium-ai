@@ -18,6 +18,7 @@ import { QuickExit } from "@/components/QuickExit";
 import { ResponsePackPanel } from "@/components/ResponsePackPanel";
 import { EvidenceLedgerInput } from "@/components/EvidenceLedgerInput";
 import { EvidenceLedgerPanel } from "@/components/EvidenceLedgerPanel";
+import { TraceGraphPanel } from "@/components/TraceGraphPanel";
 
 const situationChoices = [
   {
@@ -349,8 +350,8 @@ export function JiumApp() {
               <div className="panel panel-tight">
                 <span className="eyebrow">지금 바로 할 일</span>
                 <ul className="action-list">
-                  {savedCase.classification.immediateActions.map((item) => (
-                    <li key={item}>
+                  {savedCase.classification.immediateActions.map((item, index) => (
+                    <li key={`immediate-action-${index}-${item}`}>
                       <CheckCircle2 size={16} aria-hidden="true" />
                       {item}
                     </li>
@@ -363,12 +364,13 @@ export function JiumApp() {
 
             <div className="card-stack">
               <EvidenceLedgerPanel input={savedCase.input} />
+              <TraceGraphPanel input={savedCase.input} />
 
               <div className="panel panel-tight">
                 <span className="eyebrow">증거 정리</span>
                 <ul className="action-list">
-                  {savedCase.classification.evidenceChecklist.map((item) => (
-                    <li key={item}>
+                  {savedCase.classification.evidenceChecklist.map((item, index) => (
+                    <li key={`evidence-checklist-${index}-${item}`}>
                       <FileText size={16} aria-hidden="true" />
                       {item}
                     </li>
