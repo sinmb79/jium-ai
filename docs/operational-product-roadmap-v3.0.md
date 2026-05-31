@@ -367,6 +367,23 @@
 - 검증 범위
   - trusted key registry 있음/없음, Pages 모드 충돌, 누락 env, Route 템플릿 누락, CLI 실행을 테스트
 
+## v3.27 기관 공개키 승인 패널
+
+- 공개키 후보 검토 코어
+  - `lib/trustedKeyApproval.ts`를 추가해 후보 JWK 공개키를 검토
+  - private JWK field, private key usage, duplicate keyId, 잘못된 validity window를 차단
+  - 승인 기록용 SHA-256 fingerprint를 산출
+- registry patch 생성
+  - 기존 registry에 후보 공개키를 추가한 JSON patch를 생성
+  - 앱이 저장소 파일을 직접 수정하지 않고, PR 또는 관리자 검토 흐름으로 넘기는 구조
+- 대시보드 UI
+  - `TrustedKeyApprovalPanel`을 사건 보드에 추가
+  - 공개키 후보 JSON 입력, fingerprint/checklist 표시, registry patch 다운로드 제공
+  - 개인키 입력·저장을 금지하는 운영 문구 포함
+- 검증 범위
+  - 공개키 승인 코어 테스트와 UI 회귀 테스트 추가
+  - 기존 제한 피드 패널 테스트와 함께 실행
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -418,7 +435,8 @@
 - 배포 프로필 가드: 1차 구현 완료
 - 서버 Route materialize 흐름: 1차 구현 완료
 - 서버 운영 readiness 가드: 1차 구현 완료
-- 운영 배포 전 과제: 실제 파트너 공개키 승인·교체 UI, 서버/데스크톱 보안 저장소 연동, 기관 감사 로그 조회 UI
+- 기관 공개키 승인 패널: 1차 구현 완료
+- 운영 배포 전 과제: 실제 파트너 공개키 교체·폐기 절차, 서버/데스크톱 보안 저장소 연동, 기관 감사 로그 조회 UI
 
 ## 공식 경로 기준
 

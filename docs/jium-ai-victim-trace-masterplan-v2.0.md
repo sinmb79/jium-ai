@@ -338,6 +338,13 @@ v3.26 서버 운영 readiness 가드에서 추가 반영한 항목:
 - Route 템플릿 조건: login/session/logout 템플릿이 모두 있어야 운영 준비로 판단한다.
 - 캐시 정리: 서버 Route clean 시 stale `.next` 타입 캐시도 제거해 정적 검증으로 되돌아갈 수 있게 한다.
 
+v3.27 기관 공개키 승인 패널에서 추가 반영한 항목:
+
+- 공개키 검토: 후보 JWK 공개키에서 private field, private key usage, duplicate keyId, 만료 window 오류를 차단한다.
+- 승인 기록: 공개키 fingerprint와 checklist를 산출해 별도 승인 기록에 남길 수 있게 한다.
+- registry patch: 앱이 운영 registry를 직접 쓰지 않고, 검토 가능한 JSON patch만 만든다.
+- 대시보드 연결: 사건 보드에서 기관 공개키 승인 패널을 열어 서버 readiness 이전의 공개키 등록 절차를 준비한다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

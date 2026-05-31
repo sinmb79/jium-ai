@@ -970,6 +970,22 @@ h1 {
   background: #fbfaff;
 }
 
+.trusted-key-panel {
+  display: grid;
+  gap: 0.8rem;
+  border-color: #c7d7ee;
+  background: #fbfdff;
+}
+
+.trusted-key-review {
+  display: grid;
+  gap: 0.65rem;
+  border: 1px solid var(--soft-line);
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 0.8rem;
+}
+
 .authorized-feed-summary,
 .authorized-feed-gate {
   display: grid;

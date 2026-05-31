@@ -196,3 +196,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Server readiness requires server-route mode, safe deployment env, all institution route templates, and at least one trusted institution public key.
 - The default public registry is intentionally empty, so production readiness must fail until an approved partner key is registered.
 - Server route cleanup now removes stale `.next/types` caches so static typechecks are not polluted by a previous server build.
+
+## Implemented in v3.27
+
+- Added a trusted institution public-key approval core and dashboard panel.
+- Candidate JWK review blocks private JWK fields, private key usages, duplicate key IDs, and invalid validity windows.
+- The panel computes an approval fingerprint, renders an operator checklist, and generates a registry patch JSON without writing private key material.
+- Regression tests cover key approval logic and the dashboard UI.
