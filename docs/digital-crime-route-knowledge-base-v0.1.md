@@ -168,3 +168,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The file store verifies the existing ledger before each append and refuses to add records when tampering is detected.
 - Ledger file paths are constrained to a configured base directory and simple `.jsonl` file names.
 - Regression tests cover append/read/verify, tamper refusal, path traversal refusal, and token/origin non-exposure.
+
+## Implemented in v3.23
+
+- Added a Next server route adapter for institution login, session verification, and logout without adding static-export-breaking `app/api` files.
+- Route config loading requires a server-only institution session secret, allowlisted origins, audit ledger storage, and trusted institution public keys.
+- The loader rejects `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET` and production insecure-cookie settings.
+- Regression tests cover login/session/logout through the adapter, audit ledger writes, token/origin non-exposure, unsafe env rejection, and local dev-cookie handling.

@@ -302,6 +302,20 @@
 - 검증 범위
   - JSONL append/read/verify, 기존 원장 변조 시 append 거부, path traversal 차단, token/origin 비노출을 테스트
 
+## v3.23 기관 로그인 Next 서버 Route adapter
+
+- Route adapter
+  - `createInstitutionServerRouteHandlers`로 login/session/logout handler 묶음을 생성
+  - 현재 GitHub Pages 정적 export를 깨지 않도록 실제 `app/api` 파일은 추가하지 않고, 서버 배포 전환 시 Route Handler에서 호출 가능한 adapter로 제공
+  - login, session, logout 모두 기존 HTTP 코어와 JSONL audit ledger store를 재사용
+- 환경 로더
+  - `INSTITUTION_SESSION_SECRET`, `INSTITUTION_ALLOWED_ORIGINS`, `INSTITUTION_AUDIT_LEDGER_DIR`, 신뢰 공개키가 없으면 서버 route 설정을 거부
+  - `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET` 설정을 명시적으로 거부
+  - 운영 환경에서 `INSTITUTION_SECURE_COOKIES=false`를 거부
+  - 로컬 개발 환경에서만 dev cookie를 허용
+- 검증 범위
+  - login/session/logout route adapter 흐름, audit ledger 3건 기록, secret/token/origin 비노출, 취약 env 설정 거부, 로컬 dev cookie 허용을 테스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -349,7 +363,8 @@
 - 기관 인증 비식별 감사 로그: 1차 구현 완료
 - 기관 인증 감사 해시 체인 원장: 1차 구현 완료
 - 서버/데스크톱 감사 원장 JSONL 저장소: 1차 구현 완료
-- 운영 배포 전 과제: 실제 Next 서버 Route 연결, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
+- 기관 로그인 Next 서버 Route adapter: 1차 구현 완료
+- 운영 배포 전 과제: 실제 `app/api` Route 파일 연결, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
 
 ## 공식 경로 기준
 
