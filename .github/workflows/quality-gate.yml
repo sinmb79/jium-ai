@@ -27,6 +27,9 @@ jobs:
       - name: Static security headers
         run: npm run security:headers
 
+      - name: XSS regression tests
+        run: npm run security:xss
+
       - name: Secret scan
         run: npm run security:secrets
 

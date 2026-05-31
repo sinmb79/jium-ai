@@ -1,13 +1,6 @@
 import { savedCaseToMarkdown } from "@/lib/export";
+import { escapeHtml } from "@/lib/htmlEscape";
 import type { SavedCase } from "@/lib/types";
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 export function buildReadOnlyPacketMarkdown(savedCase: SavedCase) {
   const audit = savedCase.auditLog?.length

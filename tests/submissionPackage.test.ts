@@ -34,19 +34,20 @@ const input: CaseInput = {
   helperMode: "self",
 };
 
-function savedCase(): SavedCase {
-  const classification = classifyCase(input);
+function savedCase(overrides: Partial<CaseInput> = {}): SavedCase {
+  const caseInput = { ...input, ...overrides };
+  const classification = classifyCase(caseInput);
   return {
     id: "case-package",
     createdAt: "2026-05-31T00:00:00.000Z",
     updatedAt: "2026-05-31T00:00:00.000Z",
     expiresAt: "2026-08-31T00:00:00.000Z",
     storageMode: "LOCAL_FIRST",
-    input,
+    input: caseInput,
     redactedPreview: "",
     classification,
-    draft: generateRequestDraft(input, classification),
-    responsePack: generateResponsePack(input, classification),
+    draft: generateRequestDraft(caseInput, classification),
+    responsePack: generateResponsePack(caseInput, classification),
     status: "READY",
     notes: [],
   };
@@ -65,6 +66,39 @@ describe("submission package", () => {
     expect(html).toContain(packet.evidenceChain.manifestFingerprint);
     expect(html).not.toContain("<script");
     expect(html).not.toContain("onclick=");
+  });
+
+  it("escapes user-controlled fields in printable agency HTML", () => {
+    const malicious = `<svg onload="alert('xss')"></svg><script>alert('xss')</script>`;
+    const item = savedCase({
+      title: malicious,
+      description: `설명 ${malicious}`,
+      platform: `Forum ${malicious}`,
+      targetUrl: `https://example.com/${malicious}`,
+      evidenceItems: [
+        {
+          id: "ev-print-xss",
+          url: `https://example.com/${malicious}`,
+          platform: malicious,
+          location: malicious,
+          posterId: malicious,
+          foundAt: "2026-05-31T09:00:00.000Z",
+          capturedAt: "2026-05-31T09:05:00.000Z",
+          captureMethod: "USER_SCREENSHOT",
+          capturedByUser: true,
+          notes: malicious,
+          status: "DISCOVERED",
+        },
+      ],
+    });
+    const html = buildPrintableSubmissionHtml(item);
+
+    expect(html).toContain("&lt;svg");
+    expect(html).toContain("&lt;script&gt;");
+    expect(html).toContain("&#39;xss&#39;");
+    expect(html).not.toContain("<svg onload");
+    expect(html).not.toContain("<script>alert");
+    expect(html).not.toContain("onload=\"alert");
   });
 
   it("builds a zip package with the expected handoff files", () => {

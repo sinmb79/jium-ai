@@ -5,13 +5,15 @@ describe("GitHub Actions security gates", () => {
   it("runs security checks before GitHub Pages deploy build", () => {
     const workflow = readFileSync(".github/workflows/deploy-pages.yml", "utf8");
     const headersIndex = workflow.indexOf("npm run security:headers");
+    const xssIndex = workflow.indexOf("npm run security:xss");
     const secretIndex = workflow.indexOf("npm run security:secrets");
     const auditIndex = workflow.indexOf("npm run security:audit");
     const typecheckIndex = workflow.indexOf("npm run typecheck");
     const buildIndex = workflow.indexOf("npm run build");
 
     expect(headersIndex).toBeGreaterThan(0);
-    expect(secretIndex).toBeGreaterThan(headersIndex);
+    expect(xssIndex).toBeGreaterThan(headersIndex);
+    expect(secretIndex).toBeGreaterThan(xssIndex);
     expect(auditIndex).toBeGreaterThan(secretIndex);
     expect(typecheckIndex).toBeGreaterThan(auditIndex);
     expect(buildIndex).toBeGreaterThan(typecheckIndex);
@@ -29,6 +31,7 @@ describe("GitHub Actions security gates", () => {
 
     expect(workflow).toContain("pull_request:");
     expect(workflow).toContain("npm run security:headers");
+    expect(workflow).toContain("npm run security:xss");
     expect(workflow).toContain("npm run security:secrets");
     expect(workflow).toContain("npm run security:audit");
     expect(workflow).toContain("npm run typecheck");

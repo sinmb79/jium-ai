@@ -57,6 +57,12 @@ npm run security:headers
 npm run security:headers:check -- https://your-production.example
 ```
 
+담당자용 HTML과 기관 제출 인쇄본은 사용자 입력을 포함하므로 XSS 회귀 테스트를 별도 보안 게이트로 실행합니다.
+
+```bash
+npm run security:xss
+```
+
 CI는 Node.js 24 런타임을 직접 지원하는 GitHub Actions major 버전을 사용합니다. 향후 Actions 경고가 발생하면 강제 환경변수로 덮지 말고, 해당 공식 action의 최신 major와 보안 공지를 먼저 확인합니다.
 
 ## 신고

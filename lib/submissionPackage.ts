@@ -1,4 +1,5 @@
 import { agencyWorkflowPlanToMarkdown } from "@/lib/agencyWorkflowProfiles";
+import { escapeHtml } from "@/lib/htmlEscape";
 import { buildReadOnlyPacketHtml } from "@/lib/readOnlyPacket";
 import { buildSubmissionPacket, submissionPacketWithEvidenceToMarkdown, type SubmissionPacket } from "@/lib/submissionPacket";
 import { buildSubmissionPacketSnapshot } from "@/lib/submissionVersioning";
@@ -6,14 +7,6 @@ import { createStoredZip, type ZipTextFile } from "@/lib/zip";
 import type { SavedCase } from "@/lib/types";
 
 export const SUBMISSION_PACKAGE_VERSION = "1.0.0";
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 function filenameSafe(value: string) {
   return value.replace(/[^a-zA-Z0-9가-힣._-]+/g, "-").replace(/-+/g, "-").slice(0, 80) || "case";

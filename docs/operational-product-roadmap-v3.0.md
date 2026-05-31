@@ -129,6 +129,17 @@
 - 회귀 방지
   - 보안 헤더 감사 로직 테스트를 `npm run security:headers`와 `ci:verify`에 연결
 
+## v3.10 담당자 HTML XSS 회귀 게이트
+
+- HTML 이스케이프 중앙화
+  - 읽기전용 담당자 패킷과 제출용 인쇄 HTML이 같은 `escapeHtml` 유틸리티를 사용
+  - 작은따옴표까지 이스케이프해 향후 속성 출력 확장 시 위험을 줄임
+- 사용자 입력 회귀 테스트
+  - 사건 제목, 설명, URL, 플랫폼, 증거 위치, 게시자 단서, 메모에 악성 HTML 페이로드가 들어가도 실행 가능한 태그로 남지 않는지 확인
+  - 담당자용 HTML과 기관 제출 인쇄본 모두 검증
+- CI 보안 게이트
+  - `npm run security:xss`를 추가하고 PR 품질 게이트와 Pages 배포 게이트에 연결
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -158,7 +169,7 @@
 - CSP Report-Only 결과 확인 후 단계적 Enforcement 전환: 1차 Enforcement 병행 완료
 - 보안 헤더가 정적 호스팅에서도 적용되도록 Netlify/Cloudflare/Vercel별 설정: Netlify/Cloudflare `_headers` 1차 구현 완료
 - SAST, dependency audit, secret scan CI: secret scan과 dependency audit CI 1차 구현 완료
-- 민감정보 테스트 케이스와 XSS 회귀 테스트
+- 민감정보 테스트 케이스와 XSS 회귀 테스트: 담당자 HTML·인쇄 HTML 1차 XSS 회귀 게이트 완료
 
 ### Phase E: 합법적 데이터 피드
 

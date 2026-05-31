@@ -18,19 +18,20 @@ const input: CaseInput = {
   helperMode: "self",
 };
 
-function savedCase(): SavedCase {
-  const classification = classifyCase(input);
+function savedCase(overrides: Partial<CaseInput> = {}): SavedCase {
+  const caseInput = { ...input, ...overrides };
+  const classification = classifyCase(caseInput);
   return {
     id: "case-readonly",
     createdAt: "2026-05-31T00:00:00.000Z",
     updatedAt: "2026-05-31T00:00:00.000Z",
     expiresAt: "2026-08-31T00:00:00.000Z",
     storageMode: "LOCAL_FIRST",
-    input,
+    input: caseInput,
     redactedPreview: "",
     classification,
-    draft: generateRequestDraft(input, classification),
-    responsePack: generateResponsePack(input, classification),
+    draft: generateRequestDraft(caseInput, classification),
+    responsePack: generateResponsePack(caseInput, classification),
     status: "READY",
     auditLog: [{ id: "audit-1", at: "2026-05-31T00:01:00.000Z", action: "CREATED", summary: "생성" }],
     notes: [],
@@ -46,5 +47,39 @@ describe("read-only packet", () => {
     expect(markdown).toContain("읽기전용 안내");
     expect(html).toContain("지움AI 읽기전용 담당자 패킷");
     expect(html).not.toContain("<script");
+  });
+
+  it("escapes user-controlled case fields in the 담당자 HTML packet", () => {
+    const malicious = `<img src=x onerror="alert('xss')"><script>alert('xss')</script>`;
+    const html = buildReadOnlyPacketHtml(
+      savedCase({
+        title: malicious,
+        description: `설명 ${malicious}`,
+        platform: `Forum ${malicious}`,
+        targetUrl: `https://example.com/${malicious}`,
+        evidenceItems: [
+          {
+            id: "ev-xss",
+            url: `https://example.com/${malicious}`,
+            platform: malicious,
+            location: malicious,
+            posterId: malicious,
+            foundAt: "2026-05-31T09:00:00.000Z",
+            capturedAt: "2026-05-31T09:05:00.000Z",
+            captureMethod: "USER_SCREENSHOT",
+            capturedByUser: true,
+            notes: malicious,
+            status: "DISCOVERED",
+          },
+        ],
+      }),
+    );
+
+    expect(html).toContain("&lt;img");
+    expect(html).toContain("&lt;script&gt;");
+    expect(html).toContain("&#39;xss&#39;");
+    expect(html).not.toContain("<img src=x");
+    expect(html).not.toContain("<script>alert");
+    expect(html).not.toContain("onerror=\"alert");
   });
 });

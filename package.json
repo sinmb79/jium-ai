@@ -11,9 +11,10 @@
     "test": "vitest run",
     "security:headers": "node scripts/write-static-headers.mjs && npm test -- --run tests/securityHeaders.test.ts tests/nextConfigSecurityHeaders.test.ts tests/securityHeaderAudit.test.ts",
     "security:headers:check": "node scripts/check-security-headers.mjs",
+    "security:xss": "npm test -- --run tests/readOnlyPacket.test.ts tests/submissionPackage.test.ts",
     "security:secrets": "node scripts/secret-scan.mjs",
     "security:audit": "npm audit --audit-level=moderate",
-    "ci:verify": "npm run security:headers && npm run security:secrets && npm run security:audit && npm run typecheck && npm test && npm run build"
+    "ci:verify": "npm run security:headers && npm run security:xss && npm run security:secrets && npm run security:audit && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
