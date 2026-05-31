@@ -11,6 +11,7 @@ import { loadLearningRecords, summarizeLearningRecords, type LearningSummary } f
 import { RiskBadge } from "@/components/RiskBadge";
 import { appPath } from "@/lib/navigation";
 import { buildReadOnlyPacketHtml, openReadOnlyPacket } from "@/lib/readOnlyPacket";
+import { EncryptedVaultPanel } from "@/components/EncryptedVaultPanel";
 
 const statuses = Object.keys(STATUS_LABELS) as CaseStatus[];
 
@@ -68,6 +69,7 @@ export function CaseBoard() {
           </div>
         ) : null}
       </div>
+      <EncryptedVaultPanel />
       <div className="board-grid">
         {cases.map((item) => (
           <article className="case-card" key={item.id}>
@@ -79,7 +81,7 @@ export function CaseBoard() {
               <h3>{item.input.title}</h3>
               <p className="muted small">{item.classification.reason}</p>
               <p className="muted small">보관 기한: {new Date(item.expiresAt).toLocaleDateString("ko-KR")}</p>
-              <p className="muted small">접근경로 URL: {countEvidenceUrls(item.input)}건 · {item.input.keepExactUrlsForSubmission ? "정확 URL 보관" : "URL 경로 숨김"}</p>
+              <p className="muted small">접근경로 URL: {countEvidenceUrls(item.input)}건 · 일반 보드 URL 경로 숨김</p>
             </div>
             <label className="field">
               <span className="hint">진행 상태</span>

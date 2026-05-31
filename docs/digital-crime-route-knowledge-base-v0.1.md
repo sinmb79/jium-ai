@@ -69,9 +69,13 @@ For the 4-hour build target, JiumAI should demonstrate:
 
 The demo should not attempt live crawling, hidden-room access, dark-web access, offender deanonymization, or real-time law-enforcement attribution.
 
-## Next hardening items
+## Implemented in v0.2.2
 
 - Add encrypted case-local indicator storage.
+- Keep exact victim-provided URLs out of the normal plaintext local case board.
+
+## Next hardening items
+
 - Add role-based access control for restricted intelligence.
 - Add indicator provenance fields: source, source date, last checked, confidence, retention deadline.
 - Add audit log for every view/export of exact indicators.

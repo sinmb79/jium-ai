@@ -96,7 +96,7 @@ describe("caseStorage", () => {
     expect(stored.notes.join(" ")).toContain("URL 원문");
   });
 
-  it("사용자가 선택한 경우 기관 제출용 정확한 URL을 로컬 보드에 보관한다", () => {
+  it("사용자가 정확 URL 제출 옵션을 선택해도 일반 로컬 보드에는 원문 URL을 남기지 않는다", () => {
     upsertCase(
       buildSavedCase({
         input: {
@@ -107,9 +107,13 @@ describe("caseStorage", () => {
     );
 
     const [stored] = loadCases();
+    const raw = window.localStorage.getItem("jium-ai.local-cases.v1") || "";
 
-    expect(stored.input.targetUrl).toBe("https://example.com/private/post/123?name=test");
-    expect(stored.input.evidenceItems?.[0]?.url).toBe("https://example.com/private/post/123?name=test");
+    expect(stored.input.targetUrl).toBe("https://example.com/[경로 숨김]");
+    expect(stored.input.evidenceItems?.[0]?.url).toBe("https://example.com/[경로 숨김]");
+    expect(stored.input.keepExactUrlsForSubmission).toBe(false);
+    expect(raw).not.toContain("/private/post/123");
+    expect(raw).not.toContain("name=test");
     expect(stored.input.description).toContain("[전화번호 가림]");
   });
 

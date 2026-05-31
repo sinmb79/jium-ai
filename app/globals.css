@@ -869,6 +869,32 @@ h1 {
   font-size: 0.9rem;
 }
 
+.encrypted-vault-panel {
+  display: grid;
+  gap: 0.8rem;
+  border-color: #b9ded4;
+  background: #f8fffc;
+}
+
+.encrypted-case-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.encrypted-case {
+  display: grid;
+  gap: 0.45rem;
+  border: 1px solid var(--soft-line);
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 0.8rem;
+}
+
+.encrypted-case span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 .resource-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

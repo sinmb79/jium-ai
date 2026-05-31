@@ -239,9 +239,9 @@ export function EvidenceLedgerInput({ items, keepExactUrlsForSubmission, onChang
       <div className="evidence-retention">
         <label className="check-pill">
           <input type="checkbox" checked={keepExactUrlsForSubmission} onChange={(event) => onKeepExactUrlsChange(event.target.checked)} />
-          이 개인 기기에 정확한 URL을 기관 제출용으로 보관
+          정확한 URL을 제출 파일과 암호화 보관본에 포함
         </label>
-        <p className="small muted">꺼두면 로컬 보드 저장 시 URL의 도메인만 남기고 경로는 숨깁니다. 제출 전 내보내기 파일에는 현재 입력한 정확한 URL이 포함됩니다.</p>
+        <p className="small muted">일반 로컬 보드는 항상 URL 경로를 숨깁니다. 정확한 URL은 현재 화면에서 바로 내보내거나 패스프레이즈로 암호화 보관할 때만 유지됩니다.</p>
       </div>
     </section>
   );

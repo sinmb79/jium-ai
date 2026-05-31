@@ -6,7 +6,7 @@ import { evidenceToSearchText, hasEvidenceValue, normalizeEvidenceItem } from "@
 
 const STORAGE_KEY = "jium-ai.local-cases.v1";
 const HIDDEN_URL_VALUE = "[URL 원문은 로컬 저장하지 않음]";
-const STORAGE_NOTE = "로컬 저장본은 민감정보를 낮추기 위해 URL 원문과 차단 수준 정보를 보관하지 않습니다.";
+const STORAGE_NOTE = "일반 로컬 보드는 민감정보를 낮추기 위해 URL 원문과 차단 수준 정보를 보관하지 않습니다. 정확한 원문은 제출 직전 내보내기 또는 암호화 보관함에만 두세요.";
 
 export function createAuditEntry(action: CaseAuditAction, summary: string, at = new Date().toISOString()): CaseAuditEntry {
   return {
@@ -39,13 +39,12 @@ function safeUrlForStorage(value?: string) {
 }
 
 export function sanitizeCaseInputForStorage(input: CaseInput): CaseInput {
-  const keepExactUrls = Boolean(input.keepExactUrlsForSubmission);
   const evidenceItems = (input.evidenceItems || [])
     .map(normalizeEvidenceItem)
     .filter(hasEvidenceValue)
     .map((item) => ({
       ...item,
-      url: keepExactUrls ? item.url : safeUrlForStorage(item.url) || "",
+      url: safeUrlForStorage(item.url) || "",
       platform: item.platform ? maskSensitiveText(item.platform) : item.platform,
       location: item.location ? maskSensitiveText(item.location) : item.location,
       posterId: item.posterId ? maskSensitiveText(item.posterId) : item.posterId,
@@ -67,11 +66,11 @@ export function sanitizeCaseInputForStorage(input: CaseInput): CaseInput {
     situation: maskSensitiveText(input.situation),
     title: maskSensitiveText(input.title),
     description: maskSensitiveText(input.description),
-    targetUrl: keepExactUrls ? input.targetUrl?.trim() : safeUrlForStorage(input.targetUrl),
+    targetUrl: safeUrlForStorage(input.targetUrl),
     platform: input.platform ? maskSensitiveText(input.platform) : input.platform,
     keywords: input.keywords ? maskSensitiveText(input.keywords) : input.keywords,
     evidenceItems,
-    keepExactUrlsForSubmission: keepExactUrls,
+    keepExactUrlsForSubmission: false,
     exposedInfo: input.exposedInfo.map(maskSensitiveText),
   };
 }

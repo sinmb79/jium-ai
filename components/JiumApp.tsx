@@ -20,6 +20,7 @@ import { EvidenceLedgerInput } from "@/components/EvidenceLedgerInput";
 import { EvidenceLedgerPanel } from "@/components/EvidenceLedgerPanel";
 import { TraceGraphPanel } from "@/components/TraceGraphPanel";
 import { SubmissionPacketPanel } from "@/components/SubmissionPacketPanel";
+import { EncryptedVaultPanel } from "@/components/EncryptedVaultPanel";
 
 const situationChoices = [
   {
@@ -415,7 +416,7 @@ export function JiumApp() {
               <div className="panel panel-tight">
                 <span className="eyebrow">로컬 보드</span>
                 <p className="muted">
-                  저장하면 이 브라우저에만 남습니다. 정확한 URL 보관을 켜지 않으면 URL 경로와 차단 수준 정보는 저장용 문서에서 낮춰 보관합니다. 공용 PC에서는 저장하지 않는 편이 안전합니다.
+                  저장하면 이 브라우저에만 남습니다. 일반 로컬 보드는 URL 경로와 차단 수준 정보를 낮춰 보관하고, 정확한 원문은 제출 직전 내보내기 또는 암호화 보관함에만 두는 편이 안전합니다.
                 </p>
                 <div className="button-row">
                   <button
@@ -437,6 +438,8 @@ export function JiumApp() {
                 </div>
                 {hasBlockingFinding ? <p className="small muted">비밀번호, 주민등록번호, 카드번호, 피해물 원본 언급은 저장 전에 제거하세요.</p> : null}
               </div>
+
+              <EncryptedVaultPanel currentCase={savedCase} />
             </div>
           </div>
 
