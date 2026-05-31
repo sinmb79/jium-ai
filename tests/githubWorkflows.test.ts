@@ -16,6 +16,12 @@ describe("GitHub Actions security gates", () => {
     expect(typecheckIndex).toBeGreaterThan(auditIndex);
     expect(buildIndex).toBeGreaterThan(typecheckIndex);
     expect(workflow).toContain("enablement: true");
+    expect(workflow).toContain("uses: actions/checkout@v6");
+    expect(workflow).toContain("uses: actions/setup-node@v6");
+    expect(workflow).toContain("uses: actions/configure-pages@v6");
+    expect(workflow).toContain("uses: actions/upload-pages-artifact@v5");
+    expect(workflow).toContain("uses: actions/deploy-pages@v5");
+    expect(workflow).not.toContain("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24");
   });
 
   it("has a pull request quality gate with the same security checks", () => {
@@ -28,5 +34,8 @@ describe("GitHub Actions security gates", () => {
     expect(workflow).toContain("npm run typecheck");
     expect(workflow).toContain("npm test");
     expect(workflow).toContain("npm run build");
+    expect(workflow).toContain("uses: actions/checkout@v6");
+    expect(workflow).toContain("uses: actions/setup-node@v6");
+    expect(workflow).not.toContain("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24");
   });
 });

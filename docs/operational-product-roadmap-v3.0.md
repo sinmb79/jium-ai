@@ -109,6 +109,15 @@
 - 운영 한계 명시
   - GitHub Pages는 `_headers` 파일을 응답 헤더로 강제하지 않으므로, 강제 보안 헤더가 필요한 운영 배포는 Netlify/Cloudflare Pages/Vercel 등 헤더 지원 호스팅으로 이전 필요
 
+## v3.8 GitHub Actions Node 24 네이티브 전환
+
+- 배포 파이프라인 경고 제거
+  - `actions/checkout`, `actions/setup-node`, `actions/configure-pages`, `actions/upload-pages-artifact`, `actions/deploy-pages`를 Node 24 지원 major로 업데이트
+  - `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` 강제 환경변수를 제거하고 공식 action 버전으로 해결
+- 회귀 방지
+  - 워크플로 테스트에서 최신 major 사용과 강제 환경변수 미사용을 확인
+  - Pages 배포 워크플로와 PR 품질 게이트 모두 같은 Node 24 기반 검증 흐름 유지
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
