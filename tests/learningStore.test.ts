@@ -64,6 +64,7 @@ describe("anonymized learning store", () => {
     const record = buildAnonymizedLearningRecord(savedCase());
 
     expect(record.routeSignalIds).toEqual(expect.arrayContaining(["route-discord-private-server", "route-crypto-payment-trade"]));
+    expect(record.promotionSurfaceIds).toEqual(expect.arrayContaining(["platform-migration-signal", "payment-or-price-signal"]));
     expect(record.officialOnlyCount).toBeGreaterThan(0);
     expect(unsafeLearningRecordMarkers(record)).toEqual([]);
 

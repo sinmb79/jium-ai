@@ -1,4 +1,5 @@
 import { buildDiscoveryResearchPlan } from "@/lib/discoveryResearchEngine";
+import { buildPromotionSurfacePlan } from "@/lib/promotionSurfaceIntelligence";
 import { buildTraceAnalysis } from "@/lib/traceEngine";
 import type { SavedCase, TraceSignalSeverity } from "@/lib/types";
 
@@ -12,6 +13,7 @@ export type AnonymizedLearningRecord = {
   deletionChance: string;
   evidenceCount: number;
   routeSignalIds: string[];
+  promotionSurfaceIds: string[];
   matchChannelIds: string[];
   highestSeverity: TraceSignalSeverity;
   officialOnlyCount: number;
@@ -23,6 +25,7 @@ export type LearningSummary = {
   total: number;
   byCaseType: Record<string, number>;
   byRouteSignal: Record<string, number>;
+  byPromotionSurface: Record<string, number>;
   officialOnlyCount: number;
   specialistOnlyCount: number;
 };
@@ -38,6 +41,7 @@ function highestSeverity(values: TraceSignalSeverity[]): TraceSignalSeverity {
 export function buildAnonymizedLearningRecord(savedCase: SavedCase): AnonymizedLearningRecord {
   const trace = buildTraceAnalysis(savedCase.input);
   const discovery = buildDiscoveryResearchPlan(savedCase.input, savedCase.classification);
+  const promotionSurface = buildPromotionSurfacePlan(savedCase.input);
   const routeSignalIds = trace.learningSignals.map((signal) => signal.id).sort();
   const officialOnlyCount = discovery.matchChannels.filter((channel) => channel.authority === "OFFICIAL_ONLY").length;
   const specialistOnlyCount = discovery.matchChannels.filter((channel) => channel.authority === "SPECIALIST_ONLY").length;
@@ -50,6 +54,7 @@ export function buildAnonymizedLearningRecord(savedCase: SavedCase): AnonymizedL
     deletionChance: savedCase.classification.deletionChance,
     evidenceCount: trace.timeline.length,
     routeSignalIds,
+    promotionSurfaceIds: promotionSurface.matches.map((match) => match.id).sort(),
     matchChannelIds: discovery.matchChannels.map((channel) => channel.id).sort(),
     highestSeverity: highestSeverity(trace.learningSignals.map((signal) => signal.severity)),
     officialOnlyCount,
@@ -101,10 +106,13 @@ export function summarizeLearningRecords(records: AnonymizedLearningRecord[]): L
       record.routeSignalIds.forEach((id) => {
         summary.byRouteSignal[id] = (summary.byRouteSignal[id] || 0) + 1;
       });
+      record.promotionSurfaceIds.forEach((id) => {
+        summary.byPromotionSurface[id] = (summary.byPromotionSurface[id] || 0) + 1;
+      });
       summary.officialOnlyCount += record.officialOnlyCount;
       summary.specialistOnlyCount += record.specialistOnlyCount;
       return summary;
     },
-    { total: 0, byCaseType: {}, byRouteSignal: {}, officialOnlyCount: 0, specialistOnlyCount: 0 },
+    { total: 0, byCaseType: {}, byRouteSignal: {}, byPromotionSurface: {}, officialOnlyCount: 0, specialistOnlyCount: 0 },
   );
 }

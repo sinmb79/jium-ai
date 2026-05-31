@@ -63,6 +63,27 @@ export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
         </ul>
       </section>
 
+      <section className="trace-section" aria-labelledby="promotion-surface-title">
+        <h3 id="promotion-surface-title">비공개방 유입면·홍보글 루트</h3>
+        <p className="muted small">{packet.promotionSurfacePlan.summary}</p>
+        {packet.promotionSurfacePlan.matches.length ? (
+          <div className="trace-signal-list">
+            {packet.promotionSurfacePlan.matches.map((match) => (
+              <article className="trace-signal" key={match.id}>
+                <div className="trace-signal-title">
+                  <strong>{match.label}</strong>
+                  <span className="badge badge-high">{match.riskLevel}</span>
+                </div>
+                <p>{match.intelligenceValue}</p>
+                <p className="small muted">{match.handoffQuestion}</p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="small muted">아직 감지된 홍보면 후보가 없습니다. 공개 글 제목, 댓글 문구, 프로필 유도 문구, 결제 요구 흔적을 증거 메모에 추가하면 후보가 분류됩니다.</p>
+        )}
+      </section>
+
       {searchActions.length ? (
         <section className="trace-section" aria-labelledby="safe-search-title">
           <h3 id="safe-search-title">

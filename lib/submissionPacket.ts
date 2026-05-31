@@ -1,6 +1,7 @@
 import { buildDiscoveryResearchPlan, type DiscoveryResearchPlan } from "@/lib/discoveryResearchEngine";
 import { buildEvidenceMetadataFingerprint, formatEvidenceLedgerForDocument, getEvidenceLedger } from "@/lib/evidence";
 import { CASE_TYPE_LABELS, DELETION_CHANCE_LABELS, RISK_LABELS } from "@/lib/labels";
+import { buildPromotionSurfacePlan, type PromotionSurfacePlan } from "@/lib/promotionSurfaceIntelligence";
 import { RESOURCE_KIND_LABELS } from "@/lib/publicResources";
 import { buildSafeSearchActions } from "@/lib/searchConnectors";
 import { buildSubmissionConnectorActions, connectorActionsToMarkdown } from "@/lib/submissionConnectors";
@@ -27,6 +28,7 @@ export type SubmissionPacket = {
   traceMermaid: string;
   agencyTargets: ServiceIntegration[];
   discoveryPlan: DiscoveryResearchPlan;
+  promotionSurfacePlan: PromotionSurfacePlan;
   lawfulInvestigationMemo: string[];
   safetyBoundaries: string[];
 };
@@ -112,6 +114,7 @@ export function buildSubmissionPacket(input: CaseInput, classification: CaseClas
   const analysis = buildTraceAnalysis(input);
   const summaries = evidenceSummaries(input);
   const discoveryPlan = buildDiscoveryResearchPlan(input, classification, generatedAt);
+  const promotionSurfacePlan = buildPromotionSurfacePlan(input);
   const missing = Array.from(new Set(summaries.flatMap((item) => item.missing)));
 
   return {
@@ -128,13 +131,15 @@ export function buildSubmissionPacket(input: CaseInput, classification: CaseClas
     traceMermaid: traceAnalysisToMermaid(analysis),
     agencyTargets: agencyTargets(responsePack),
     discoveryPlan,
+    promotionSurfacePlan,
     lawfulInvestigationMemo: [
       "피해자는 최초 피해사실, URL, 게시 위치, 관찰 ID, 발견·캡처 시각, 접수번호를 신속히 제출해 초기 보존과 삭제 조치를 요청합니다.",
       "플랫폼 로그, IP, 가입자 정보, 서버 정보, 결제·암호화폐 흐름은 수사기관 또는 법원의 적법 절차로 확인되어야 합니다.",
       "폐쇄형 메신저, 디스코드 비공개 서버, 다크웹, 유료방 신호는 피해자 직접 탐색 대상이 아니라 긴급 인계 신호입니다.",
+      "비공개방 자체가 보이지 않아도, 공개 홍보글·프로필·댓글·검색 스니펫·결제 요구는 유입면 증거로 분리해 제출합니다.",
       "삭제 요청과 증거보전·수사 요청은 목적이 다르므로, 삭제 전후의 상태와 재유포 여부를 별도 항목으로 남깁니다.",
     ],
-    safetyBoundaries: Array.from(new Set([...analysis.boundaries, ...discoveryPlan.boundaries])),
+    safetyBoundaries: Array.from(new Set([...analysis.boundaries, ...discoveryPlan.boundaries, ...promotionSurfacePlan.boundaries])),
   };
 }
 
@@ -196,6 +201,34 @@ ${packet.discoveryPlan.matchChannels
   - 경계: ${channel.safetyBoundary}`,
   )
   .join("\n")}
+
+### 비공개방 유입면·홍보글 루트
+
+${packet.promotionSurfacePlan.summary}
+
+루트 시드:
+${packet.promotionSurfacePlan.routeSeeds.length ? packet.promotionSurfacePlan.routeSeeds.map((seed) => `- ${seed}`).join("\n") : "- 입력된 루트 시드가 부족합니다."}
+
+홍보면 후보:
+${packet.promotionSurfacePlan.matches.length
+  ? packet.promotionSurfacePlan.matches
+      .map(
+        (match) => `- ${match.label}
+  - 표면: ${match.surfaceKind}
+  - 위험도: ${match.riskLevel}
+  - 기록할 것: ${match.evidenceToRecord.join(", ")}
+  - 인계: ${match.officialHandoff.join(", ")}
+  - 경계: ${match.doNotDo.join(" / ")}
+  - 확인 질문: ${match.handoffQuestion}`,
+      )
+      .join("\n")
+  : "- 아직 홍보면 후보가 감지되지 않았습니다. 공개 표면의 제목·스니펫·프로필·댓글·결제 요구 단서를 추가하면 후보가 생깁니다."}
+
+수집 체크리스트:
+${packet.promotionSurfacePlan.safeCollectionChecklist.map((item) => `- ${item}`).join("\n")}
+
+공식 인계 트리거:
+${packet.promotionSurfacePlan.officialEscalationTriggers.map((item) => `- ${item}`).join("\n")}
 
 ### 사법기관·전문기관 요청 메모
 

@@ -39,7 +39,15 @@ describe("discovery research engine", () => {
     const plan = buildDiscoveryResearchPlan(input, classification, "2026-05-31T00:00:00.000Z");
 
     expect(plan.matchChannels.map((channel) => channel.id)).toEqual(
-      expect.arrayContaining(["text-keyword-alias", "visual-fingerprint", "platform-log-preservation", "route-discord-private-server", "route-crypto-payment-trade"]),
+      expect.arrayContaining([
+        "text-keyword-alias",
+        "visual-fingerprint",
+        "platform-log-preservation",
+        "route-discord-private-server",
+        "route-crypto-payment-trade",
+        "promo-platform-migration-signal",
+        "promo-payment-or-price-signal",
+      ]),
     );
     expect(plan.matchChannels.find((channel) => channel.id === "route-crypto-payment-trade")?.authority).toBe("OFFICIAL_ONLY");
     expect(plan.officialPreservationRequests.join(" ")).toContain("IP, 가입자 정보");

@@ -1,6 +1,7 @@
 import { detectDigitalCrimeRoutePatterns } from "@/lib/digitalCrimeRouteKnowledge";
 import { getEvidenceLedger } from "@/lib/evidence";
 import { CASE_TYPE_LABELS } from "@/lib/labels";
+import { buildPromotionSurfacePlan } from "@/lib/promotionSurfaceIntelligence";
 import type { CaseClassification, CaseInput, EvidenceItem, TraceSignalSeverity } from "@/lib/types";
 
 export type DiscoveryAuthority = "VICTIM_SAFE" | "SUPPORTER_SAFE" | "OFFICIAL_ONLY" | "SPECIALIST_ONLY";
@@ -122,6 +123,7 @@ function buildEvidenceGaps(evidenceItems: EvidenceItem[]) {
 
 function buildMatchChannels(input: CaseInput, classification: CaseClassification, evidenceItems: EvidenceItem[]): DiscoveryMatchChannel[] {
   const routeMatches = detectDigitalCrimeRoutePatterns(evidenceItems);
+  const promotionSurfaceMatches = buildPromotionSurfacePlan(input).matches;
   const channels: DiscoveryMatchChannel[] = [
     {
       id: "text-keyword-alias",
@@ -183,6 +185,20 @@ function buildMatchChannels(input: CaseInput, classification: CaseClassification
     });
   });
 
+  promotionSurfaceMatches.forEach((match) => {
+    channels.push({
+      id: `promo-${match.id}`,
+      label: match.label,
+      authority: match.accessLevel === "PUBLIC_SURFACE" ? "VICTIM_SAFE" : match.accessLevel === "RESTRICTED_HINT" ? "SUPPORTER_SAFE" : "OFFICIAL_ONLY",
+      severity: match.riskLevel,
+      inputSignals: match.matchedEvidenceIds,
+      matchingApproach: [match.intelligenceValue, match.handoffQuestion],
+      expectedOutput: match.evidenceToRecord,
+      officialHandoff: match.officialHandoff,
+      safetyBoundary: match.doNotDo.join(" / "),
+    });
+  });
+
   return channels;
 }
 
@@ -201,6 +217,7 @@ export function buildDiscoveryResearchPlan(input: CaseInput, classification: Cas
       "플랫폼에는 게시물 URL, 계정/별칭, 발견·게시 추정 시각, 신고 접수번호를 기준으로 로그 보존 필요성을 전달합니다.",
       "IP, 가입자 정보, 접속 로그, 결제·암호화폐 흐름은 수사기관 또는 법원의 적법 절차로 확보해야 합니다.",
       "폐쇄형 메신저, 디스코드 비공개 서버, 다크웹, 유료방 신호는 피해자 직접 확인 대상이 아니라 긴급 인계 신호입니다.",
+      "비공개방이 직접 보이지 않아도 공개 홍보면·프로필·댓글·검색 스니펫·결제 요구는 유입 경로 단서로 분리해 제출합니다.",
       "삭제 요청과 증거보전 요청을 분리해, 삭제 후에도 재유포·가해자 특정 수사가 이어질 수 있게 합니다.",
     ],
     expertLessons: [
