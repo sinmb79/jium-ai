@@ -8,6 +8,7 @@ describe("GitHub Actions security gates", () => {
     const xssIndex = workflow.indexOf("npm run security:xss");
     const authIndex = workflow.indexOf("npm run security:auth");
     const feedsIndex = workflow.indexOf("npm run security:feeds");
+    const deploymentIndex = workflow.indexOf("npm run security:deployment");
     const secretIndex = workflow.indexOf("npm run security:secrets");
     const auditIndex = workflow.indexOf("npm run security:audit");
     const typecheckIndex = workflow.indexOf("npm run typecheck");
@@ -17,7 +18,8 @@ describe("GitHub Actions security gates", () => {
     expect(xssIndex).toBeGreaterThan(headersIndex);
     expect(authIndex).toBeGreaterThan(xssIndex);
     expect(feedsIndex).toBeGreaterThan(authIndex);
-    expect(secretIndex).toBeGreaterThan(feedsIndex);
+    expect(deploymentIndex).toBeGreaterThan(feedsIndex);
+    expect(secretIndex).toBeGreaterThan(deploymentIndex);
     expect(auditIndex).toBeGreaterThan(secretIndex);
     expect(typecheckIndex).toBeGreaterThan(auditIndex);
     expect(buildIndex).toBeGreaterThan(typecheckIndex);
@@ -27,6 +29,7 @@ describe("GitHub Actions security gates", () => {
     expect(workflow).toContain("uses: actions/configure-pages@v6");
     expect(workflow).toContain("uses: actions/upload-pages-artifact@v5");
     expect(workflow).toContain("uses: actions/deploy-pages@v5");
+    expect(workflow).toContain("GITHUB_PAGES: \"true\"");
     expect(workflow).not.toContain("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24");
   });
 
@@ -38,6 +41,7 @@ describe("GitHub Actions security gates", () => {
     expect(workflow).toContain("npm run security:xss");
     expect(workflow).toContain("npm run security:auth");
     expect(workflow).toContain("npm run security:feeds");
+    expect(workflow).toContain("npm run security:deployment");
     expect(workflow).toContain("npm run security:secrets");
     expect(workflow).toContain("npm run security:audit");
     expect(workflow).toContain("npm run typecheck");

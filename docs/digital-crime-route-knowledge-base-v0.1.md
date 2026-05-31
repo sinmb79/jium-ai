@@ -175,3 +175,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Route config loading requires a server-only institution session secret, allowlisted origins, audit ledger storage, and trusted institution public keys.
 - The loader rejects `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET` and production insecure-cookie settings.
 - Regression tests cover login/session/logout through the adapter, audit ledger writes, token/origin non-exposure, unsafe env rejection, and local dev-cookie handling.
+
+## Implemented in v3.24
+
+- Added a deployment profile guard script for GitHub Pages static export and future server-route deployments.
+- Static export fails early if `app/**/route.ts` handlers are present while `GITHUB_PAGES=true`.
+- Server-route mode requires session secret, allowlisted origins, audit ledger directory, and rejects public institution secrets or insecure production cookies.
+- GitHub Pages deploy and PR quality-gate workflows now run `npm run security:deployment`.

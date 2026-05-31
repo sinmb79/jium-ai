@@ -36,6 +36,9 @@ jobs:
       - name: Authorized feed safety tests
         run: npm run security:feeds
 
+      - name: Deployment profile guard
+        run: npm run security:deployment
+
       - name: Secret scan
         run: npm run security:secrets
 

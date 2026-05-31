@@ -317,6 +317,13 @@ v3.23 기관 로그인 Next 서버 Route adapter에서 추가 반영한 항목:
 - secret 방어: `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET`은 설정 자체를 거부하고, 운영 환경에서 insecure cookie도 거부한다.
 - 정적 배포 보존: GitHub Pages export를 깨지 않도록 실제 `app/api` 파일은 서버 배포 전환 시점까지 보류한다.
 
+v3.24 배포 프로필 가드에서 추가 반영한 항목:
+
+- 정적 배포 가드: `GITHUB_PAGES=true` 정적 export에서 Route Handler 파일이 들어오면 build 전에 실패한다.
+- 서버 운영 가드: `JIUM_SERVER_ROUTES=true` 서버 프로필은 세션 secret, 허용 Origin, 감사 원장 디렉터리를 요구한다.
+- 충돌 방지: `GITHUB_PAGES=true`와 `JIUM_SERVER_ROUTES=true`를 동시에 켜면 실패한다.
+- CI 연결: GitHub Pages 배포와 PR 품질 게이트 모두 deployment profile guard를 실행한다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

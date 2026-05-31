@@ -316,6 +316,20 @@
 - 검증 범위
   - login/session/logout route adapter 흐름, audit ledger 3건 기록, secret/token/origin 비노출, 취약 env 설정 거부, 로컬 dev cookie 허용을 테스트
 
+## v3.24 배포 프로필 가드
+
+- 정적 export 보호
+  - `npm run security:deployment` 스크립트를 추가
+  - `GITHUB_PAGES=true`일 때 `app/**/route.ts` 같은 Route Handler 파일이 존재하면 정적 export 전에 실패
+  - GitHub Pages 배포 워크플로에서 build 전에 이 검사를 실행
+- 서버 운영 프로필 보호
+  - `JIUM_SERVER_ROUTES=true`이면 `INSTITUTION_SESSION_SECRET`, `INSTITUTION_ALLOWED_ORIGINS`, `INSTITUTION_AUDIT_LEDGER_DIR`를 요구
+  - `GITHUB_PAGES=true`와 `JIUM_SERVER_ROUTES=true` 동시 설정을 거부
+  - `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET` 및 운영 환경 insecure cookie 설정을 거부
+- 검증 범위
+  - 현재 정적/local 프로필 통과, Route Handler가 있는 임시 repo의 Pages export 실패, unsafe server env 실패, 정상 server env 통과를 테스트
+  - PR 품질 게이트와 Pages 배포 워크플로에 deployment profile guard가 포함되는지 테스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -364,7 +378,8 @@
 - 기관 인증 감사 해시 체인 원장: 1차 구현 완료
 - 서버/데스크톱 감사 원장 JSONL 저장소: 1차 구현 완료
 - 기관 로그인 Next 서버 Route adapter: 1차 구현 완료
-- 운영 배포 전 과제: 실제 `app/api` Route 파일 연결, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
+- 배포 프로필 가드: 1차 구현 완료
+- 운영 배포 전 과제: 서버 배포 프로필에서 실제 `app/api` Route 파일 연결, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
 
 ## 공식 경로 기준
 

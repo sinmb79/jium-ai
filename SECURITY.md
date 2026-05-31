@@ -101,6 +101,8 @@ npm run security:auth
 
 Next 서버 배포로 전환할 때는 기관 route adapter가 `INSTITUTION_SESSION_SECRET`, `INSTITUTION_ALLOWED_ORIGINS`, `INSTITUTION_AUDIT_LEDGER_DIR`, 신뢰 공개키를 모두 요구합니다. `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET`은 설정 자체를 거부하며, 운영 환경에서 `INSTITUTION_SECURE_COOKIES=false`도 거부합니다. 현재 GitHub Pages 정적 export를 깨지 않기 위해 실제 `app/api` 파일은 아직 추가하지 않고, 서버 배포 시 adapter를 Route Handler에서 호출합니다.
 
+배포 프로필 가드는 `npm run security:deployment`로 실행합니다. `GITHUB_PAGES=true` 정적 export에서는 `app/**/route.ts` 같은 Route Handler 파일이 있으면 실패하며, `JIUM_SERVER_ROUTES=true` 서버 운영 프로필에서는 기관 secret, 허용 Origin, 감사 원장 디렉터리 같은 서버 설정이 없으면 실패합니다. GitHub Pages 배포와 PR 품질 게이트 모두 이 검사를 실행합니다.
+
 CI는 Node.js 24 런타임을 직접 지원하는 GitHub Actions major 버전을 사용합니다. 향후 Actions 경고가 발생하면 강제 환경변수로 덮지 말고, 해당 공식 action의 최신 major와 보안 공지를 먼저 확인합니다.
 
 ## 신고
