@@ -84,7 +84,21 @@ describe("server runtime readiness", () => {
 
     expect(result.valid).toBe(true);
     expect(result.keyCount).toBe(1);
+    expect(result.activeKeyCount).toBe(1);
     expect(result.templateFiles).toContain("api/institution/login/route.ts");
+  });
+
+  it("rejects registries that only contain expired keys", async () => {
+    const root = await tempRepo();
+    await writeRegistry(root, [{ ...validKey(), validUntil: "2026-01-01T00:00:00.000Z" }]);
+    await writeRequiredRouteTemplates(root);
+
+    const result = validateServerRuntimeReadiness({ root, env: serverEnv(root) });
+
+    expect(result.valid).toBe(false);
+    expect(result.keyCount).toBe(1);
+    expect(result.activeKeyCount).toBe(0);
+    expect(result.errors.join("\n")).toContain("at least one active");
   });
 
   it("rejects empty trusted key registries, Pages mode, and incomplete server env", async () => {
@@ -140,7 +154,7 @@ describe("server runtime readiness", () => {
     });
 
     expect(passed.status).toBe(0);
-    expect(passed.stdout).toContain("Server runtime readiness passed");
+    expect(passed.stdout).toContain("active trusted key");
     expect(failed.status).toBe(1);
     expect(failed.stderr).toContain("Server runtime readiness check failed");
   });

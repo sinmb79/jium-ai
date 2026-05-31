@@ -3,6 +3,7 @@ export type ServerRuntimeReadiness = {
   errors: string[];
   profile: "github-pages-static" | "server-routes" | "local-build";
   keyCount: number;
+  activeKeyCount: number;
   templateFiles: string[];
 };
 

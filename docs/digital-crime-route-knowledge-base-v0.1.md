@@ -217,3 +217,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Added `INSTITUTION_AUDIT_LEDGER_REVIEW` as a PROGRAM_ADMIN MFA-only capability.
 - The audit-ledger API verifies the institution session cookie, requires the audit review capability, reads the server audit store, and returns only a redacted summary report.
 - Audit-ledger view success and denial attempts are themselves recorded as privacy-minimized audit events.
+
+## Implemented in v3.30
+
+- Added trusted institution public-key lifecycle review for active, expiring, expired, no-expiry, and not-yet-active keys.
+- Added retirement and rotation patch helpers so operators can review key changes before updating the registry.
+- Server readiness now requires at least one currently active trusted key, not just any key in the registry.
+- The dashboard trusted-key panel can review registry lifecycle status and generate a retirement patch without storing private key material.

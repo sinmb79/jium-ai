@@ -17,6 +17,17 @@ export const REQUIRED_SERVER_ROUTE_TEMPLATES = [
   "api/institution/session/route.ts",
 ];
 
+function parseIso(value) {
+  const parsed = Date.parse(value || "");
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+}
+
+function isActiveTrustedKey(key, now = Date.now()) {
+  const validFrom = parseIso(key.validFrom);
+  const validUntil = parseIso(key.validUntil);
+  return (!Number.isFinite(validFrom) || validFrom <= now) && (!Number.isFinite(validUntil) || validUntil > now);
+}
+
 export function validateServerRuntimeReadiness({
   root = process.cwd(),
   templateRoot = path.join(root, "server-route-templates", "app"),
@@ -34,15 +45,20 @@ export function validateServerRuntimeReadiness({
   deployment.errors.forEach((error) => errors.push(`deployment profile: ${error}`));
 
   let keyCount = 0;
+  let activeKeyCount = 0;
   try {
     const registry = loadTrustedAuthorizedFeedKeyRegistry(path.resolve(root, TRUSTED_KEY_REGISTRY_PATH));
     const keyErrors = validateTrustedAuthorizedFeedKeyRegistry(registry);
     keyErrors.forEach((error) => errors.push(`trusted key registry: ${error}`));
     keyCount = Array.isArray(registry.keys) ? registry.keys.length : 0;
+    activeKeyCount = Array.isArray(registry.keys) ? registry.keys.filter((key) => isActiveTrustedKey(key)).length : 0;
     if (keyCount < 1) {
       errors.push(
         `trusted key registry: at least one ${AUTHORIZED_FEED_SIGNATURE_ALGORITHM} institution public key is required`,
       );
+    }
+    if (keyCount >= 1 && activeKeyCount < 1) {
+      errors.push(`trusted key registry: at least one active ${AUTHORIZED_FEED_SIGNATURE_ALGORITHM} institution public key is required`);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -61,6 +77,7 @@ export function validateServerRuntimeReadiness({
     errors,
     profile: deployment.profile,
     keyCount,
+    activeKeyCount,
     templateFiles,
   };
 }
@@ -73,6 +90,6 @@ if (path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1
     process.exit(1);
   }
   console.log(
-    `Server runtime readiness passed: ${result.keyCount} trusted key(s), ${result.templateFiles.length} route template(s)`,
+    `Server runtime readiness passed: ${result.activeKeyCount}/${result.keyCount} active trusted key(s), ${result.templateFiles.length} route template(s)`,
   );
 }

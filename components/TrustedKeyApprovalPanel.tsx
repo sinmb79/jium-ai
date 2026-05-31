@@ -1,7 +1,7 @@
 "use client";
 
-import { Download, KeyRound, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { Download, KeyRound, RefreshCw, ShieldCheck } from "lucide-react";
+import { useMemo, useState } from "react";
 import type { TrustedAuthorizedFeedKey } from "@/lib/authorizedFeedSignature";
 import { TRUSTED_AUTHORIZED_FEED_KEYS } from "@/lib/authorizedFeedTrustedKeys";
 import {
@@ -9,6 +9,12 @@ import {
   reviewTrustedAuthorizedFeedKeyCandidate,
   type TrustedKeyApprovalReview,
 } from "@/lib/trustedKeyApproval";
+import {
+  buildTrustedKeyRetirementPatch,
+  parseTrustedKeyRegistryText,
+  reviewTrustedKeyLifecycle,
+  type TrustedKeyLifecycleReview,
+} from "@/lib/trustedKeyLifecycle";
 import { downloadTextFile } from "@/lib/export";
 
 type TrustedKeyApprovalPanelProps = {
@@ -39,11 +45,37 @@ function statusLabel(status: TrustedKeyApprovalReview["status"]) {
   return "등록 차단";
 }
 
+function lifecycleLabel(status: string) {
+  const labels: Record<string, string> = {
+    ACTIVE: "활성",
+    EXPIRING_SOON: "곧 만료",
+    NO_EXPIRY: "만료일 없음",
+    NOT_YET_ACTIVE: "활성 전",
+    EXPIRED: "만료",
+  };
+  return labels[status] || status;
+}
+
 export function TrustedKeyApprovalPanel({ trustedFeedKeys = TRUSTED_AUTHORIZED_FEED_KEYS }: TrustedKeyApprovalPanelProps = {}) {
   const [candidateText, setCandidateText] = useState("");
   const [review, setReview] = useState<TrustedKeyApprovalReview | null>(null);
   const [registryPatch, setRegistryPatch] = useState("");
+  const [registryText, setRegistryText] = useState("");
+  const [lifecycle, setLifecycle] = useState<TrustedKeyLifecycleReview | null>(null);
+  const [retireKeyId, setRetireKeyId] = useState("");
+  const [retireAt, setRetireAt] = useState(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString());
+  const [retirePatch, setRetirePatch] = useState("");
   const [message, setMessage] = useState("");
+  const lifecycleKeys = useMemo(() => {
+    if (!registryText.trim()) {
+      return trustedFeedKeys;
+    }
+    try {
+      return parseTrustedKeyRegistryText(registryText);
+    } catch {
+      return trustedFeedKeys;
+    }
+  }, [registryText, trustedFeedKeys]);
 
   async function reviewCandidate() {
     try {
@@ -64,6 +96,31 @@ export function TrustedKeyApprovalPanel({ trustedFeedKeys = TRUSTED_AUTHORIZED_F
     }
   }
 
+  async function reviewRegistryLifecycle() {
+    try {
+      const keys = registryText.trim() ? parseTrustedKeyRegistryText(registryText) : trustedFeedKeys;
+      const nextLifecycle = await reviewTrustedKeyLifecycle(keys);
+      setLifecycle(nextLifecycle);
+      setRetirePatch("");
+      setMessage(nextLifecycle.errors.length ? "공개키 수명주기에서 운영 차단 항목이 있습니다." : "공개키 수명주기 검토가 끝났습니다.");
+    } catch (error) {
+      setLifecycle(null);
+      setRetirePatch("");
+      setMessage(error instanceof Error ? error.message : "공개키 수명주기를 검토하지 못했습니다.");
+    }
+  }
+
+  function createRetirementPatch() {
+    try {
+      const patch = buildTrustedKeyRetirementPatch(retireKeyId.trim(), lifecycleKeys, retireAt.trim());
+      setRetirePatch(patch);
+      setMessage("공개키 폐기 patch를 만들었습니다. 반영 전 활성 공개키가 남는지 readiness로 확인하세요.");
+    } catch (error) {
+      setRetirePatch("");
+      setMessage(error instanceof Error ? error.message : "공개키 폐기 patch를 만들지 못했습니다.");
+    }
+  }
+
   return (
     <div className="panel panel-tight trusted-key-panel">
       <div className="trace-header">
@@ -75,6 +132,92 @@ export function TrustedKeyApprovalPanel({ trustedFeedKeys = TRUSTED_AUTHORIZED_F
         </span>
       </div>
       <p className="small muted">운영 공개키 후보를 검토하고 registry 반영용 JSON을 만듭니다. 개인키는 입력하지 않습니다.</p>
+
+      <div className="trusted-key-review">
+        <label className="field">
+          <span className="label-row">
+            현재 registry JSON <span className="hint">선택 입력 · 비우면 번들 registry 사용</span>
+          </span>
+          <textarea
+            className="textarea textarea-compact"
+            value={registryText}
+            onChange={(event) => {
+              setRegistryText(event.target.value);
+              setLifecycle(null);
+              setRetirePatch("");
+            }}
+            placeholder='{"version":"jium-authorized-feed-trusted-keys-v1","keys":[]}'
+          />
+        </label>
+        <div className="button-row">
+          <button className="btn btn-secondary" type="button" onClick={() => void reviewRegistryLifecycle()}>
+            <RefreshCw size={16} aria-hidden="true" />
+            registry 수명주기 검토
+          </button>
+        </div>
+        {lifecycle ? (
+          <>
+            <div className="submission-summary-grid">
+              <div className="submission-summary-item">활성 {lifecycle.activeCount}개</div>
+              <div className="submission-summary-item">곧 만료 {lifecycle.expiringSoonCount}개</div>
+              <div className="submission-summary-item">만료 {lifecycle.expiredCount}개</div>
+              <div className="submission-summary-item">만료일 없음 {lifecycle.noExpiryCount}개</div>
+            </div>
+            {lifecycle.errors.length ? (
+              <ul className="action-list compact-list">
+                {lifecycle.errors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            ) : null}
+            {lifecycle.warnings.length ? (
+              <ul className="action-list compact-list">
+                {lifecycle.warnings.map((warning) => (
+                  <li key={warning}>{warning}</li>
+                ))}
+              </ul>
+            ) : null}
+            <ul className="action-list compact-list">
+              {lifecycle.entries.map((entry) => (
+                <li key={entry.keyId}>
+                  {entry.keyId} · {entry.issuerName} · {lifecycleLabel(entry.status)}
+                  {typeof entry.daysUntilExpiry === "number" ? ` · 만료 ${entry.daysUntilExpiry}일` : ""}
+                </li>
+              ))}
+            </ul>
+            <div className="two-col">
+              <label className="field">
+                <span className="label-row">폐기 keyId</span>
+                <input className="input" value={retireKeyId} onChange={(event) => setRetireKeyId(event.target.value)} placeholder="partner-key-..." />
+              </label>
+              <label className="field">
+                <span className="label-row">폐기 시각 ISO</span>
+                <input
+                  className="input"
+                  value={retireAt}
+                  onChange={(event) => setRetireAt(event.target.value)}
+                  placeholder="2026-06-02T00:00:00.000Z"
+                />
+              </label>
+            </div>
+            <div className="button-row">
+              <button className="btn btn-secondary" type="button" disabled={!retireKeyId.trim()} onClick={createRetirementPatch}>
+                <RefreshCw size={16} aria-hidden="true" />
+                폐기 patch 생성
+              </button>
+              <button
+                className="btn btn-secondary"
+                type="button"
+                disabled={!retirePatch}
+                onClick={() => downloadTextFile("trusted-authorized-feed-keys-retire.patch.json", retirePatch)}
+              >
+                <Download size={16} aria-hidden="true" />
+                폐기 patch 저장
+              </button>
+            </div>
+          </>
+        ) : null}
+      </div>
 
       <label className="field">
         <span className="label-row">

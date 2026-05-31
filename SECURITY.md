@@ -112,9 +112,11 @@ npm run security:deployment
 npm run build:server
 ```
 
-실제 운영 전 최종 승인은 `npm run security:server-readiness` 또는 `npm run build:server:production`으로 확인합니다. 이 검사는 서버 env뿐 아니라 `data/trusted-authorized-feed-keys.json`에 최소 1개의 승인 기관 공개키가 등록되어 있는지도 확인합니다. 현재 공개 저장소의 기본 registry는 비어 있으므로, 파트너 공개키 승인 절차가 끝나기 전에는 이 readiness 검사가 실패해야 정상입니다.
+실제 운영 전 최종 승인은 `npm run security:server-readiness` 또는 `npm run build:server:production`으로 확인합니다. 이 검사는 서버 env뿐 아니라 `data/trusted-authorized-feed-keys.json`에 최소 1개의 활성 승인 기관 공개키가 등록되어 있는지도 확인합니다. 만료됐거나 아직 유효하지 않은 공개키는 운영 활성키로 세지 않습니다. 현재 공개 저장소의 기본 registry는 비어 있으므로, 파트너 공개키 승인 절차가 끝나기 전에는 이 readiness 검사가 실패해야 정상입니다.
 
 대시보드의 "기관 공개키 승인" 패널은 후보 JWK 공개키를 검토하고 registry patch JSON을 만들기 위한 보조 도구입니다. fingerprint와 checklist를 승인 기록에 남기는 용도이며, 개인키·PEM private key·서명 key material은 입력하거나 저장하지 않습니다.
+
+같은 패널에서 registry 수명주기 검토를 실행하면 활성, 곧 만료, 만료, 만료일 없음, 활성 전 상태를 집계하고 운영 차단 항목을 표시합니다. 운영자는 폐기할 keyId와 폐기 시각을 입력해 검토 가능한 retirement patch를 만들 수 있습니다. 실제 교체 때는 새 공개키를 먼저 승인한 뒤 기존 키를 폐기하고, readiness 검사로 최소 1개의 활성 공개키가 남는지 확인해야 합니다.
 
 대시보드의 "기관 감사 원장 검증" 패널은 서버/데스크톱에서 내보낸 `institution-auth-audit-ledger.jsonl`을 클라이언트에서 검증하는 보조 도구입니다. 해시 체인, sequence, event digest, record digest를 확인하고 집계 리포트를 만들지만, 검증 성공이 수사권한이나 신원 특정 권한을 의미하지는 않습니다. 검증 실패 원장은 덮어쓰지 말고 원본 파일을 보존한 뒤 관리자 절차로 분리해야 합니다.
 

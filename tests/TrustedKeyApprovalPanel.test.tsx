@@ -50,4 +50,37 @@ describe("TrustedKeyApprovalPanel", () => {
     await waitFor(() => expect(screen.getByText("등록 차단")).toBeInTheDocument());
     expect(screen.getByText(/private JWK field: d/)).toBeInTheDocument();
   });
+
+  it("reviews registry lifecycle and generates a retirement patch", async () => {
+    render(<TrustedKeyApprovalPanel trustedFeedKeys={[]} />);
+
+    fireEvent.change(screen.getByPlaceholderText(/trusted-keys-v1/), {
+      target: {
+        value: JSON.stringify({
+          version: "jium-authorized-feed-trusted-keys-v1",
+          keys: [
+            {
+              ...validKey,
+              keyId: "partner-key-retire-ui",
+              algorithm: "RSASSA-PKCS1-v1_5",
+              validFrom: "2026-01-01T00:00:00.000Z",
+            },
+          ],
+        }),
+      },
+    });
+    fireEvent.click(screen.getByText("registry 수명주기 검토"));
+    await waitFor(() => expect(screen.getByText("활성 1개")).toBeInTheDocument());
+
+    fireEvent.change(screen.getByPlaceholderText("partner-key-..."), {
+      target: { value: "partner-key-retire-ui" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("2026-06-02T00:00:00.000Z"), {
+      target: { value: "2026-06-02T00:00:00.000Z" },
+    });
+    fireEvent.click(screen.getByText("폐기 patch 생성"));
+
+    await waitFor(() => expect(screen.getByText(/폐기 patch를 만들었습니다/)).toBeInTheDocument());
+    expect(screen.getByText("폐기 patch 저장")).not.toBeDisabled();
+  });
 });
