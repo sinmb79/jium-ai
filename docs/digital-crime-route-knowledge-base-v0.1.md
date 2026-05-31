@@ -105,3 +105,9 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Restricted imports must pass RSA-SHA256 WebCrypto verification against pinned trusted public keys.
 - The default dashboard rejects unsigned feed JSON and stays closed until a trusted public key is registered.
 - Regression tests reject tampered bundles, unknown or inactive keys, and imports without an operator session.
+
+## Implemented in v3.14
+
+- Trusted authorized feed public keys are loaded from `data/trusted-authorized-feed-keys.json`.
+- `npm run security:feed-keys` rejects private JWK fields, private key usages, PEM private key material, duplicate key IDs, and invalid validity windows.
+- The key-registry check is included in `npm run security:feeds`, so feed safety tests cover both signed bundles and the key registry.

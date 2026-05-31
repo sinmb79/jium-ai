@@ -73,6 +73,12 @@ npm run security:feeds
 
 운영 승인 피드는 `jium-authorized-feed-signed-v1` envelope로 서명되어야 합니다. 지움AI는 고정된 신뢰 공개키로 RSA-SHA256 서명을 검증한 뒤에만 제한 피드를 수입합니다. 개인키는 저장소, 브라우저 번들, 환경변수에 넣지 말고 기관·파트너 쪽 안전한 서명 환경에서만 사용해야 합니다. 현재 저장소에는 실제 운영 공개키가 없으므로, 운영 배포 전 승인 기관/파트너의 공개키를 검증 절차와 함께 등록해야 합니다.
 
+신뢰 공개키는 `data/trusted-authorized-feed-keys.json`에 등록합니다. 아래 검사는 공개키 레지스트리에 개인키 JWK 필드, private key usage, 중복 keyId, 잘못된 유효기간이 섞였는지 확인합니다.
+
+```bash
+npm run security:feed-keys
+```
+
 CI는 Node.js 24 런타임을 직접 지원하는 GitHub Actions major 버전을 사용합니다. 향후 Actions 경고가 발생하면 강제 환경변수로 덮지 말고, 해당 공식 action의 최신 major와 보안 공지를 먼저 확인합니다.
 
 ## 신고
