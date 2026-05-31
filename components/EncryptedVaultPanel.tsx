@@ -1,11 +1,12 @@
 "use client";
 
-import { Download, Eye, Lock, ShieldCheck, Trash2, Unlock } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Download, Eye, Lock, ShieldCheck, Trash2, Unlock, Upload } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 import { clearEncryptedVault, hasEncryptedVault, loadEncryptedVault, upsertEncryptedCase } from "@/lib/encryptedCaseStorage";
-import { downloadTextFile, savedCaseToMarkdown } from "@/lib/export";
+import { downloadFile, downloadTextFile, savedCaseToMarkdown } from "@/lib/export";
 import { openReadOnlyPacket } from "@/lib/readOnlyPacket";
 import { compromisedDeviceRisks, deviceSafetyWarningText, safeDeviceChecklist } from "@/lib/deviceSafety";
+import { buildJiumCaseArchive, importJiumCaseArchiveToVault, serializeJiumCaseArchive } from "@/lib/jiumCaseFile";
 import type { SavedCase } from "@/lib/types";
 
 type EncryptedVaultPanelProps = {
@@ -18,6 +19,7 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
   const [cases, setCases] = useState<SavedCase[]>([]);
   const [busy, setBusy] = useState(false);
   const [deviceChecked, setDeviceChecked] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const vaultExists = useMemo(() => hasEncryptedVault(), [message, cases.length]);
   const canUsePassphrase = passphrase.length >= 12;
 
@@ -72,6 +74,55 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
     clearEncryptedVault();
     setCases([]);
     setMessage("암호화 보관함을 삭제했습니다.");
+  }
+
+  async function exportVaultFile() {
+    if (!deviceChecked || !canUsePassphrase) {
+      setMessage("안전 기기 확인과 12자 이상의 패스프레이즈가 필요합니다.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const state = await loadEncryptedVault(passphrase);
+      if (!state.cases.length) {
+        setMessage("내보낼 암호화 보관 사건이 없습니다.");
+        return;
+      }
+      const archive = await buildJiumCaseArchive(state.cases, passphrase);
+      const day = new Date().toISOString().slice(0, 10);
+      downloadFile(`jium-ai-${day}.jiumcase`, serializeJiumCaseArchive(archive), "application/vnd.jium.case+json;charset=utf-8");
+      setMessage("암호화 사건 파일(.jiumcase)을 내려받았습니다.");
+    } catch {
+      setMessage("암호화 사건 파일을 만들지 못했습니다. 패스프레이즈를 확인하세요.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function importVaultFile(file?: File) {
+    if (!file) {
+      return;
+    }
+    if (!deviceChecked || !canUsePassphrase) {
+      setMessage("가져오기 전 안전 기기 확인과 12자 이상의 패스프레이즈가 필요합니다.");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+    setBusy(true);
+    try {
+      const state = await importJiumCaseArchiveToVault(await file.text(), passphrase);
+      setCases(state.cases);
+      setMessage(`암호화 사건 파일에서 ${state.cases.length}건을 보관함에 반영했습니다.`);
+    } catch {
+      setMessage(".jiumcase 파일을 열지 못했습니다. 파일 형식과 패스프레이즈를 확인하세요.");
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      setBusy(false);
+    }
   }
 
   return (
@@ -138,6 +189,21 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
             암호화본 삭제
           </button>
         ) : null}
+        <button className="btn btn-secondary" type="button" disabled={busy || !deviceChecked} onClick={() => void exportVaultFile()}>
+          <Download size={17} aria-hidden="true" />
+          .jiumcase 내보내기
+        </button>
+        <button className="btn btn-secondary" type="button" disabled={busy || !deviceChecked} onClick={() => fileInputRef.current?.click()}>
+          <Upload size={17} aria-hidden="true" />
+          .jiumcase 가져오기
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".jiumcase,application/json,application/vnd.jium.case+json"
+          hidden
+          onChange={(event) => void importVaultFile(event.target.files?.[0])}
+        />
       </div>
       {message ? <p className="small muted">{message}</p> : null}
       {cases.length ? (

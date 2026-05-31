@@ -41,13 +41,16 @@ export function CaseBoard() {
 
   if (!cases.length) {
     return (
-      <div className="panel panel-tight">
-        <span className="eyebrow">로컬 사건 보드</span>
-        <h2>아직 저장한 사건이 없습니다.</h2>
-        <p className="muted">진단 결과에서 "로컬 보드에 저장"을 누르면 이 브라우저 안에만 저장됩니다.</p>
-        <a className="btn btn-primary" href={appPath("/")}>
-          진단 시작하기
-        </a>
+      <div className="card-stack">
+        <div className="panel panel-tight">
+          <span className="eyebrow">로컬 사건 보드</span>
+          <h2>아직 저장한 사건이 없습니다.</h2>
+          <p className="muted">진단 결과에서 "로컬 보드에 저장"을 누르면 이 브라우저 안에만 저장됩니다. 암호화 사건 파일이 있다면 아래 보관함에서 가져올 수 있습니다.</p>
+          <a className="btn btn-primary" href={appPath("/")}>
+            진단 시작하기
+          </a>
+        </div>
+        <EncryptedVaultPanel />
       </div>
     );
   }
