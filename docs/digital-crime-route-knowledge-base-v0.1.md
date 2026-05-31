@@ -182,3 +182,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Static export fails early if `app/**/route.ts` handlers are present while `GITHUB_PAGES=true`.
 - Server-route mode requires session secret, allowlisted origins, audit ledger directory, and rejects public institution secrets or insecure production cookies.
 - GitHub Pages deploy and PR quality-gate workflows now run `npm run security:deployment`.
+
+## Implemented in v3.25
+
+- Added server-route templates for institution login, session verification, and logout under `server-route-templates/app/api/institution`.
+- Added `server:routes:materialize`, `server:routes:clean`, and `build:server` scripts for server-runtime deployments.
+- Materialization refuses GitHub Pages mode, missing server-route env, and non-generated route overwrites.
+- Generated `app/api/institution/*/route.ts` files are ignored by git and can be removed with the clean command before static export work.

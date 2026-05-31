@@ -324,6 +324,13 @@ v3.24 배포 프로필 가드에서 추가 반영한 항목:
 - 충돌 방지: `GITHUB_PAGES=true`와 `JIUM_SERVER_ROUTES=true`를 동시에 켜면 실패한다.
 - CI 연결: GitHub Pages 배포와 PR 품질 게이트 모두 deployment profile guard를 실행한다.
 
+v3.25 서버 Route materialize 흐름에서 추가 반영한 항목:
+
+- 실제 Route 연결: 서버 배포 때 `server-route-templates/app/api/institution/*/route.ts`를 `app/api`로 생성해 login/session/logout Route Handler를 연결한다.
+- 정적 배포 보존: GitHub Pages 모드에서는 materialize를 거부하고, 생성 Route 파일은 clean 명령으로 제거한다.
+- 덮어쓰기 방지: 사용자가 직접 만든 비생성 Route 파일은 자동으로 덮어쓰지 않는다.
+- 검증 연결: materialize/clean, Pages 충돌, 누락 env, 비생성 Route 보호를 회귀 테스트에 포함한다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

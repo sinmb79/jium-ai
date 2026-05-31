@@ -330,6 +330,24 @@
   - 현재 정적/local 프로필 통과, Route Handler가 있는 임시 repo의 Pages export 실패, unsafe server env 실패, 정상 server env 통과를 테스트
   - PR 품질 게이트와 Pages 배포 워크플로에 deployment profile guard가 포함되는지 테스트
 
+## v3.25 서버 Route materialize 흐름
+
+- 서버 Route 템플릿
+  - `server-route-templates/app/api/institution/login/route.ts`, `session/route.ts`, `logout/route.ts`를 추가
+  - 각 Route는 Node.js runtime과 dynamic mode를 사용하고, 요청 시 `loadInstitutionServerRouteConfig`와 `createInstitutionServerRouteHandlers`를 lazy-load
+  - 정적 GitHub Pages export를 깨지 않도록 `app/api`에는 상시 Route 파일을 두지 않음
+- 서버 배포 명령
+  - `npm run server:routes:materialize`로 서버 프로필에서만 `app/api/institution/*/route.ts`를 생성
+  - `npm run server:routes:clean`으로 생성된 Route 파일만 안전하게 제거
+  - `npm run build:server`로 materialize, deployment profile check, Next server build를 연결
+- 안전장치
+  - `GITHUB_PAGES=true`에서는 materialize를 거부
+  - `JIUM_SERVER_ROUTES=true`가 아니거나 server secret/origin/audit dir 설정이 부족하면 materialize를 거부
+  - 기존 비생성 Route 파일은 덮어쓰지 않음
+  - 생성 Route 파일은 `.gitignore`에 추가해 정적 배포 저장소에 실수로 커밋되지 않게 함
+- 검증 범위
+  - 템플릿 목록, materialize 결과, clean 결과, Pages 모드 거부, 누락 env 거부, 비생성 Route 덮어쓰기 거부를 테스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -379,7 +397,8 @@
 - 서버/데스크톱 감사 원장 JSONL 저장소: 1차 구현 완료
 - 기관 로그인 Next 서버 Route adapter: 1차 구현 완료
 - 배포 프로필 가드: 1차 구현 완료
-- 운영 배포 전 과제: 서버 배포 프로필에서 실제 `app/api` Route 파일 연결, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
+- 서버 Route materialize 흐름: 1차 구현 완료
+- 운영 배포 전 과제: 실제 파트너 공개키 승인·교체 절차, 서버/데스크톱 보안 저장소 연동, 기관 감사 로그 조회 UI
 
 ## 공식 경로 기준
 

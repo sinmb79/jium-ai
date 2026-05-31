@@ -1,4 +1,5 @@
 import { mkdir, writeFile, rm } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -88,5 +89,22 @@ describe("deployment profile guard", () => {
 
     expect(result.valid).toBe(true);
     expect(result.profile).toBe("server-routes");
+  });
+
+  it("runs the CLI guard on Windows-style paths too", () => {
+    const passed = spawnSync(process.execPath, ["scripts/check-deployment-profile.mjs"], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    });
+    const failed = spawnSync(process.execPath, ["scripts/check-deployment-profile.mjs"], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      env: { ...process.env, GITHUB_PAGES: "true", JIUM_SERVER_ROUTES: "true" },
+    });
+
+    expect(passed.status).toBe(0);
+    expect(passed.stdout).toContain("Deployment profile check passed");
+    expect(failed.status).toBe(1);
+    expect(failed.stderr).toContain("Deployment profile check failed");
   });
 });

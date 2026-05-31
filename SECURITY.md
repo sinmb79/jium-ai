@@ -91,7 +91,7 @@ npm run security:auth
 
 기관 세션 쿠키는 운영 환경에서 `__Host-jium_institution_session` 이름의 `HttpOnly; Secure; SameSite=Strict; Path=/` 쿠키로만 발급합니다. 개발용 HTTP 환경에서만 별도 dev 쿠키 이름을 사용하며, 운영 쿠키에는 `Domain`을 붙이지 않습니다.
 
-기관 credential 로그인 HTTP 코어는 `POST`만 허용하고, `Content-Type: application/json`, 허용 Origin, `X-Jium-Institution-Login: 1` 헤더, 16KB 요청 본문 제한을 통과해야 합니다. 성공 응답은 서버 세션 토큰을 JSON 본문에 노출하지 않고 `Set-Cookie`로만 전달하며, 실패 응답에는 credential 검증 상세를 노출하지 않습니다. 현재 GitHub Pages 정적 배포를 유지하기 위해 실제 `app/api` Route Handler는 추가하지 않고, 서버 배포 전환 시 이 코어를 Route에서 호출하도록 연결합니다.
+기관 credential 로그인 HTTP 코어는 `POST`만 허용하고, `Content-Type: application/json`, 허용 Origin, `X-Jium-Institution-Login: 1` 헤더, 16KB 요청 본문 제한을 통과해야 합니다. 성공 응답은 서버 세션 토큰을 JSON 본문에 노출하지 않고 `Set-Cookie`로만 전달하며, 실패 응답에는 credential 검증 상세를 노출하지 않습니다. GitHub Pages 정적 배포를 유지하기 위해 `app/api` Route Handler는 저장소에 상시 두지 않고, 서버 배포 프로필에서만 템플릿을 materialize해 이 코어를 호출합니다.
 
 기관 인증 감사 로그는 credential 원문, 세션 토큰, 원문 URL, 초대링크, 계정 핸들, onion 주소, 이메일, 전화번호를 저장하지 않습니다. 감사 이벤트에는 성공/거부 결과, reason code, Origin의 허용/거부/누락 분류, 기관명, 가명 subjectId, role, capability, 만료시각 같은 운영 확인 정보만 남깁니다.
 
@@ -99,9 +99,18 @@ npm run security:auth
 
 서버/데스크톱 런타임에서는 기관 인증 감사 원장을 JSONL 파일로 append-only 저장할 수 있습니다. 파일 저장소는 설정된 기준 디렉터리 안의 단순 `.jsonl` 파일명만 허용하며, 기존 원장 검증이 실패하면 새 기록 추가를 거부합니다. 실제 운영 배포에서는 이 파일 저장소 또는 동등한 DB 저장소를 단일 writer 정책, 백업, 접근 통제와 함께 사용해야 합니다.
 
-Next 서버 배포로 전환할 때는 기관 route adapter가 `INSTITUTION_SESSION_SECRET`, `INSTITUTION_ALLOWED_ORIGINS`, `INSTITUTION_AUDIT_LEDGER_DIR`, 신뢰 공개키를 모두 요구합니다. `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET`은 설정 자체를 거부하며, 운영 환경에서 `INSTITUTION_SECURE_COOKIES=false`도 거부합니다. 현재 GitHub Pages 정적 export를 깨지 않기 위해 실제 `app/api` 파일은 아직 추가하지 않고, 서버 배포 시 adapter를 Route Handler에서 호출합니다.
+Next 서버 배포로 전환할 때는 기관 route adapter가 `INSTITUTION_SESSION_SECRET`, `INSTITUTION_ALLOWED_ORIGINS`, `INSTITUTION_AUDIT_LEDGER_DIR`, 신뢰 공개키를 모두 요구합니다. `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET`은 설정 자체를 거부하며, 운영 환경에서 `INSTITUTION_SECURE_COOKIES=false`도 거부합니다. 서버 Route 파일은 `server-route-templates/app/api/institution/*/route.ts`에 보관하고, `npm run server:routes:materialize`로 `app/api` 아래에 생성합니다. 다시 정적 Pages 빌드로 돌아갈 때는 `npm run server:routes:clean`으로 생성 파일을 제거합니다.
 
 배포 프로필 가드는 `npm run security:deployment`로 실행합니다. `GITHUB_PAGES=true` 정적 export에서는 `app/**/route.ts` 같은 Route Handler 파일이 있으면 실패하며, `JIUM_SERVER_ROUTES=true` 서버 운영 프로필에서는 기관 secret, 허용 Origin, 감사 원장 디렉터리 같은 서버 설정이 없으면 실패합니다. GitHub Pages 배포와 PR 품질 게이트 모두 이 검사를 실행합니다.
+
+서버 운영 빌드는 아래 순서로 준비합니다.
+
+```powershell
+$env:JIUM_SERVER_ROUTES="true"
+npm run server:routes:materialize
+npm run security:deployment
+npm run build:server
+```
 
 CI는 Node.js 24 런타임을 직접 지원하는 GitHub Actions major 버전을 사용합니다. 향후 Actions 경고가 발생하면 강제 환경변수로 덮지 말고, 해당 공식 action의 최신 major와 보안 공지를 먼저 확인합니다.
 

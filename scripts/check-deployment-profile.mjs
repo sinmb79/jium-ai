@@ -69,7 +69,7 @@ export function validateDeploymentProfile(env = process.env, root = repoRoot) {
   };
 }
 
-if (import.meta.url === `file://${process.argv[1]?.replace(/\\/g, "/")}`) {
+if (path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1] || "")) {
   const result = validateDeploymentProfile();
   if (!result.valid) {
     console.error("Deployment profile check failed:");

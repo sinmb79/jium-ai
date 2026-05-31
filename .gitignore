@@ -10,3 +10,6 @@ coverage
 *.tsbuildinfo
 playwright-report
 test-results
+
+# Generated only for server-runtime deployments. Keep static Pages clean.
+app/api/institution/**/route.ts
