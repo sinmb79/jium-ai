@@ -282,6 +282,13 @@ v3.18 기관 로그인 코어·HttpOnly 쿠키 정책에서 추가 반영한 항
 - 권한 재검증: 서버 역할이 credential capability를 허용하지 않으면 쿠키를 발급하지 않는다.
 - 정적 배포 보존: GitHub Pages export를 깨지 않도록 실제 Route 파일 대신 서버 배포에서 호출할 수 있는 코어로 먼저 고정했다.
 
+v3.19 기관 로그인 HTTP 핸들러 코어에서 추가 반영한 항목:
+
+- Route 연결 전 서버 코어: 표준 Web `Request`/`Response` 기반 로그인, 세션 확인, 로그아웃 핸들러를 추가했다.
+- 요청 방어: 로그인/로그아웃은 `POST`, JSON content-type, 허용 Origin, `X-Jium-Institution-Login: 1` 헤더, 16KB 본문 제한을 통과해야 한다.
+- token 비노출: 성공 응답은 기관 세션 토큰을 JSON에 넣지 않고 HttpOnly cookie로만 전달한다.
+- 검증 범위: 세션 쿠키 발급, 세션 확인, 로그아웃 clear cookie, origin/CSRF/body-size/content-type 차단을 테스트한다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

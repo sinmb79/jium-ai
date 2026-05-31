@@ -243,6 +243,22 @@
   - Set-Cookie 헤더에 secret이 들어가지 않는지, HttpOnly/Secure/SameSite/Path가 붙는지, clear cookie가 안전한지 테스트
   - role escalation credential은 쿠키 발급 전에 거부
 
+## v3.19 기관 로그인 HTTP 핸들러 코어
+
+- 서버 Route 연결 전 코어
+  - GitHub Pages 정적 export를 유지하기 위해 실제 `app/api` Route Handler는 아직 추가하지 않음
+  - 표준 Web `Request`/`Response` 기반 `handleInstitutionCredentialLoginRequest`, `handleInstitutionSessionRequest`, `handleInstitutionLogoutRequest` 코어를 추가
+  - 이후 Next 서버 배포, 데스크톱 로컬 서버, 별도 기관 포털 API에서 같은 코어를 재사용할 수 있음
+- 요청 보안
+  - 로그인과 로그아웃은 `POST`만 허용
+  - 로그인 요청은 `Content-Type: application/json`, 허용 Origin, `X-Jium-Institution-Login: 1` 헤더, 16KB 본문 제한을 통과해야 함
+  - 실패 응답에는 credential 검증 상세를 노출하지 않고, 성공 응답은 서버 세션 토큰을 JSON에 포함하지 않음
+- 세션 확인
+  - 세션 확인 핸들러는 HttpOnly 쿠키에 담긴 기관 세션 토큰만 검증
+  - 유효한 세션도 브라우저 응답에는 기관명, 가명 subjectId, role, capability, 만료시각, 운영 제한만 반환
+- 검증 범위
+  - 쿠키 발급, JSON 본문 token 비노출, origin/CSRF/content-type/body-size 차단, 세션 확인, logout clear cookie를 테스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -286,6 +302,7 @@
 - 서버 기관 계정 RBAC 공통 모델: 1차 구현 완료
 - 서버 기관 세션 토큰 코어: 1차 구현 완료
 - 기관 로그인 코어·HttpOnly 쿠키 정책: 1차 구현 완료
+- 기관 로그인 HTTP 핸들러 코어: 1차 구현 완료
 - 운영 배포 전 과제: 실제 Next 서버 Route 연결, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
 
 ## 공식 경로 기준

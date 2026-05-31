@@ -140,3 +140,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Production institution session cookies use `__Host-jium_institution_session` with HttpOnly, Secure, SameSite=Strict, and Path=/.
 - Login tests ensure role escalation is rejected before Set-Cookie is issued.
 - Cookie tests ensure production cookies do not use a Domain attribute and do not expose the server session secret.
+
+## Implemented in v3.19
+
+- Added HTTP handler cores for institution credential login, session verification, and logout without adding static-export-breaking Next API routes.
+- Login/logout handlers require POST, JSON content type for login, an allowlisted Origin when configured, `X-Jium-Institution-Login: 1`, and a bounded request body.
+- Successful login returns only a safe session view in JSON and delivers the server session token through HttpOnly Set-Cookie.
+- Regression tests cover CSRF header, origin, content-type, body-size, session cookie verification, logout cookie clearing, and token non-exposure.
