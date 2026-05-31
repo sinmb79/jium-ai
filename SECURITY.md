@@ -63,6 +63,12 @@ npm run security:headers:check -- https://your-production.example
 npm run security:xss
 ```
 
+승인된 기관·파트너 지능 피드는 원문 URL, 초대링크, 계정 핸들, 전화번호, onion 주소를 저장하지 않고, 패턴 ID·비식별 digest·출처·확인일·보존기한·감사로그만 허용합니다.
+
+```bash
+npm run security:feeds
+```
+
 CI는 Node.js 24 런타임을 직접 지원하는 GitHub Actions major 버전을 사용합니다. 향후 Actions 경고가 발생하면 강제 환경변수로 덮지 말고, 해당 공식 action의 최신 major와 보안 공지를 먼저 확인합니다.
 
 ## 신고

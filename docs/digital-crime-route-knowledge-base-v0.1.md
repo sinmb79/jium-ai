@@ -77,7 +77,15 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 ## Next hardening items
 
 - Add role-based access control for restricted intelligence.
-- Add indicator provenance fields: source, source date, last checked, confidence, retention deadline.
-- Add audit log for every view/export of exact indicators.
-- Add official CSV/JSON import format for authorized public notices or partner feeds.
+- Add indicator provenance fields: source, source date, last checked, confidence, retention deadline. v3.11 implements the first restricted feed model.
+- Add audit log for every view/export of exact indicators. v3.11 adds import audit logs; future restricted viewing still needs role-based access control.
+- Add official CSV/JSON import format for authorized public notices or partner feeds. v3.11 adds a JSON bundle shape for pre-vetted, non-raw indicators.
 - Add retention/deletion workflow for closed cases.
+
+## Implemented in v3.11
+
+- `AuthorizedFeedIndicator` accepts only official, platform transparency, or authorized partner sources.
+- Raw operational targets such as URLs, invite links, handles, phone numbers, and onion addresses are rejected.
+- Pre-vetted indicators must use route pattern IDs, promotion-surface IDs, or non-raw `sha256-*` / `ahash-*` digests.
+- Each indicator carries source date, last checked date, retention deadline, access level, confidence, allowed uses, prohibited uses, official handoff, and import audit logs.
+- `npm run security:feeds` verifies the restricted feed model together with route knowledge, promotion surfaces, and anonymized learning storage.
