@@ -147,3 +147,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Login/logout handlers require POST, JSON content type for login, an allowlisted Origin when configured, `X-Jium-Institution-Login: 1`, and a bounded request body.
 - Successful login returns only a safe session view in JSON and delivers the server session token through HttpOnly Set-Cookie.
 - Regression tests cover CSRF header, origin, content-type, body-size, session cookie verification, logout cookie clearing, and token non-exposure.
+
+## Implemented in v3.20
+
+- Added a privacy-minimized institution authentication audit event model and optional audit sink.
+- HTTP login, session verification, and logout handlers can now emit audit events for success and denial outcomes.
+- Audit events do not store raw credentials, server session tokens, URLs, invite links, handles, onion addresses, emails, or phone numbers.
+- Request origins are recorded only as ALLOWED, REJECTED, MISSING, or NOT_CONFIGURED classifications.

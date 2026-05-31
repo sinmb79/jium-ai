@@ -259,6 +259,19 @@
 - 검증 범위
   - 쿠키 발급, JSON 본문 token 비노출, origin/CSRF/content-type/body-size 차단, 세션 확인, logout clear cookie를 테스트
 
+## v3.20 기관 인증 비식별 감사 로그
+
+- 감사 이벤트 코어
+  - `InstitutionAuditEvent` 모델과 `InstitutionAuditSink`를 추가
+  - 로그인 성공/거부, 세션 확인 성공/거부, 로그아웃 성공/거부 이벤트를 기록할 수 있음
+  - HTTP 핸들러는 선택적 audit sink가 있을 때 각 인증 경계에서 이벤트를 emit
+- 데이터 최소화
+  - credential 원문, 서버 세션 토큰, 원문 URL, 초대링크, 계정 핸들, onion 주소, 이메일, 전화번호를 감사 로그에 저장하지 않음
+  - Origin은 실제 값을 저장하지 않고 `ALLOWED`, `REJECTED`, `MISSING`, `NOT_CONFIGURED`로만 분류
+  - requestId는 안전한 문자 집합만 허용하고, 위험한 값은 새 비식별 ID로 대체
+- 검증 범위
+  - 안전한 감사 이벤트 생성, raw indicator 차단, Origin 분류, requestId 정규화, HTTP 핸들러 audit sink 연동을 테스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -303,6 +316,7 @@
 - 서버 기관 세션 토큰 코어: 1차 구현 완료
 - 기관 로그인 코어·HttpOnly 쿠키 정책: 1차 구현 완료
 - 기관 로그인 HTTP 핸들러 코어: 1차 구현 완료
+- 기관 인증 비식별 감사 로그: 1차 구현 완료
 - 운영 배포 전 과제: 실제 Next 서버 Route 연결, 실제 파트너 공개키 승인 절차, 서버/데스크톱 보안 저장소 연동
 
 ## 공식 경로 기준

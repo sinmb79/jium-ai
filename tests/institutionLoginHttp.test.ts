@@ -10,6 +10,7 @@ import {
   type SignedAuthorizedOperatorCredential,
   type SignedAuthorizedOperatorCredentialPayload,
 } from "@/lib/authorizedOperatorCredential";
+import type { InstitutionAuditEvent } from "@/lib/institutionAuditLog";
 import {
   handleInstitutionCredentialLoginRequest,
   handleInstitutionLogoutRequest,
@@ -98,6 +99,7 @@ describe("institution login HTTP handler core", () => {
   it("sets an HttpOnly cookie without exposing the server token in the JSON body", async () => {
     const { privateKey, trustedKey } = await generateTrustedKey();
     const credential = await signCredential(privateKey);
+    const auditEvents: InstitutionAuditEvent[] = [];
     const response = await handleInstitutionCredentialLoginRequest(
       loginRequest({ credential }),
       {
@@ -105,6 +107,9 @@ describe("institution login HTTP handler core", () => {
         tokenKey,
         secureCookies: true,
         allowedOrigins: [origin],
+        auditSink: (event) => {
+          auditEvents.push(event);
+        },
         now,
       },
     );
@@ -119,6 +124,9 @@ describe("institution login HTTP handler core", () => {
     expect(setCookie).toContain("Secure");
     expect(token).toBeTruthy();
     expect(JSON.stringify(body)).not.toContain(token);
+    expect(JSON.stringify(auditEvents)).not.toContain(token);
+    expect(auditEvents[0]?.eventType).toBe("INSTITUTION_LOGIN_SUCCESS");
+    expect(auditEvents[0]?.originClassification).toBe("ALLOWED");
     expect(body.session.organizationName).toBe("Authorized Support Center");
   });
 
@@ -130,6 +138,7 @@ describe("institution login HTTP handler core", () => {
       { trustedKeys: [trustedKey], tokenKey, secureCookies: true, allowedOrigins: [origin], now },
     );
     const token = readInstitutionSessionTokenFromCookie(login.headers.get("Set-Cookie"), true);
+    const auditEvents: InstitutionAuditEvent[] = [];
 
     const response = await handleInstitutionSessionRequest(
       new Request("https://jium.example/api/institution/session", {
@@ -138,15 +147,25 @@ describe("institution login HTTP handler core", () => {
           Origin: origin,
         },
       }),
-      { tokenKeys: [tokenKey], secureCookies: true, allowedOrigins: [origin], now: now + 1 },
+      {
+        tokenKeys: [tokenKey],
+        secureCookies: true,
+        allowedOrigins: [origin],
+        auditSink: (event) => {
+          auditEvents.push(event);
+        },
+        now: now + 1,
+      },
     );
     const body = await response.json();
 
     expect(response.status).toBe(200);
     expect(body.session.subjectId).toBe("operator:caseworker-001");
+    expect(auditEvents[0]?.eventType).toBe("INSTITUTION_SESSION_VERIFIED");
   });
 
   it("rejects unsafe browser requests before credential verification", async () => {
+    const auditEvents: InstitutionAuditEvent[] = [];
     const getResponse = await handleInstitutionCredentialLoginRequest(
       new Request("https://jium.example/api/institution/login", { method: "GET" }),
       { trustedKeys: [], tokenKey, secureCookies: true },
@@ -157,7 +176,15 @@ describe("institution login HTTP handler core", () => {
     );
     const wrongOrigin = await handleInstitutionCredentialLoginRequest(
       loginRequest({ credential: {} }, { Origin: "https://evil.example" }),
-      { trustedKeys: [], tokenKey, secureCookies: true, allowedOrigins: [origin] },
+      {
+        trustedKeys: [],
+        tokenKey,
+        secureCookies: true,
+        allowedOrigins: [origin],
+        auditSink: (event) => {
+          auditEvents.push(event);
+        },
+      },
     );
 
     expect(getResponse.status).toBe(405);
@@ -165,6 +192,9 @@ describe("institution login HTTP handler core", () => {
     expect(missingCsrf.status).toBe(403);
     expect(wrongOrigin.status).toBe(403);
     expect(wrongOrigin.headers.get("Set-Cookie")).toBeNull();
+    expect(auditEvents[0]?.eventType).toBe("INSTITUTION_LOGIN_DENIED");
+    expect(auditEvents[0]?.reasonCode).toBe("ORIGIN_NOT_ALLOWED");
+    expect(auditEvents[0]?.originClassification).toBe("REJECTED");
   });
 
   it("rejects non-JSON and oversized login bodies", async () => {
@@ -187,6 +217,7 @@ describe("institution login HTTP handler core", () => {
   });
 
   it("clears the institution cookie through the logout handler", async () => {
+    const auditEvents: InstitutionAuditEvent[] = [];
     const response = await handleInstitutionLogoutRequest(
       new Request("https://jium.example/api/institution/logout", {
         method: "POST",
@@ -195,11 +226,18 @@ describe("institution login HTTP handler core", () => {
           [INSTITUTION_LOGIN_CSRF_HEADER]: INSTITUTION_LOGIN_CSRF_VALUE,
         },
       }),
-      { secureCookies: true, allowedOrigins: [origin] },
+      {
+        secureCookies: true,
+        allowedOrigins: [origin],
+        auditSink: (event) => {
+          auditEvents.push(event);
+        },
+      },
     );
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Set-Cookie")).toContain(`${INSTITUTION_SESSION_COOKIE_NAME}=`);
     expect(response.headers.get("Set-Cookie")).toContain("Max-Age=0");
+    expect(auditEvents[0]?.eventType).toBe("INSTITUTION_LOGOUT");
   });
 });

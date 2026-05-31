@@ -93,6 +93,8 @@ npm run security:auth
 
 기관 credential 로그인 HTTP 코어는 `POST`만 허용하고, `Content-Type: application/json`, 허용 Origin, `X-Jium-Institution-Login: 1` 헤더, 16KB 요청 본문 제한을 통과해야 합니다. 성공 응답은 서버 세션 토큰을 JSON 본문에 노출하지 않고 `Set-Cookie`로만 전달하며, 실패 응답에는 credential 검증 상세를 노출하지 않습니다. 현재 GitHub Pages 정적 배포를 유지하기 위해 실제 `app/api` Route Handler는 추가하지 않고, 서버 배포 전환 시 이 코어를 Route에서 호출하도록 연결합니다.
 
+기관 인증 감사 로그는 credential 원문, 세션 토큰, 원문 URL, 초대링크, 계정 핸들, onion 주소, 이메일, 전화번호를 저장하지 않습니다. 감사 이벤트에는 성공/거부 결과, reason code, Origin의 허용/거부/누락 분류, 기관명, 가명 subjectId, role, capability, 만료시각 같은 운영 확인 정보만 남깁니다.
+
 CI는 Node.js 24 런타임을 직접 지원하는 GitHub Actions major 버전을 사용합니다. 향후 Actions 경고가 발생하면 강제 환경변수로 덮지 말고, 해당 공식 action의 최신 major와 보안 공지를 먼저 확인합니다.
 
 ## 신고
