@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { classifyCase } from "@/lib/classifier";
 import { generateRequestDraft } from "@/lib/requestTemplates";
 import { generateResponsePack } from "@/lib/responsePack";
@@ -60,6 +60,10 @@ describe("anonymized learning store", () => {
     clearLearningRecords();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("stores only pattern ids and aggregate counts", () => {
     const record = buildAnonymizedLearningRecord(savedCase());
 
@@ -73,5 +77,14 @@ describe("anonymized learning store", () => {
 
     expect(summary.total).toBe(1);
     expect(summary.officialOnlyCount).toBeGreaterThan(0);
+  });
+
+  it("does not create accidental phone-like markers in generated record ids", () => {
+    vi.spyOn(Date, "now").mockReturnValue(1_775_010);
+    vi.spyOn(Math, "random").mockReturnValue(0.123456);
+    const record = buildAnonymizedLearningRecord(savedCase());
+
+    expect(record.id).not.toContain("010-");
+    expect(unsafeLearningRecordMarkers(record)).toEqual([]);
   });
 });

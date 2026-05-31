@@ -38,6 +38,10 @@ function highestSeverity(values: TraceSignalSeverity[]): TraceSignalSeverity {
   return values.sort((a, b) => severityRank(b) - severityRank(a))[0] || "LOW";
 }
 
+function learningRecordId() {
+  return `learning_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export function buildAnonymizedLearningRecord(savedCase: SavedCase): AnonymizedLearningRecord {
   const trace = buildTraceAnalysis(savedCase.input);
   const discovery = buildDiscoveryResearchPlan(savedCase.input, savedCase.classification);
@@ -47,7 +51,7 @@ export function buildAnonymizedLearningRecord(savedCase: SavedCase): AnonymizedL
   const specialistOnlyCount = discovery.matchChannels.filter((channel) => channel.authority === "SPECIALIST_ONLY").length;
 
   return {
-    id: `learning-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: learningRecordId(),
     createdAt: new Date().toISOString(),
     caseType: savedCase.classification.caseType,
     riskLevel: savedCase.classification.riskLevel,
