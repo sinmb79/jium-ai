@@ -238,3 +238,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The account review checks role, capability, MFA, expiry, high-risk capabilities, and raw identifier exposure without issuing accounts.
 - Added a regional digital-sex-crime support router based on the official D4U regional-center status page.
 - The submission packet can now show regional center candidates, 1366, and the central D4U path while preserving the no-auto-submit boundary.
+
+## Implemented in v3.33
+
+- Added encrypted support handoff archives for counselor, supporter, and investigator review.
+- The handoff archive stores the read-only packet, HTML, evidence-chain manifest, and checklist inside an AES-GCM passphrase-encrypted payload.
+- Handoff metadata keeps only case ID, role, expiry, and chain fingerprint outside encryption.
+- The submission packet UI can export `.jiumhandoff.json` plus a separate instruction memo, and the ZIP package now includes a support handoff guide.

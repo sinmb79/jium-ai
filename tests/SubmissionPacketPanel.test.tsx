@@ -59,6 +59,7 @@ describe("SubmissionPacketPanel", () => {
 
     expect(screen.getByText("기관별 제출 준비도")).toBeInTheDocument();
     expect(screen.getByText("지역 피해지원 라우팅")).toBeInTheDocument();
+    expect(screen.getByText("지원자 읽기전용 전달")).toBeInTheDocument();
     expect(screen.getAllByText("중앙디지털성범죄피해자지원센터").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("경찰청 사이버범죄 신고시스템").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("공식 경로 열기").length).toBeGreaterThanOrEqual(2);

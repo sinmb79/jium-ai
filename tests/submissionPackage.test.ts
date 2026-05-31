@@ -117,6 +117,7 @@ describe("submission package", () => {
         expect.stringContaining("submission-version-snapshot.json"),
         expect.stringContaining("agency-workflow-plan.json"),
         expect.stringContaining("agency-workflow-checklist.txt"),
+        expect.stringContaining("support-handoff-guide.txt"),
         expect.stringContaining("trace-diagram.mmd"),
         expect.stringContaining("checklist.txt"),
       ]),
@@ -125,6 +126,7 @@ describe("submission package", () => {
     expect(zipText).toContain("submission-version-snapshot.json");
     expect(zipText).toContain("agency-workflow-plan.json");
     expect(zipText).toContain("agency-workflow-checklist.txt");
+    expect(zipText).toContain("support-handoff-guide.txt");
     expect(zipText).toContain("submission-packet.md");
   });
 });

@@ -90,6 +90,7 @@ export type CaseAuditAction =
   | "SUBMISSION_VERSION_SAVED"
   | "SUBMISSION_VERSION_COMPARED"
   | "READONLY_PACKET_OPENED"
+  | "SUPPORT_HANDOFF_EXPORTED"
   | "LEARNING_RECORD_SAVED";
 
 export type CaseAuditEntry = {

@@ -10,6 +10,7 @@ import { buildSubmissionConnectorActions } from "@/lib/submissionConnectors";
 import { buildPrintableSubmissionHtml, buildSubmissionPackageZip } from "@/lib/submissionPackage";
 import { buildSubmissionPacket, submissionPacketWithEvidenceToMarkdown } from "@/lib/submissionPacket";
 import { RegionalSupportRouterPanel } from "@/components/RegionalSupportRouterPanel";
+import { SupportHandoffPanel } from "@/components/SupportHandoffPanel";
 import {
   buildSubmissionPacketSnapshot,
   compareSubmissionPacketSnapshots,
@@ -155,6 +156,8 @@ export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
       {savedCase.classification.caseType === "DIGITAL_SEX_CRIME" ? (
         <RegionalSupportRouterPanel caseType={savedCase.classification.caseType} urgent={savedCase.input.urgent} />
       ) : null}
+
+      <SupportHandoffPanel savedCase={savedCase} />
 
       <section className="trace-section" aria-labelledby="promotion-surface-title">
         <h3 id="promotion-surface-title">비공개방 유입면·홍보글 루트</h3>
