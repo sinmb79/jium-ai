@@ -203,3 +203,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Candidate JWK review blocks private JWK fields, private key usages, duplicate key IDs, and invalid validity windows.
 - The panel computes an approval fingerprint, renders an operator checklist, and generates a registry patch JSON without writing private key material.
 - Regression tests cover key approval logic and the dashboard UI.
+
+## Implemented in v3.28
+
+- Added an institution audit ledger report core and dashboard verification panel.
+- The report accepts JSONL or JSON array exports, verifies the hash chain, and summarizes event type, outcome, origin classification, organization, and recent records.
+- The UI can paste or load `.jsonl/.json` ledger files and export a Markdown verification report.
+- Regression tests cover valid ledgers, parse failures, tamper detection, and the dashboard verification flow.

@@ -977,7 +977,15 @@ h1 {
   background: #fbfdff;
 }
 
-.trusted-key-review {
+.audit-ledger-panel {
+  display: grid;
+  gap: 0.8rem;
+  border-color: #d9c9a8;
+  background: #fffdf8;
+}
+
+.trusted-key-review,
+.audit-ledger-review {
   display: grid;
   gap: 0.65rem;
   border: 1px solid var(--soft-line);

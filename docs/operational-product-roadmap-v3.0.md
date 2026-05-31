@@ -384,6 +384,24 @@
   - 공개키 승인 코어 테스트와 UI 회귀 테스트 추가
   - 기존 제한 피드 패널 테스트와 함께 실행
 
+## v3.28 기관 감사 원장 검증 패널
+
+- 감사 원장 리포트 코어
+  - `lib/institutionAuditLedgerReport.ts`를 추가
+  - JSONL과 JSON 배열 형식의 기관 인증 감사 원장 export를 파싱
+  - 기존 `verifyInstitutionAuditLedger`를 사용해 sequence, previous digest, event digest, record digest를 검증
+  - 이벤트 유형, 결과, Origin 분류, 기관명 기준 집계를 생성
+- 대시보드 UI
+  - `InstitutionAuditLedgerPanel`을 사건 보드에 추가
+  - 원장 텍스트 붙여넣기, `.jsonl/.json` 파일 선택, 검증 실행, Markdown 리포트 저장을 지원
+  - 최근 감사 기록은 sequence, event type, outcome, 기관명, recordedAt만 표시
+  - credential 원문, 세션 토큰, URL, 초대링크, 계정 핸들, onion 주소, 이메일, 전화번호를 표시하지 않는 안전 메모를 함께 제공
+- 운영 안전
+  - 검증 실패 원장은 덮어쓰지 말고 원본 파일을 보존하도록 안내
+  - 검증 성공도 수사권한 또는 신원 특정 권한을 대신하지 않음을 명시
+- 검증 범위
+  - JSONL/JSON 배열 파싱, 정상 원장 리포트, parse error, tamper detection, UI 검증 흐름을 테스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -436,7 +454,8 @@
 - 서버 Route materialize 흐름: 1차 구현 완료
 - 서버 운영 readiness 가드: 1차 구현 완료
 - 기관 공개키 승인 패널: 1차 구현 완료
-- 운영 배포 전 과제: 실제 파트너 공개키 교체·폐기 절차, 서버/데스크톱 보안 저장소 연동, 기관 감사 로그 조회 UI
+- 기관 감사 원장 검증 패널: 1차 구현 완료
+- 운영 배포 전 과제: 실제 파트너 공개키 교체·폐기 절차, 서버/데스크톱 보안 저장소 연동, 기관 감사 로그 서버 조회 API
 
 ## 공식 경로 기준
 

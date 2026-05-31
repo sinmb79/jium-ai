@@ -14,6 +14,7 @@ import { buildReadOnlyPacketHtml, openReadOnlyPacket } from "@/lib/readOnlyPacke
 import { EncryptedVaultPanel } from "@/components/EncryptedVaultPanel";
 import { AuthorizedFeedPanel } from "@/components/AuthorizedFeedPanel";
 import { TrustedKeyApprovalPanel } from "@/components/TrustedKeyApprovalPanel";
+import { InstitutionAuditLedgerPanel } from "@/components/InstitutionAuditLedgerPanel";
 
 const statuses = Object.keys(STATUS_LABELS) as CaseStatus[];
 
@@ -54,6 +55,7 @@ export function CaseBoard() {
         </div>
         <EncryptedVaultPanel />
         <TrustedKeyApprovalPanel />
+        <InstitutionAuditLedgerPanel />
         <AuthorizedFeedPanel />
       </div>
     );
@@ -78,6 +80,7 @@ export function CaseBoard() {
       </div>
       <EncryptedVaultPanel />
       <TrustedKeyApprovalPanel />
+      <InstitutionAuditLedgerPanel />
       <AuthorizedFeedPanel />
       <div className="board-grid">
         {cases.map((item) => (

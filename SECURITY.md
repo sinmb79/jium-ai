@@ -116,6 +116,8 @@ npm run build:server
 
 대시보드의 "기관 공개키 승인" 패널은 후보 JWK 공개키를 검토하고 registry patch JSON을 만들기 위한 보조 도구입니다. fingerprint와 checklist를 승인 기록에 남기는 용도이며, 개인키·PEM private key·서명 key material은 입력하거나 저장하지 않습니다.
 
+대시보드의 "기관 감사 원장 검증" 패널은 서버/데스크톱에서 내보낸 `institution-auth-audit-ledger.jsonl`을 클라이언트에서 검증하는 보조 도구입니다. 해시 체인, sequence, event digest, record digest를 확인하고 집계 리포트를 만들지만, 검증 성공이 수사권한이나 신원 특정 권한을 의미하지는 않습니다. 검증 실패 원장은 덮어쓰지 말고 원본 파일을 보존한 뒤 관리자 절차로 분리해야 합니다.
+
 CI는 Node.js 24 런타임을 직접 지원하는 GitHub Actions major 버전을 사용합니다. 향후 Actions 경고가 발생하면 강제 환경변수로 덮지 말고, 해당 공식 action의 최신 major와 보안 공지를 먼저 확인합니다.
 
 ## 신고
