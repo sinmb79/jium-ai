@@ -23,12 +23,27 @@
 - 외부 AI provider는 명시적으로 켤 때만 사용합니다.
 - AI 호출 전 민감정보는 redaction pipeline을 거쳐야 합니다.
 - 디지털 성범죄, 아동 피해, 협박, 스토킹, 자해 위험은 외부 AI 전송보다 전문기관 라우팅이 우선입니다.
+- 실제 API 키는 `.env`, GitHub Secrets, 배포 플랫폼 secret store에만 둡니다.
 
 ## 링크 정책
 
 - 피해 URL을 자동으로 열지 않습니다.
 - 링크 미리보기, 썸네일 생성, Open Graph fetch를 하지 않습니다.
 - 외부 공식기관 링크는 사용자가 누를 때만 열립니다.
+
+## 운영 보안 게이트
+
+배포 전 아래 검사를 통과해야 합니다.
+
+```bash
+npm run security:secrets
+npm run security:audit
+npm run typecheck
+npm test
+npm run build
+```
+
+`npm run ci:verify`는 위 검사를 한 번에 실행합니다. GitHub Actions의 Pull Request 품질 게이트와 Pages 배포 워크플로도 같은 검사를 사용합니다.
 
 ## 신고
 

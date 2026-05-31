@@ -85,6 +85,19 @@
   - 보관함 상태를 `잠김/열림`으로 표시하고 자동 잠금까지 남은 시간을 안내
   - 정책 문구로 패스프레이즈 미저장, 복호화 목록 초기화, 숨김 탭 잠금을 명시
 
+## v3.6 운영 보안 게이트 보강
+
+- 로컬 보안 스크립트
+  - `npm run security:secrets`: 추적 파일에서 고신뢰 API 키, GitHub 토큰, 개인키, Slack/AWS 토큰 패턴을 검사
+  - `npm run security:audit`: 중간 이상 취약 의존성 감사
+  - `npm run ci:verify`: secret scan, dependency audit, typecheck, test, build를 한 번에 실행
+- GitHub Actions 품질 게이트
+  - Pull Request용 `Quality Gate` 워크플로 추가
+  - GitHub Pages 배포 전 secret scan, dependency audit, typecheck, test를 모두 통과해야 static build와 deploy 진행
+- 운영 원칙
+  - 실제 키는 `.env`, GitHub Secrets, 배포 플랫폼 secret store에만 두고 저장소에는 빈 예시값만 유지
+  - secret scan은 고신뢰 패턴 중심의 1차 방어선이며, 외부 전문 스캐너 도입 전까지 로컬·CI 기본 게이트로 사용
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -113,7 +126,7 @@
 
 - CSP Report-Only 결과 확인 후 단계적 Enforcement 전환
 - 보안 헤더가 정적 호스팅에서도 적용되도록 Netlify/Cloudflare/Vercel별 설정
-- SAST, dependency audit, secret scan CI
+- SAST, dependency audit, secret scan CI: secret scan과 dependency audit CI 1차 구현 완료
 - 민감정보 테스트 케이스와 XSS 회귀 테스트
 
 ### Phase E: 합법적 데이터 피드

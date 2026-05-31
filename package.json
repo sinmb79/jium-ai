@@ -8,7 +8,10 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "security:secrets": "node scripts/secret-scan.mjs",
+    "security:audit": "npm audit --audit-level=moderate",
+    "ci:verify": "npm run security:secrets && npm run security:audit && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
