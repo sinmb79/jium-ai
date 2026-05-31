@@ -9,6 +9,7 @@ import { buildSafeSearchActions } from "@/lib/searchConnectors";
 import { buildSubmissionConnectorActions } from "@/lib/submissionConnectors";
 import { buildPrintableSubmissionHtml, buildSubmissionPackageZip } from "@/lib/submissionPackage";
 import { buildSubmissionPacket, submissionPacketWithEvidenceToMarkdown } from "@/lib/submissionPacket";
+import { PreSubmissionChecklistPanel } from "@/components/PreSubmissionChecklistPanel";
 import { RegionalSupportRouterPanel } from "@/components/RegionalSupportRouterPanel";
 import { SupportHandoffPanel } from "@/components/SupportHandoffPanel";
 import {
@@ -152,6 +153,8 @@ export function SubmissionPacketPanel({ savedCase }: { savedCase: SavedCase }) {
           ))}
         </div>
       </section>
+
+      <PreSubmissionChecklistPanel savedCase={savedCase} />
 
       {savedCase.classification.caseType === "DIGITAL_SEX_CRIME" ? (
         <RegionalSupportRouterPanel caseType={savedCase.classification.caseType} urgent={savedCase.input.urgent} />

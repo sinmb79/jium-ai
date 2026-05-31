@@ -1,5 +1,6 @@
 import { agencyWorkflowPlanToMarkdown } from "@/lib/agencyWorkflowProfiles";
 import { escapeHtml } from "@/lib/htmlEscape";
+import { buildPreSubmissionChecklistReport, formatPreSubmissionChecklistMarkdown } from "@/lib/preSubmissionChecklist";
 import { buildReadOnlyPacketHtml } from "@/lib/readOnlyPacket";
 import { buildSubmissionPacket, submissionPacketWithEvidenceToMarkdown, type SubmissionPacket } from "@/lib/submissionPacket";
 import { buildSubmissionPacketSnapshot } from "@/lib/submissionVersioning";
@@ -120,6 +121,7 @@ export function buildSubmissionPackageFiles(savedCase: SavedCase): ZipTextFile[]
   const packet = buildSubmissionPacket(savedCase.input, savedCase.classification, savedCase.responsePack);
   const markdown = submissionPacketWithEvidenceToMarkdown(savedCase.input, packet);
   const manifest = buildEvidenceChainManifest(savedCase, packet);
+  const preSubmissionChecklist = buildPreSubmissionChecklistReport(savedCase, packet);
   const versionSnapshot = buildSubmissionPacketSnapshot(savedCase, packet);
   const prefix = filenameSafe(`${savedCase.id}-${packet.evidenceChain.manifestFingerprint}`);
 
@@ -156,6 +158,10 @@ export function buildSubmissionPackageFiles(savedCase: SavedCase): ZipTextFile[]
     {
       name: `${prefix}/agency-workflow-checklist.txt`,
       content: agencyWorkflowPlanToMarkdown(packet.agencyWorkflowPlan),
+    },
+    {
+      name: `${prefix}/pre-submission-checklist.md`,
+      content: formatPreSubmissionChecklistMarkdown(preSubmissionChecklist),
     },
     {
       name: `${prefix}/support-handoff-guide.txt`,

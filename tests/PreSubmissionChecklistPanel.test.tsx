@@ -1,23 +1,23 @@
 import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { SubmissionPacketPanel } from "@/components/SubmissionPacketPanel";
+import { PreSubmissionChecklistPanel } from "@/components/PreSubmissionChecklistPanel";
 import { classifyCase } from "@/lib/classifier";
 import { generateRequestDraft } from "@/lib/requestTemplates";
 import { generateResponsePack } from "@/lib/responsePack";
 import type { CaseInput, SavedCase } from "@/lib/types";
 
 const input: CaseInput = {
-  situation: "디지털 성범죄 피해",
-  title: "기관별 제출 준비도 화면 테스트",
-  description: "딥페이크 이미지 게시글과 비공개방 유도 문구가 발견됐습니다.",
-  targetUrl: "https://example.com/post/ui",
+  situation: "디지털 성범죄 피해 게시물 발견",
+  title: "최종 검수 화면 테스트",
+  description: "공개 게시판에 피해 이미지 유포를 암시하는 글이 발견되었습니다.",
+  targetUrl: "https://example.com/post/preflight-ui",
   platform: "Example Forum",
   keywords: "alias",
   evidenceItems: [
     {
-      id: "ev-ui-1",
-      url: "https://example.com/post/ui",
+      id: "ev-preflight-ui",
+      url: "https://example.com/post/preflight-ui",
       platform: "Example Forum",
       location: "게시판",
       posterId: "alias",
@@ -25,7 +25,7 @@ const input: CaseInput = {
       capturedAt: "2026-05-31T09:05:00.000Z",
       captureMethod: "USER_SCREENSHOT",
       capturedByUser: true,
-      evidenceHash: "sha256-ui-placeholder",
+      evidenceHash: "sha256-ui-preflight",
       submissionTarget: "중앙디지털성범죄피해자지원센터",
       status: "DISCOVERED",
     },
@@ -38,7 +38,7 @@ const input: CaseInput = {
 function savedCase(): SavedCase {
   const classification = classifyCase(input);
   return {
-    id: "case-ui",
+    id: "case-preflight-ui",
     createdAt: "2026-05-31T00:00:00.000Z",
     updatedAt: "2026-05-31T00:00:00.000Z",
     expiresAt: "2026-08-31T00:00:00.000Z",
@@ -53,16 +53,13 @@ function savedCase(): SavedCase {
   };
 }
 
-describe("SubmissionPacketPanel", () => {
-  it("renders agency workflow readiness cards for the submission packet", () => {
-    render(<SubmissionPacketPanel savedCase={savedCase()} />);
+describe("PreSubmissionChecklistPanel", () => {
+  it("renders final pre-submission readiness and export action", () => {
+    render(<PreSubmissionChecklistPanel savedCase={savedCase()} />);
 
-    expect(screen.getByText("기관별 제출 준비도")).toBeInTheDocument();
     expect(screen.getByText("제출 전 최종 검수")).toBeInTheDocument();
-    expect(screen.getByText("지역 피해지원 라우팅")).toBeInTheDocument();
-    expect(screen.getByText("지원자 읽기전용 전달")).toBeInTheDocument();
-    expect(screen.getAllByText("중앙디지털성범죄피해자지원센터").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("경찰청 사이버범죄 신고시스템").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("공식 경로 열기").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText(/수사·심의기관에 제출하기 직전/)).toBeInTheDocument();
+    expect(screen.getByText(/점수/)).toBeInTheDocument();
+    expect(screen.getByText("검수표 저장")).toBeInTheDocument();
   });
 });

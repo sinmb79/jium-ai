@@ -245,3 +245,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The handoff archive stores the read-only packet, HTML, evidence-chain manifest, and checklist inside an AES-GCM passphrase-encrypted payload.
 - Handoff metadata keeps only case ID, role, expiry, and chain fingerprint outside encryption.
 - The submission packet UI can export `.jiumhandoff.json` plus a separate instruction memo, and the ZIP package now includes a support handoff guide.
+
+## Implemented in v3.34
+
+- Added a pre-submission checklist engine that classifies final handoff readiness as PASS, REVIEW, or BLOCKED.
+- The checklist validates case summary, access path, timestamps, capture method, integrity fingerprints, request history, original media handling, and official-authority boundaries.
+- The submission packet UI now shows a `제출 전 최종 검수` panel and can export the checklist as Markdown.
+- The agency ZIP package now includes `pre-submission-checklist.md` so support workers and officials can see what was checked before handoff.
