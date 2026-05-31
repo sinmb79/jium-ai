@@ -118,6 +118,17 @@
   - 워크플로 테스트에서 최신 major 사용과 강제 환경변수 미사용을 확인
   - Pages 배포 워크플로와 PR 품질 게이트 모두 같은 Node 24 기반 검증 흐름 유지
 
+## v3.9 운영 URL 보안 헤더 감사
+
+- 운영 URL 검증 명령
+  - `npm run security:headers:check -- <url>`로 실제 HTTP 응답의 CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy를 검사
+  - `_headers` 파일 생성과 실제 응답 헤더 강제 여부를 분리해 판단
+- 배포 의사결정 보조
+  - GitHub Pages처럼 응답 헤더 강제가 안 되는 환경은 감사 실패로 드러남
+  - Netlify/Cloudflare Pages/Vercel 등 운영 후보 배포 URL을 같은 기준으로 비교 가능
+- 회귀 방지
+  - 보안 헤더 감사 로직 테스트를 `npm run security:headers`와 `ci:verify`에 연결
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화

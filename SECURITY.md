@@ -51,6 +51,12 @@ npm run build
 npm run security:headers
 ```
 
+운영 URL에 실제 응답 헤더가 붙었는지는 아래 명령으로 확인합니다. GitHub Pages처럼 `_headers` 파일은 배포되지만 응답 헤더로 강제되지 않는 호스팅은 이 검사가 실패해야 정상입니다.
+
+```bash
+npm run security:headers:check -- https://your-production.example
+```
+
 CI는 Node.js 24 런타임을 직접 지원하는 GitHub Actions major 버전을 사용합니다. 향후 Actions 경고가 발생하면 강제 환경변수로 덮지 말고, 해당 공식 action의 최신 major와 보안 공지를 먼저 확인합니다.
 
 ## 신고
