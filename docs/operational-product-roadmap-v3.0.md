@@ -402,6 +402,27 @@
 - 검증 범위
   - JSONL/JSON 배열 파싱, 정상 원장 리포트, parse error, tamper detection, UI 검증 흐름을 테스트
 
+## v3.29 기관 감사 원장 서버 요약 API
+
+- 감사 원장 조회 capability
+  - `INSTITUTION_AUDIT_LEDGER_REVIEW` institution capability를 추가
+  - `PROGRAM_ADMIN` 역할과 `SERVER_SESSION_MFA` assurance에서만 허용
+  - 일반 피드 수입/요약 권한과 감사 원장 조회 권한을 분리
+- HTTP 코어
+  - `lib/institutionAuditLedgerHttp.ts`를 추가
+  - `GET`만 허용하고, 허용 Origin과 HttpOnly 기관 세션 쿠키를 검증
+  - 세션 토큰 검증 후 `INSTITUTION_AUDIT_LEDGER_REVIEW` capability를 요구
+  - JSONL audit store에서 원장을 읽고, `InstitutionAuditLedgerReport` 기반 공개 요약만 반환
+- 감사 재기록
+  - 감사 원장 조회 성공은 `INSTITUTION_AUDIT_LEDGER_VIEWED`로 기록
+  - 세션 누락, Origin 거부, 권한 부족은 `INSTITUTION_AUDIT_LEDGER_VIEW_DENIED`로 기록
+  - 응답에는 credential 원문, 세션 토큰, Origin URL, 원장 원문을 넣지 않음
+- 서버 Route 연결
+  - `server-route-templates/app/api/institution/audit-ledger/route.ts` 추가
+  - materialize/readiness 검사에서 login/logout/session과 함께 audit-ledger Route 템플릿을 확인
+- 검증 범위
+  - 권한 있는 세션의 redacted report 응답, 세션 누락 거부, 권한 부족 거부, materialize/readiness 갱신을 테스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -455,7 +476,8 @@
 - 서버 운영 readiness 가드: 1차 구현 완료
 - 기관 공개키 승인 패널: 1차 구현 완료
 - 기관 감사 원장 검증 패널: 1차 구현 완료
-- 운영 배포 전 과제: 실제 파트너 공개키 교체·폐기 절차, 서버/데스크톱 보안 저장소 연동, 기관 감사 로그 서버 조회 API
+- 기관 감사 원장 서버 요약 API: 1차 구현 완료
+- 운영 배포 전 과제: 실제 파트너 공개키 교체·폐기 절차, 서버/데스크톱 보안 저장소 연동, 기관 계정 관리자 UI
 
 ## 공식 경로 기준
 

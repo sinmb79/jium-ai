@@ -210,3 +210,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The report accepts JSONL or JSON array exports, verifies the hash chain, and summarizes event type, outcome, origin classification, organization, and recent records.
 - The UI can paste or load `.jsonl/.json` ledger files and export a Markdown verification report.
 - Regression tests cover valid ledgers, parse failures, tamper detection, and the dashboard verification flow.
+
+## Implemented in v3.29
+
+- Added a server-side institution audit ledger summary HTTP core and Route template.
+- Added `INSTITUTION_AUDIT_LEDGER_REVIEW` as a PROGRAM_ADMIN MFA-only capability.
+- The audit-ledger API verifies the institution session cookie, requires the audit review capability, reads the server audit store, and returns only a redacted summary report.
+- Audit-ledger view success and denial attempts are themselves recorded as privacy-minimized audit events.

@@ -82,9 +82,16 @@ export function parseInstitutionAuditLedgerText(text: string): InstitutionAuditL
 
 export async function buildInstitutionAuditLedgerReport(text: string): Promise<InstitutionAuditLedgerReport> {
   const parsed = parseInstitutionAuditLedgerText(text);
-  const records = sortRecords(parsed.records);
-  const verification = parsed.errors.length
-    ? { valid: false, errors: parsed.errors, recordCount: records.length }
+  return buildInstitutionAuditLedgerReportFromRecords(parsed.records, parsed.errors);
+}
+
+export async function buildInstitutionAuditLedgerReportFromRecords(
+  inputRecords: readonly InstitutionAuditLedgerRecord[],
+  parseErrors: string[] = [],
+): Promise<InstitutionAuditLedgerReport> {
+  const records = sortRecords([...inputRecords]);
+  const verification = parseErrors.length
+    ? { valid: false, errors: parseErrors, recordCount: records.length }
     : await verifyInstitutionAuditLedger(records);
   const byEventType = {} as Record<InstitutionAuditEventType, number>;
   const byOutcome = {} as Record<InstitutionAuditOutcome, number>;
@@ -101,7 +108,7 @@ export async function buildInstitutionAuditLedgerReport(text: string): Promise<I
 
   return {
     verification,
-    parseErrors: parsed.errors,
+    parseErrors,
     firstRecordedAt: records[0]?.recordedAt,
     lastRecordedAt: records[records.length - 1]?.recordedAt,
     byEventType,

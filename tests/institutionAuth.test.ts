@@ -69,6 +69,23 @@ describe("institution account auth and RBAC", () => {
     expect(validation.errors.join("\n")).toContain("requires mfaVerifiedAt");
   });
 
+  it("requires program admin MFA for audit ledger review", () => {
+    const valid = session({
+      role: "PROGRAM_ADMIN",
+      capabilityIds: ["AUTHORIZED_FEED_SUMMARY", "INSTITUTION_AUDIT_LEDGER_REVIEW"],
+    });
+    const wrongRole = session({
+      role: "PLATFORM_TRUST_SAFETY",
+      capabilityIds: ["AUTHORIZED_FEED_SUMMARY", "INSTITUTION_AUDIT_LEDGER_REVIEW"],
+    });
+
+    expect(validateInstitutionAccountSession(valid, now).valid).toBe(true);
+    expect(canUseInstitutionCapability(valid, "INSTITUTION_AUDIT_LEDGER_REVIEW", now)).toBe(true);
+    expect(validateInstitutionAccountSession(wrongRole, now).errors.join("\n")).toContain(
+      "PLATFORM_TRUST_SAFETY cannot use INSTITUTION_AUDIT_LEDGER_REVIEW",
+    );
+  });
+
   it("rejects raw account identifiers and expired sessions", () => {
     const raw = validateInstitutionAccountSession(session({ subjectId: "caseworker@example.invalid" }), now);
     const expired = validateInstitutionAccountSession(session({ expiresAt: "2026-05-01T00:00:00.000Z" }), now);

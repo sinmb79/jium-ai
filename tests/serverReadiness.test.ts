@@ -31,6 +31,7 @@ async function writeRegistry(root: string, keys: unknown[]) {
 
 async function writeRequiredRouteTemplates(root: string) {
   for (const relativePath of [
+    "api/institution/audit-ledger/route.ts",
     "api/institution/login/route.ts",
     "api/institution/logout/route.ts",
     "api/institution/session/route.ts",

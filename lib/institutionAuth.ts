@@ -20,7 +20,8 @@ export type InstitutionCapability =
   | "REDACTED_CASE_REVIEW"
   | "OFFICIAL_PACKET_EXPORT"
   | "HANDOFF_STATUS_UPDATE"
-  | "TRUSTED_KEY_REVIEW";
+  | "TRUSTED_KEY_REVIEW"
+  | "INSTITUTION_AUDIT_LEDGER_REVIEW";
 
 export type InstitutionEvidenceAccessScope = "REDACTED_ONLY" | "ASSIGNED_CASE_REDACTED" | "OFFICIAL_REQUEST_ONLY";
 
@@ -59,6 +60,7 @@ export const INSTITUTION_CAPABILITIES: InstitutionCapability[] = [
   "OFFICIAL_PACKET_EXPORT",
   "HANDOFF_STATUS_UPDATE",
   "TRUSTED_KEY_REVIEW",
+  "INSTITUTION_AUDIT_LEDGER_REVIEW",
 ];
 
 export const INSTITUTION_ROLE_CAPABILITY_MATRIX: Record<InstitutionRole, InstitutionCapability[]> = {
@@ -89,10 +91,11 @@ export const INSTITUTION_ROLE_CAPABILITY_MATRIX: Record<InstitutionRole, Institu
     "OFFICIAL_PACKET_EXPORT",
     "HANDOFF_STATUS_UPDATE",
     "TRUSTED_KEY_REVIEW",
+    "INSTITUTION_AUDIT_LEDGER_REVIEW",
   ],
 };
 
-const MFA_REQUIRED_CAPABILITIES: InstitutionCapability[] = ["TRUSTED_KEY_REVIEW"];
+const MFA_REQUIRED_CAPABILITIES: InstitutionCapability[] = ["TRUSTED_KEY_REVIEW", "INSTITUTION_AUDIT_LEDGER_REVIEW"];
 const UNSAFE_ACCOUNT_MARKERS = ["http://", "https://", "discord.gg/", "t.me/", "telegram.me/", ".onion", "@", "010-"];
 
 function parseDate(value: string) {

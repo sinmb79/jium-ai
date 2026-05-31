@@ -6,6 +6,7 @@ import {
   handleInstitutionLogoutRequest,
   handleInstitutionSessionRequest,
 } from "@/lib/institutionLoginHttp";
+import { handleInstitutionAuditLedgerSummaryRequest } from "@/lib/institutionAuditLedgerHttp";
 import {
   validateInstitutionSessionTokenKey,
   type InstitutionSessionTokenKey,
@@ -41,6 +42,7 @@ export type InstitutionServerRouteHandlers = {
   login: (request: Request) => Promise<Response>;
   session: (request: Request) => Promise<Response>;
   logout: (request: Request) => Promise<Response>;
+  auditLedger: (request: Request) => Promise<Response>;
 };
 
 function clean(value: string | undefined) {
@@ -158,6 +160,20 @@ export function createInstitutionServerRouteHandlers(
       handleInstitutionLogoutRequest(request, {
         secureCookies: config.secureCookies,
         allowedOrigins: config.allowedOrigins,
+        auditSink: config.auditSink,
+        now: config.now?.(),
+      }),
+    auditLedger: (request) =>
+      handleInstitutionAuditLedgerSummaryRequest(request, {
+        tokenKeys: config.tokenKeys,
+        secureCookies: config.secureCookies,
+        allowedOrigins: config.allowedOrigins,
+        readAuditRecords: async () => {
+          if (!config.auditStore) {
+            throw new Error("Institution audit ledger store is not configured");
+          }
+          return config.auditStore.read();
+        },
         auditSink: config.auditSink,
         now: config.now?.(),
       }),

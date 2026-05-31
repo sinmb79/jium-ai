@@ -352,6 +352,13 @@ v3.28 기관 감사 원장 검증 패널에서 추가 반영한 항목:
 - 데이터 최소화: credential 원문, 세션 토큰, URL, 초대링크, 계정 핸들, onion 주소, 이메일, 전화번호는 표시하지 않는다.
 - 실패 처리: 검증 실패 원장은 덮어쓰지 않고 원본 보존과 관리자 조사로 분리한다.
 
+v3.29 기관 감사 원장 서버 요약 API에서 추가 반영한 항목:
+
+- 서버 조회 권한: `INSTITUTION_AUDIT_LEDGER_REVIEW` capability를 추가하고 `PROGRAM_ADMIN` MFA 세션에만 허용한다.
+- API 요약: `/api/institution/audit-ledger` 서버 Route가 원장 원문 대신 검증 상태, 집계, 최근 비식별 기록만 반환한다.
+- 조회 감사: 성공/거부 조회 자체도 감사 원장 이벤트로 남긴다.
+- Route materialize: 서버 배포 템플릿과 readiness 검사에 audit-ledger Route를 포함한다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

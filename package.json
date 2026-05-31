@@ -13,7 +13,7 @@
     "security:headers:check": "node scripts/check-security-headers.mjs",
     "security:xss": "npm test -- --run tests/readOnlyPacket.test.ts tests/submissionPackage.test.ts",
     "security:feed-keys": "node scripts/check-authorized-feed-keys.mjs",
-    "security:auth": "npm test -- --run tests/institutionAuth.test.ts tests/institutionSessionToken.test.ts tests/institutionSessionCookie.test.ts tests/institutionLogin.test.ts tests/institutionLoginHttp.test.ts tests/institutionAuditLog.test.ts tests/institutionAuditLedger.test.ts tests/serverInstitutionAuditLedgerStore.test.ts tests/institutionServerRoutes.test.ts tests/authorizedOperatorCredential.test.ts",
+    "security:auth": "npm test -- --run tests/institutionAuth.test.ts tests/institutionSessionToken.test.ts tests/institutionSessionCookie.test.ts tests/institutionLogin.test.ts tests/institutionLoginHttp.test.ts tests/institutionAuditLog.test.ts tests/institutionAuditLedger.test.ts tests/institutionAuditLedgerHttp.test.ts tests/serverInstitutionAuditLedgerStore.test.ts tests/institutionServerRoutes.test.ts tests/authorizedOperatorCredential.test.ts",
     "security:feeds": "npm run security:feed-keys && npm test -- --run tests/authorizedFeedAccess.test.ts tests/authorizedIntelligenceFeed.test.ts tests/authorizedFeedSignature.test.ts tests/authorizedFeedKeyRegistryScript.test.ts tests/AuthorizedFeedPanel.test.tsx tests/digitalCrimeRouteKnowledge.test.ts tests/promotionSurfaceIntelligence.test.ts tests/learningStore.test.ts",
     "security:deployment": "node scripts/check-deployment-profile.mjs",
     "security:server-readiness": "node scripts/check-server-readiness.mjs",

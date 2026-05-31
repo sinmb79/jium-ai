@@ -40,6 +40,7 @@ afterEach(async () => {
 describe("server route materialization", () => {
   it("keeps the server route templates explicit and lazy-loaded", () => {
     expect(listServerRouteTemplates().map((template) => template.relativePath)).toEqual([
+      "api/institution/audit-ledger/route.ts",
       "api/institution/login/route.ts",
       "api/institution/logout/route.ts",
       "api/institution/session/route.ts",
@@ -57,6 +58,7 @@ describe("server route materialization", () => {
 
     expect(result.profile).toBe("server-routes");
     expect(result.routeFiles).toEqual([
+      "app/api/institution/audit-ledger/route.ts",
       "app/api/institution/login/route.ts",
       "app/api/institution/logout/route.ts",
       "app/api/institution/session/route.ts",
