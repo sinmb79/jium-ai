@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { classifyCase } from "@/lib/classifier";
-import { clearEncryptedVault, encryptedVaultStorageKey, loadEncryptedVault, upsertEncryptedCase } from "@/lib/encryptedCaseStorage";
+import { clearEncryptedVault, encryptedVaultStorageKey, getEncryptedVaultStorageStatus, loadEncryptedVault, upsertEncryptedCase } from "@/lib/encryptedCaseStorage";
 import { generateRequestDraft } from "@/lib/requestTemplates";
 import { generateResponsePack } from "@/lib/responsePack";
 import type { CaseInput, SavedCase } from "@/lib/types";
@@ -38,6 +38,7 @@ function savedCase(): SavedCase {
 
 describe("encrypted case storage", () => {
   beforeEach(() => {
+    delete window.jiumSecureVault;
     clearEncryptedVault();
   });
 
@@ -53,5 +54,40 @@ describe("encrypted case storage", () => {
     expect(vault.cases).toHaveLength(1);
     expect(vault.cases[0]?.input.targetUrl).toBe("https://example.com/private/post/123");
     expect(vault.cases[0]?.auditLog?.some((entry) => entry.summary.includes("암호화 보관함"))).toBe(true);
+  });
+
+  it("uses a desktop secure-storage bridge when one is available", async () => {
+    const bridgeStore = new Map<string, string>();
+    window.jiumSecureVault = {
+      readEncryptedVault: (key) => bridgeStore.get(key) || null,
+      writeEncryptedVault: (key, value) => {
+        bridgeStore.set(key, value);
+      },
+      deleteEncryptedVault: (key) => {
+        bridgeStore.delete(key);
+      },
+      hasEncryptedVault: (key) => bridgeStore.has(key),
+      describe: () => ({
+        providerName: "Windows DPAPI test bridge",
+        platform: "windows-dpapi",
+        platformProtected: true,
+      }),
+    };
+
+    await upsertEncryptedCase(savedCase(), "long passphrase for vault");
+
+    const bridgeRaw = bridgeStore.get(encryptedVaultStorageKey()) || "";
+    expect(window.localStorage.getItem(encryptedVaultStorageKey())).toBeNull();
+    expect(bridgeRaw).not.toContain("민감 URL 보관");
+    expect(bridgeRaw).not.toContain("/private/post/123");
+
+    const status = await getEncryptedVaultStorageStatus();
+    expect(status.kind).toBe("DESKTOP_SECURE_STORAGE_BRIDGE");
+    expect(status.usesPlatformSecretStore).toBe(true);
+    expect(status.providerName).toBe("Windows DPAPI test bridge");
+    expect(status.hasVault).toBe(true);
+
+    const vault = await loadEncryptedVault("long passphrase for vault");
+    expect(vault.cases[0]?.input.targetUrl).toBe("https://example.com/private/post/123");
   });
 });

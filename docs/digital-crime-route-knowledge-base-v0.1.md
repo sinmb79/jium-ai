@@ -224,3 +224,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Added retirement and rotation patch helpers so operators can review key changes before updating the registry.
 - Server readiness now requires at least one currently active trusted key, not just any key in the registry.
 - The dashboard trusted-key panel can review registry lifecycle status and generate a retirement patch without storing private key material.
+
+## Implemented in v3.31
+
+- Split the encrypted vault storage backend into browser localStorage and an optional desktop secure-storage bridge.
+- Added the `window.jiumSecureVault` bridge contract for future Windows DPAPI, macOS Keychain, or Linux Secret Service providers.
+- When the bridge is present, encrypted vault payloads are written to the bridge and removed from browser localStorage.
+- The vault UI now shows the active storage backend and whether an OS-protected provider is connected.

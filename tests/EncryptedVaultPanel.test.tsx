@@ -41,8 +41,16 @@ function savedCase(): SavedCase {
 
 describe("EncryptedVaultPanel", () => {
   beforeEach(() => {
+    delete window.jiumSecureVault;
     clearEncryptedVault();
     vi.useRealTimers();
+  });
+
+  it("shows the current encrypted storage backend", async () => {
+    render(<EncryptedVaultPanel currentCase={savedCase()} />);
+
+    expect(await screen.findByText("브라우저 localStorage 보관")).toBeInTheDocument();
+    expect(screen.getByText("브라우저 암호화 보관 모드")).toBeInTheDocument();
   });
 
   it("clears decrypted cases and passphrase when the user locks the vault", async () => {

@@ -1,8 +1,14 @@
 "use client";
 
-import { Clock3, Download, Eye, Lock, ShieldCheck, Trash2, Unlock, Upload } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { clearEncryptedVault, hasEncryptedVault, loadEncryptedVault, upsertEncryptedCase } from "@/lib/encryptedCaseStorage";
+import { Clock3, Download, Eye, HardDrive, Lock, ShieldCheck, Trash2, Unlock, Upload } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  clearEncryptedVaultAsync,
+  getEncryptedVaultStorageStatus,
+  loadEncryptedVault,
+  upsertEncryptedCase,
+  type EncryptedVaultStorageStatus,
+} from "@/lib/encryptedCaseStorage";
 import { downloadFile, downloadTextFile, savedCaseToMarkdown } from "@/lib/export";
 import { openReadOnlyPacket } from "@/lib/readOnlyPacket";
 import { compromisedDeviceRisks, deviceSafetyWarningText, safeDeviceChecklist } from "@/lib/deviceSafety";
@@ -22,10 +28,15 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
   const [deviceChecked, setDeviceChecked] = useState(false);
   const [session, setSession] = useState<VaultSessionState>({});
   const [remainingMs, setRemainingMs] = useState(0);
+  const [storageStatus, setStorageStatus] = useState<EncryptedVaultStorageStatus | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const vaultExists = useMemo(() => hasEncryptedVault(), [message, cases.length]);
+  const vaultExists = storageStatus?.hasVault ?? false;
   const canUsePassphrase = passphrase.length >= 12;
   const isUnlocked = cases.length > 0 && Boolean(session.unlockedAt);
+
+  const refreshStorageStatus = useCallback(async () => {
+    setStorageStatus(await getEncryptedVaultStorageStatus());
+  }, []);
 
   const markActivity = useCallback(() => {
     setSession((current) => (current.unlockedAt ? { ...current, lastActivityAt: Date.now() } : current));
@@ -38,6 +49,10 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
     setRemainingMs(0);
     setMessage(reason);
   }, []);
+
+  useEffect(() => {
+    void refreshStorageStatus();
+  }, [refreshStorageStatus]);
 
   useEffect(() => {
     if (!session.unlockedAt) {
@@ -76,6 +91,7 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
     setSession({ unlockedAt: now, lastActivityAt: now });
     setRemainingMs(vaultRemainingLockMs({ unlockedAt: now, lastActivityAt: now }));
     setMessage(openedMessage);
+    void refreshStorageStatus();
   }
 
   async function saveCurrentCase() {
@@ -91,6 +107,7 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
     try {
       const state = await upsertEncryptedCase(currentCase, passphrase);
       unlockSession(state.cases, "암호화 보관함에 저장하고 잠시 열었습니다. 패스프레이즈는 저장하지 않습니다.");
+      await refreshStorageStatus();
     } catch {
       setMessage("암호화 저장에 실패했습니다. 패스프레이즈와 브라우저 보안 환경을 확인하세요.");
     } finally {
@@ -118,6 +135,7 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
         setRemainingMs(0);
         setMessage("암호화 보관함이 비어 있습니다.");
       }
+      await refreshStorageStatus();
     } catch {
       setCases([]);
       setSession({});
@@ -128,13 +146,19 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
     }
   }
 
-  function clearVault() {
+  async function clearVault() {
     const ok = window.confirm("암호화 보관함 전체를 삭제합니다. 패스프레이즈가 있어도 복구할 수 없습니다.");
     if (!ok) {
       return;
     }
-    clearEncryptedVault();
-    lockVault("암호화 보관함을 삭제했습니다.");
+    setBusy(true);
+    try {
+      await clearEncryptedVaultAsync();
+      lockVault("암호화 보관함을 삭제했습니다.");
+      await refreshStorageStatus();
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function exportVaultFile() {
@@ -153,6 +177,7 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
       const day = new Date().toISOString().slice(0, 10);
       downloadFile(`jium-ai-${day}.jiumcase`, serializeJiumCaseArchive(archive), "application/vnd.jium.case+json;charset=utf-8");
       markActivity();
+      await refreshStorageStatus();
       setMessage("암호화 사건 파일(.jiumcase)을 내려받았습니다.");
     } catch {
       setMessage("암호화 사건 파일을 만들지 못했습니다. 패스프레이즈를 확인하세요.");
@@ -176,6 +201,7 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
     try {
       const state = await importJiumCaseArchiveToVault(await file.text(), passphrase);
       unlockSession(state.cases, `암호화 사건 파일에서 ${state.cases.length}건을 보관함에 반영했습니다.`);
+      await refreshStorageStatus();
     } catch {
       setMessage(".jiumcase 파일을 열지 못했습니다. 파일 형식과 패스프레이즈를 확인하세요.");
     } finally {
@@ -202,6 +228,20 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
         <div>
           <strong>{isUnlocked ? `열림 · 자동 잠금까지 ${formatVaultRemainingTime(remainingMs)}` : "잠김 · 복호화 목록 없음"}</strong>
           <span>{vaultAutoLockPolicyText()}</span>
+        </div>
+      </div>
+      <div className="vault-session-box" role="status">
+        <HardDrive size={17} aria-hidden="true" />
+        <div>
+          <strong>
+            {storageStatus
+              ? `${storageStatus.label}${storageStatus.providerName ? ` · ${storageStatus.providerName}` : ""}`
+              : "보관 backend 확인 중"}
+          </strong>
+          <span>{storageStatus?.usesPlatformSecretStore ? "OS 보안 저장소 브리지 연결됨" : "브라우저 암호화 보관 모드"}</span>
+          {storageStatus?.warnings.slice(0, 1).map((warning) => (
+            <span key={warning}>{warning}</span>
+          ))}
         </div>
       </div>
       <div className="device-safety-box" role="note">
@@ -252,7 +292,7 @@ export function EncryptedVaultPanel({ currentCase }: EncryptedVaultPanelProps) {
           보관함 열기
         </button>
         {vaultExists ? (
-          <button className="btn btn-ghost" type="button" disabled={busy} onClick={clearVault}>
+          <button className="btn btn-ghost" type="button" disabled={busy} onClick={() => void clearVault()}>
             <Trash2 size={17} aria-hidden="true" />
             암호화본 삭제
           </button>

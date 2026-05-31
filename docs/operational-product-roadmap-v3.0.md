@@ -441,6 +441,18 @@
 - 검증 범위
   - 수명주기 판정, 폐기/교체 patch 생성, 만료 키만 있는 readiness 거부, UI 폐기 patch 흐름을 테스트
 
+## v3.31 암호화 보관함 보안 저장소 backend 분리
+
+- 보관 backend 추상화
+  - `lib/encryptedCaseStorage.ts`에 브라우저 localStorage와 데스크톱 보안 저장소 브리지 backend를 분리
+  - 데스크톱 앱은 `window.jiumSecureVault` 계약으로 read/write/delete/describe를 제공할 수 있음
+  - 브리지가 연결되면 암호화 payload를 localStorage에 남기지 않고 브리지 저장소에만 기록
+- 운영 준비도 표시
+  - 암호화 보관함 UI가 현재 backend, providerName, OS 보안 저장소 연결 여부, 경고를 표시
+  - 브리지 미연결 상태에서는 브라우저 localStorage 암호화 모드와 운영 전 보강 필요성을 명시
+- 검증 범위
+  - localStorage 암호화 저장, 데스크톱 브리지 우선 저장, localStorage 미잔류, UI backend 표시를 테스트
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -454,7 +466,8 @@
 ### Phase B: 데스크톱 보안 저장소
 
 - Tauri 또는 Electron 기반 로컬 앱 검토
-- Windows DPAPI, macOS Keychain, Linux Secret Service 연동
+- Windows DPAPI, macOS Keychain, Linux Secret Service 브리지 실제 구현
+- 보관함 storage backend 추상화와 UI 상태 표시: 1차 구현 완료
 - 브라우저 확장프로그램 영향을 줄이는 독립 실행 환경
 - 자동 잠금, 세션 타임아웃, 복호화 메모리 초기화: 브라우저 보관함 1차 구현 완료
 
@@ -496,7 +509,8 @@
 - 기관 공개키 수명주기·폐기 절차: 1차 구현 완료
 - 기관 감사 원장 검증 패널: 1차 구현 완료
 - 기관 감사 원장 서버 요약 API: 1차 구현 완료
-- 운영 배포 전 과제: 실제 파트너 공개키 값 등록과 승인 기록 보관, 서버/데스크톱 보안 저장소 연동, 기관 계정 관리자 UI
+- 암호화 보관함 보안 저장소 backend 분리: 1차 구현 완료
+- 운영 배포 전 과제: 실제 파트너 공개키 값 등록과 승인 기록 보관, 네이티브 DPAPI/Keychain/Secret Service 브리지 구현, 기관 계정 관리자 UI
 
 ## 공식 경로 기준
 

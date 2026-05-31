@@ -366,6 +366,13 @@ v3.30 기관 공개키 수명주기·폐기 절차에서 추가 반영한 항목
 - 교체 절차: 새 공개키 승인 후 기존 공개키를 폐기하는 rotation patch 코어를 마련했다.
 - 운영 readiness: 서버 운영 준비 검사는 공개키 개수가 아니라 현재 활성 공개키가 1개 이상인지 확인한다.
 
+v3.31 암호화 보관함 보안 저장소 backend 분리에서 추가 반영한 항목:
+
+- backend 분리: 암호화 보관함이 브라우저 localStorage와 데스크톱 보안 저장소 브리지를 같은 API로 사용할 수 있게 했다.
+- 데스크톱 연결 계약: 향후 Tauri/Electron 앱은 `window.jiumSecureVault`로 OS 보안 저장소 read/write/delete/describe 기능을 제공한다.
+- localStorage 미잔류: 브리지가 연결되면 암호화 payload를 브라우저 localStorage에 남기지 않는다.
+- UI 상태 표시: 피해자가 현재 보관 backend와 OS 보안 저장소 연결 여부를 볼 수 있게 했다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP
