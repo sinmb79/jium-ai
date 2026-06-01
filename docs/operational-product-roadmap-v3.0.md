@@ -815,3 +815,18 @@
   - `ops:handoff:bundle`은 `operational-approval-records-report.json`과 `.md`를 함께 묶는다.
 - 검증 범위
   - 완전한 approval packet, 누락된 승인 유형, raw URL 유출 차단, 경로 redaction, go-live/handoff 연동을 테스트했다.
+
+## v3.52 운영 승인 packet init
+
+- 승인 packet 생성 보조
+  - 앱 version을 `0.3.52`로 올리고 `ops:approvals:init`을 추가했다.
+  - 운영자는 git에서 제외된 `ops/private/operational-approval-records.json` 초안을 생성한 뒤, 실제 승인 기록을 채워 `ops:approvals:check`를 통과시킨다.
+  - 기존 packet은 기본적으로 덮어쓰지 않고, 명시적 `-- --force`가 있을 때만 다시 생성한다.
+- placeholder 차단
+  - 초안은 `REPLACE-ME` reference와 `PENDING_APPROVAL` 상태를 넣어 일부러 BLOCKED로 남긴다.
+  - validator가 `REPLACE-ME`, `TODO`, `TBD`, `PLACEHOLDER`, `PENDING_APPROVAL` 같은 placeholder 값을 차단한다.
+- 개인정보와 secret 최소화
+  - init template에는 raw URL, 연락처, 담당자명, secret, token, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호를 넣지 않는다.
+  - 승인 packet이 실제 운영 자료가 되는 시점에도 가명 reference, release scope, sha256 증거 지문만 사용하도록 유도한다.
+- 검증 범위
+  - template 생성, overwrite 차단, force overwrite, release tag 정렬, placeholder 기반 BLOCKED 판정을 테스트했다.

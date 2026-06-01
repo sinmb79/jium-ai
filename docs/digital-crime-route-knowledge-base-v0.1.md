@@ -367,3 +367,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - `ops:go-live:check` now requires the approval records gate in addition to environment approval flags, server readiness, and desktop publish readiness.
 - `ops:handoff:bundle` now includes redacted operational approval records reports in JSON and Markdown.
 - Approval packets and reports reject raw URLs, contacts, names, secrets, tokens, certificate material, victim indicators, invite links, onion addresses, emails, and phone numbers.
+
+## Implemented in v3.52
+
+- Added `scripts/init-operational-approval-records.mjs` and `ops:approvals:init` to create a private approval records packet scaffold.
+- The scaffold is intentionally BLOCKED until placeholders are replaced and real human approvals are recorded.
+- The validator now rejects placeholder values such as `REPLACE-ME`, `TODO`, `TBD`, `PLACEHOLDER`, and `PENDING_APPROVAL`.
+- The init command refuses to overwrite an existing private packet unless `--force` is explicitly passed.
+- The generated scaffold avoids raw URLs, contacts, names, secrets, tokens, victim indicators, invite links, onion addresses, emails, and phone numbers.

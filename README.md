@@ -179,3 +179,13 @@ Production go-live now requires a private, redacted approval records packet in a
 - The default private path is `ops/private/operational-approval-records.json`, and `ops/private` is ignored by git.
 
 The approval packet must contain only pseudonymous references, release/package alignment, HTTPS status fields, and required approval types. Do not store raw URLs, contacts, owner names, secrets, tokens, victim indicators, invite links, onion addresses, emails, or phone numbers in the packet.
+
+## v0.3.52 Approval Packet Init
+
+Operators can now create a private approval packet scaffold with:
+
+```bash
+npm run ops:approvals:init
+```
+
+The generated packet stays BLOCKED until every `REPLACE-ME` placeholder is replaced and each record is changed to `APPROVED` after real human approval. Existing packets are not overwritten unless `-- --force` is passed.
