@@ -22,9 +22,14 @@ const completeInput: CaseInput = {
       foundAt: "2026-05-31T09:00:00.000Z",
       capturedAt: "2026-05-31T09:05:00.000Z",
       captureMethod: "USER_SCREENSHOT",
+      collectorRef: "victim-self-ref-01",
+      deviceRef: "trusted-device-ref-01",
       capturedByUser: true,
       evidenceHash: "sha256-preflight-placeholder",
+      hashAlgorithm: "SHA-256",
+      verifiedAt: "2026-05-31T09:08:00.000Z",
       submissionTarget: "중앙디지털성범죄피해자지원센터",
+      handoffRecipientRef: "agency-intake-ref-01",
       status: "DISCOVERED",
       requestLogs: [
         {
@@ -99,5 +104,29 @@ describe("pre-submission checklist", () => {
     expect(markdown).toContain("수사·심의기관");
     expect(markdown).not.toContain(".onion");
     expect(markdown).not.toContain("초대코드 구매");
+  });
+
+  it("flags missing custody metadata for operational handoff review", () => {
+    const evidence = completeInput.evidenceItems![0];
+    const report = buildPreSubmissionChecklistReport(
+      savedCase({
+        ...completeInput,
+        evidenceItems: [
+          {
+            ...evidence,
+            collectorRef: "",
+            deviceRef: "",
+            hashAlgorithm: "UNKNOWN",
+            verifiedAt: "",
+            handoffRecipientRef: "",
+          },
+        ],
+      }),
+    );
+    const custodyItem = report.items.find((item) => item.id === "evidence-custody-chain");
+
+    expect(custodyItem?.status).toBe("REVIEW");
+    expect(custodyItem?.detail).toContain("collector pseudonymous reference");
+    expect(report.warnings.join("\n")).toContain("collector pseudonymous reference");
   });
 });

@@ -344,3 +344,17 @@ npm run ops:onboarding:check
 ```
 
 `ops:onboarding:init` creates `public-operations.template.json`, and `ops:onboarding:check` requires approved pseudonymous evidence for the public app, privacy notice, and support route. The actual URLs stay in private env/deployment settings and are redacted from reports.
+
+## v0.3.66 Evidence Custody Chain
+
+Submission packets now track evidence custody metadata for real operational handoff:
+
+- `collectorRef`
+- `deviceRef`
+- `hashAlgorithm`
+- `verifiedAt`
+- `handoffRecipientRef`
+
+These are pseudonymous references only. Names, phone numbers, emails, URLs, invite links, and onion addresses are redacted from custody refs and reported as custody warnings.
+
+The pre-submission checklist now includes `evidence-custody-chain`, so missing custody metadata is visible before a victim or support worker submits the package to an official agency. Details are in [Evidence Custody Chain v0.3.66](docs/evidence-custody-chain-v0.3.66.md).

@@ -85,6 +85,18 @@ function hasSubmissionTarget(evidenceItems: EvidenceItem[]) {
   return evidenceItems.some((item) => clean(item.submissionTarget));
 }
 
+const CUSTODY_MISSING_FIELDS = new Set([
+  "collector pseudonymous reference",
+  "collection device pseudonymous reference",
+  "hash algorithm",
+  "verification timestamp",
+  "handoff recipient pseudonymous reference",
+]);
+
+function custodyMissingFields(packet: SubmissionPacket) {
+  return packet.evidenceChain.missingForOperationalUse.filter((item) => CUSTODY_MISSING_FIELDS.has(item));
+}
+
 function hasOriginalMediaMetadata(evidenceItems: EvidenceItem[]) {
   return evidenceItems.some((item) => clean(item.fileName) || clean(item.fileMimeType) || typeof item.fileSize === "number");
 }
@@ -131,6 +143,9 @@ export function buildPreSubmissionChecklistReport(
   const summaryParts = [savedCase.input.title, savedCase.input.description, savedCase.input.situation].filter((value) => clean(value));
   const completeSummary = summaryParts.length === 3;
   const accessPath = hasAccessPath(savedCase, packet);
+  const custodyMissing = custodyMissingFields(packet);
+  const custodyWarnings = packet.evidenceChain.custodyWarnings;
+  const custodyStatus: PreSubmissionCheckStatus = custodyWarnings.length ? "BLOCKED" : custodyMissing.length ? "REVIEW" : evidenceItems.length ? "PASS" : "BLOCKED";
   const targets = packet.agencyWorkflowPlan.recommendations.map(({ profile, readiness }) => ({
     agencyName: profile.name,
     readinessStatus: readiness.status,
@@ -202,6 +217,18 @@ export function buildPreSubmissionChecklistReport(
       "SUPPORTER",
     ),
     check(
+      "evidence-custody-chain",
+      "증거 인계·검증 메타데이터",
+      custodyStatus,
+      custodyWarnings.length
+        ? custodyWarnings.join("; ")
+        : custodyMissing.length
+          ? custodyMissing.join(", ")
+          : "증거별 collector, device, capture method, hash algorithm, verification timestamp, handoff recipient ref가 준비되어 있습니다.",
+      custodyMissing.length ? custodyMissing.join(", ") : packet.evidenceChain.manifestFingerprint,
+      "SUPPORTER",
+    ),
+    check(
       "request-history",
       "제출 대상·요청 이력",
       hasRequestLog(evidenceItems) ? "PASS" : "REVIEW",
@@ -258,6 +285,8 @@ export function buildPreSubmissionChecklistReport(
   const score = scoreItems(items);
   const overallStatus: PreSubmissionOverallStatus = blockers.length ? "BLOCKED" : score >= 80 ? "READY_TO_SUBMIT" : "NEEDS_REVIEW";
   const warnings = [
+    ...custodyWarnings,
+    ...custodyMissing.map((item) => `Evidence custody review needed: ${item}`),
     "지움AI는 자동 제출·자동 고소·가해자 단정을 하지 않습니다.",
     "비공개방 침투, 초대링크 수집, 직접 잠입, 계정 구매, 다크웹 접속은 피해자 직접 수행 대상이 아닙니다.",
     "공식기관 제출 전 민감 원문과 원본 피해물 포함 여부를 다시 확인하세요.",

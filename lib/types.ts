@@ -44,6 +44,8 @@ export type EvidenceCaptureMethod =
   | "PLATFORM_REPORT"
   | "THIRD_PARTY_TIP";
 
+export type EvidenceHashAlgorithm = "SHA-256" | "A_HASH" | "METADATA_FINGERPRINT" | "UNKNOWN";
+
 export type EvidenceRequestStatus = "DRAFTED" | "SENT" | "RECEIVED" | "REJECTED" | "ESCALATED";
 
 export type EvidenceRequestLog = {
@@ -65,16 +67,21 @@ export type EvidenceItem = {
   foundAt?: string;
   capturedAt?: string;
   captureMethod?: EvidenceCaptureMethod;
+  collectorRef?: string;
+  deviceRef?: string;
   capturedByUser: boolean;
   evidenceHash?: string;
+  hashAlgorithm?: EvidenceHashAlgorithm;
   hashSource?: string;
   visualFingerprint?: string;
+  verifiedAt?: string;
   fileName?: string;
   fileSize?: number;
   fileMimeType?: string;
   fileLastModified?: string;
   metadataFingerprint?: string;
   submissionTarget?: string;
+  handoffRecipientRef?: string;
   status: EvidenceStatus;
   requestLogs?: EvidenceRequestLog[];
   notes?: string;

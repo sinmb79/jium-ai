@@ -72,9 +72,14 @@ export function buildEvidenceMetadataFingerprint(item: EvidenceItem) {
     trim(item.foundAt),
     trim(item.capturedAt),
     item.captureMethod || "UNKNOWN",
+    trim(item.collectorRef),
+    trim(item.deviceRef),
     trim(item.visualFingerprint),
     trim(item.evidenceHash),
+    item.hashAlgorithm || "UNKNOWN",
+    trim(item.verifiedAt),
     trim(item.submissionTarget),
+    trim(item.handoffRecipientRef),
     item.status || "DISCOVERED",
   ].join("|");
 
@@ -91,15 +96,20 @@ export function createEvidenceItem(seed: Partial<EvidenceItem> = {}): EvidenceIt
     foundAt: seed.foundAt || "",
     capturedAt: seed.capturedAt || "",
     captureMethod: seed.captureMethod || "UNKNOWN",
+    collectorRef: seed.collectorRef || "",
+    deviceRef: seed.deviceRef || "",
     capturedByUser: seed.capturedByUser ?? false,
     evidenceHash: seed.evidenceHash || "",
+    hashAlgorithm: seed.hashAlgorithm || "UNKNOWN",
     hashSource: seed.hashSource || "",
     visualFingerprint: seed.visualFingerprint || "",
+    verifiedAt: seed.verifiedAt || "",
     fileName: seed.fileName || "",
     fileSize: seed.fileSize,
     fileMimeType: seed.fileMimeType || "",
     fileLastModified: seed.fileLastModified || "",
     submissionTarget: seed.submissionTarget || EVIDENCE_SUBMISSION_TARGETS[0],
+    handoffRecipientRef: seed.handoffRecipientRef || "",
     status: seed.status || "DISCOVERED",
     requestLogs: seed.requestLogs || [],
     notes: seed.notes || "",
@@ -118,10 +128,14 @@ export function hasEvidenceValue(item: EvidenceItem) {
       trim(item.posterId) ||
       trim(item.foundAt) ||
       trim(item.capturedAt) ||
+      trim(item.collectorRef) ||
+      trim(item.deviceRef) ||
       trim(item.evidenceHash) ||
+      trim(item.verifiedAt) ||
       trim(item.hashSource) ||
       trim(item.visualFingerprint) ||
       trim(item.fileName) ||
+      trim(item.handoffRecipientRef) ||
       trim(item.notes) ||
       (item.requestLogs || []).some((log) => trim(log.target) || trim(log.receiptId) || trim(log.notes)) ||
       item.capturedByUser,
@@ -138,15 +152,20 @@ export function normalizeEvidenceItem(item: EvidenceItem): EvidenceItem {
     foundAt: trim(item.foundAt),
     capturedAt: trim(item.capturedAt),
     captureMethod: item.captureMethod || "UNKNOWN",
+    collectorRef: trim(item.collectorRef),
+    deviceRef: trim(item.deviceRef),
     capturedByUser: Boolean(item.capturedByUser),
     evidenceHash: trim(item.evidenceHash),
+    hashAlgorithm: item.hashAlgorithm || "UNKNOWN",
     hashSource: trim(item.hashSource),
     visualFingerprint: trim(item.visualFingerprint),
+    verifiedAt: trim(item.verifiedAt),
     fileName: trim(item.fileName),
     fileSize: item.fileSize,
     fileMimeType: trim(item.fileMimeType),
     fileLastModified: trim(item.fileLastModified),
     submissionTarget: trim(item.submissionTarget) || EVIDENCE_SUBMISSION_TARGETS[0],
+    handoffRecipientRef: trim(item.handoffRecipientRef),
     status: item.status || "DISCOVERED",
     requestLogs: (item.requestLogs || []).map(normalizeRequestLog).filter((log) => trim(log.target) || trim(log.receiptId) || trim(log.notes)),
     notes: trim(item.notes),
