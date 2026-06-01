@@ -1041,6 +1041,22 @@
 - 검증 범위
   - valid Netlify static-hosting config, unsafe config 차단, CLI output path guard, action-plan run order 연결을 테스트했다.
 
+## v3.96 Operational approval inputs
+
+- Batch approval input path
+  - Version was raised to `0.3.96`.
+  - Added `ops:approvals:input-template` and `ops:approvals:apply-inputs`, with JSON and Markdown variants.
+  - The input template covers operational approval records, production onboarding checklist records, storage decisions, and public operations route approvals.
+- Operational wiring
+  - Approval-record action plans now include the input template and batch apply path before individual fallback approval commands.
+  - Operational release dossiers and approval evidence digests include the approval input template JSON/Markdown reports.
+- Safety boundary
+  - The batch apply command validates every input first and applies nothing if any item is blocked.
+  - It records only externally approved pseudonymous references into ignored private files and does not create approval by itself.
+  - Reports do not store raw public URLs, contacts, owner names, victim indicators, invite links, onion addresses, emails, phone numbers, tokens, certificate material, or private paths.
+- Verification scope
+  - Tested template counts, redaction/leak scan, batch apply success, unsafe batch rejection with no partial write, dry-run CLI mode, output path guard, action-plan routing, and release dossier inclusion.
+
 ## v3.95 Operational launch console
 
 - Operator launch board

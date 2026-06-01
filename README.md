@@ -683,3 +683,14 @@ npm run ops:launch-console:json -- --output dist/operational-launch-console/repo
 ```
 
 The console shows blocked phases, owner roles, P0 action counts, external approval command queues, verification commands, and ready evidence lanes without storing raw URLs, contacts, tokens, invite routes, onion addresses, phone numbers, or private paths. It is included in release dossiers and approval evidence digests. Details are in [Operational Launch Console v0.3.95](docs/operational-launch-console-v0.3.95.md).
+
+## v0.3.96 Operational Approval Inputs
+
+Operators can now prepare one private-fill input template and batch-apply externally approved pseudonymous references:
+
+```bash
+npm run ops:approvals:input-template
+npm run ops:approvals:apply-inputs -- --input ops/private/production-onboarding/approved-operational-inputs.json --init
+```
+
+The apply command validates every approval/onboarding/storage/public-route input before writing anything. If one value contains a placeholder, raw URL, contact, token, phone number, invite route, onion address, or private path, the whole batch is blocked and no private record is changed. Details are in [Operational Approval Inputs v0.3.96](docs/operational-approval-inputs-v0.3.96.md).

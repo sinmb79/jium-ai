@@ -206,6 +206,8 @@ describe("operational action plan", () => {
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:launch-console"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:approvals:digest-evidence"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:approvals:command-packet"))).toBe(true);
+    expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:approvals:input-template"))).toBe(true);
+    expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:approvals:apply-inputs"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "production-onboarding")?.actions.some((action) => action.action.includes("ops:onboarding:digest-evidence"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "desktop-release")?.actions.some((action) => action.action.includes("desktop:release:digest-evidence"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "desktop-release")?.actions.some((action) => action.action.includes("desktop:publish:candidate"))).toBe(true);

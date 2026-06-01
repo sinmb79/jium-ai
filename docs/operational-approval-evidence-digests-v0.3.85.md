@@ -50,6 +50,8 @@ When run without `--file`, the command refreshes the release dossier and digests
 - `dist/operational-approval-command-packet/operational-approval-command-packet.md`
 - `dist/operational-launch-console/operational-launch-console.json`
 - `dist/operational-launch-console/operational-launch-console.md`
+- `dist/operational-approval-inputs/operational-approval-inputs-template.json`
+- `dist/operational-approval-inputs/operational-approval-inputs-template.md`
 
 For an already frozen review packet:
 

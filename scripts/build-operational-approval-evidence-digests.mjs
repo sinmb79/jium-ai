@@ -41,6 +41,13 @@ import {
   OPERATIONAL_LAUNCH_CONSOLE_MARKDOWN,
   buildOperationalLaunchConsole,
 } from "./build-operational-launch-console.mjs";
+import {
+  OPERATIONAL_APPROVAL_INPUTS_DIR,
+  OPERATIONAL_APPROVAL_INPUTS_TEMPLATE_JSON,
+  OPERATIONAL_APPROVAL_INPUTS_TEMPLATE_MARKDOWN,
+  buildOperationalApprovalInputsTemplate,
+  writeOperationalApprovalInputsTemplateFiles,
+} from "./operational-approval-inputs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -66,6 +73,8 @@ const DEFAULT_EVIDENCE_FILES = [
   `${OPERATIONAL_APPROVAL_COMMAND_PACKET_DIR}/${OPERATIONAL_APPROVAL_COMMAND_PACKET_MARKDOWN}`,
   `${OPERATIONAL_LAUNCH_CONSOLE_DIR}/${OPERATIONAL_LAUNCH_CONSOLE_JSON}`,
   `${OPERATIONAL_LAUNCH_CONSOLE_DIR}/${OPERATIONAL_LAUNCH_CONSOLE_MARKDOWN}`,
+  `${OPERATIONAL_APPROVAL_INPUTS_DIR}/${OPERATIONAL_APPROVAL_INPUTS_TEMPLATE_JSON}`,
+  `${OPERATIONAL_APPROVAL_INPUTS_DIR}/${OPERATIONAL_APPROVAL_INPUTS_TEMPLATE_MARKDOWN}`,
 ];
 
 const UNSAFE_PATTERNS = [
@@ -184,6 +193,10 @@ async function ensureDefaultEvidenceFiles({ root, env, platform, generatedAt, no
   await buildDesktopPublishCandidate({ root, env, platform, generatedAt });
   await buildOperationalApprovalCommandPacket({ root, generatedAt });
   await buildOperationalLaunchConsole({ root, env, platform, generatedAt });
+  writeOperationalApprovalInputsTemplateFiles({
+    root,
+    template: buildOperationalApprovalInputsTemplate({ root, generatedAt }),
+  });
   const dossier = await buildOperationalReleaseDossier({ root, env, platform, generatedAt });
   writeOperationalReleaseDossierFiles({ root, dossier });
   return DEFAULT_EVIDENCE_FILES;

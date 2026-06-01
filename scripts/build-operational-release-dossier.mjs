@@ -40,6 +40,11 @@ import {
   OPERATIONAL_LAUNCH_CONSOLE_JSON,
   OPERATIONAL_LAUNCH_CONSOLE_MARKDOWN,
 } from "./build-operational-launch-console.mjs";
+import {
+  OPERATIONAL_APPROVAL_INPUTS_DIR,
+  OPERATIONAL_APPROVAL_INPUTS_TEMPLATE_JSON,
+  OPERATIONAL_APPROVAL_INPUTS_TEMPLATE_MARKDOWN,
+} from "./operational-approval-inputs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -209,6 +214,18 @@ function buildRequiredReviewFiles() {
       label: "Operational launch console Markdown",
       path: `${OPERATIONAL_LAUNCH_CONSOLE_DIR}/${OPERATIONAL_LAUNCH_CONSOLE_MARKDOWN}`,
       purpose: "Human-readable launch board for program owner, legal reviewer, release manager, and deployment admin.",
+    },
+    {
+      id: "operational-approval-inputs-template-json",
+      label: "Operational approval inputs template JSON",
+      path: `${OPERATIONAL_APPROVAL_INPUTS_DIR}/${OPERATIONAL_APPROVAL_INPUTS_TEMPLATE_JSON}`,
+      purpose: "Private-fill template for batch recording externally approved approval and onboarding references.",
+    },
+    {
+      id: "operational-approval-inputs-template-markdown",
+      label: "Operational approval inputs template Markdown",
+      path: `${OPERATIONAL_APPROVAL_INPUTS_DIR}/${OPERATIONAL_APPROVAL_INPUTS_TEMPLATE_MARKDOWN}`,
+      purpose: "Human-readable guide for preparing a private approval input file.",
     },
     {
       id: "release-dossier-json",
@@ -442,6 +459,7 @@ export async function buildOperationalReleaseDossier({
       "npm run ops:handoff:bundle",
       "npm run ops:action-plan",
       "npm run ops:launch-console",
+      "npm run ops:approvals:input-template",
       "npm run ops:go-live:rehearsal",
       "npm run ops:release-dossier",
       "npm run ops:go-live:check",
