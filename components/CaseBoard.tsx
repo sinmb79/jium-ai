@@ -16,6 +16,7 @@ import { AuthorizedFeedPanel } from "@/components/AuthorizedFeedPanel";
 import { TrustedKeyApprovalPanel } from "@/components/TrustedKeyApprovalPanel";
 import { InstitutionAuditLedgerPanel } from "@/components/InstitutionAuditLedgerPanel";
 import { InstitutionAccountAdminPanel } from "@/components/InstitutionAccountAdminPanel";
+import { DeviceSafetyPanel } from "@/components/DeviceSafetyPanel";
 
 const statuses = Object.keys(STATUS_LABELS) as CaseStatus[];
 
@@ -54,6 +55,7 @@ export function CaseBoard() {
             진단 시작하기
           </a>
         </div>
+        <DeviceSafetyPanel compact />
         <EncryptedVaultPanel />
         <InstitutionAccountAdminPanel />
         <TrustedKeyApprovalPanel />
@@ -80,6 +82,7 @@ export function CaseBoard() {
           </div>
         ) : null}
       </div>
+      <DeviceSafetyPanel compact />
       <EncryptedVaultPanel />
       <InstitutionAccountAdminPanel />
       <TrustedKeyApprovalPanel />

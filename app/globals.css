@@ -101,6 +101,7 @@ a {
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .container {
@@ -120,6 +121,7 @@ a {
   position: sticky;
   top: 5.2rem;
   padding-top: 0.5rem;
+  min-width: 0;
 }
 
 .eyebrow {
@@ -169,6 +171,11 @@ h1 {
   gap: 0.7rem;
   align-items: flex-start;
   color: #2d3833;
+  min-width: 0;
+}
+
+.hero-point span {
+  min-width: 0;
 }
 
 .hero-point svg {
@@ -182,6 +189,7 @@ h1 {
   border-radius: 0.8rem;
   background: rgba(255, 253, 248, 0.96);
   box-shadow: var(--shadow);
+  min-width: 0;
 }
 
 .panel-tight {
@@ -211,6 +219,7 @@ h1 {
 .panel-header p {
   margin: 0.35rem 0 0;
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
 .form-body {
@@ -1073,6 +1082,61 @@ h1 {
   gap: 0.65rem;
 }
 
+.device-safety-panel {
+  border-color: rgba(160, 51, 40, 0.18);
+  background: #fffaf2;
+}
+
+.device-safety-checks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.device-safety-check {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: start;
+  border: 1px solid rgba(160, 51, 40, 0.14);
+  border-radius: 0.7rem;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0.72rem;
+}
+
+.device-safety-check span,
+.device-safety-check strong,
+.device-safety-check em {
+  min-width: 0;
+}
+
+.device-safety-check strong {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.device-safety-check small {
+  border-radius: 999px;
+  background: rgba(41, 81, 69, 0.1);
+  color: #295145;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.12rem 0.38rem;
+}
+
+.device-safety-check em {
+  display: block;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-style: normal;
+  line-height: 1.45;
+  margin-top: 0.28rem;
+}
+
 .resource-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1130,6 +1194,13 @@ h1 {
   color: var(--muted);
 }
 
+.lead,
+.hero-point span,
+.vault-session-box span,
+.device-safety-check em {
+  overflow-wrap: anywhere;
+}
+
 .small {
   font-size: 0.88rem;
 }
@@ -1150,7 +1221,8 @@ h1 {
   .hero,
   .result-grid,
   .authorized-feed-summary,
-  .device-safety-grid {
+  .device-safety-grid,
+  .device-safety-checks {
     grid-template-columns: 1fr;
   }
 
@@ -1168,10 +1240,13 @@ h1 {
   .topbar {
     position: static;
     align-items: flex-start;
+    flex-direction: column;
   }
 
   .topbar-actions {
-    justify-content: flex-end;
+    justify-content: flex-start;
+    align-self: stretch;
+    width: auto;
   }
 
   .hero {
@@ -1185,6 +1260,15 @@ h1 {
   .agency-workflow-grid,
   .submission-summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .panel-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .panel-header .badge {
+    align-self: flex-start;
   }
 
   .evidence-editor-header,

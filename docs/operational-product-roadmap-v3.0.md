@@ -674,3 +674,16 @@
 - 검증 범위
   - Electron route resolver, static export profile, desktop release report redaction, 실제 `npm run desktop:export`를 검증했다.
   - 기본 공개 repo 상태에서는 signing/update/channel 값이 없으므로 `desktop:release:check`가 BLOCKED로 실패해야 정상이다.
+
+## v3.43 피해자 기기 안전점검
+
+- 악성 확장프로그램·원격제어 리스크 반영
+  - `lib/deviceSafety.ts`를 필수/권장 점검과 readiness 판정 엔진으로 확장했다.
+  - 필수 항목은 본인만 쓰는 기기, 확장프로그램 격리, 원격제어 종료, 가해자 접근 차단이다.
+  - 권장 항목은 빠른 악성코드 검사, 신뢰 가능한 네트워크, 동기화·클립보드 노출 축소다.
+- 제품 흐름 연결
+  - `DeviceSafetyPanel`을 추가해 첫 진단 화면과 사건 보드에서 같은 안전점검을 보여준다.
+  - 상태는 `중지 권장`, `추가 확인`, `진행 가능`으로 표시하고 피해자 원문이나 기기 세부정보는 저장하지 않는다.
+  - 암호화 보관함의 기존 기기 확인 흐름과 같은 안전 원칙을 공유한다.
+- 검증 범위
+  - readiness 판정, 패널 상호작용, 사건 보드 통합, 모바일 패널 헤더 배치 보정을 테스트했다.

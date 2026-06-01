@@ -145,6 +145,7 @@ npm run build
 - Electron 기반 로컬 앱은 `desktop/electron-preload.cjs`를 preload로 연결해 `window.jiumSecureVault`를 제공
 - 데스크톱 정적 산출물은 `npm run desktop:export`로 생성하며, release 전에는 `npm run desktop:release:check`로 channel, HTTPS update URL, signing profile 준비 여부를 확인
 - `desktop:release:json`과 `desktop:release:markdown`은 updater URL 원문, 인증서 경로·hash, team ID, signing key ID, 피해자 지표를 저장하지 않는 redacted 인수인계 리포트를 생성
+- 첫 진단 화면과 사건 보드에는 악성 확장프로그램, 원격제어, 공용 PC, 가해자 접근 가능성을 확인하는 기기 안전점검을 표시
 
 ## 🏷️ 메타
 

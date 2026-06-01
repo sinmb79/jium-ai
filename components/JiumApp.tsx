@@ -21,6 +21,7 @@ import { EvidenceLedgerPanel } from "@/components/EvidenceLedgerPanel";
 import { TraceGraphPanel } from "@/components/TraceGraphPanel";
 import { SubmissionPacketPanel } from "@/components/SubmissionPacketPanel";
 import { EncryptedVaultPanel } from "@/components/EncryptedVaultPanel";
+import { DeviceSafetyPanel } from "@/components/DeviceSafetyPanel";
 
 const situationChoices = [
   {
@@ -213,6 +214,8 @@ export function JiumApp() {
             </div>
           </div>
         </div>
+
+        <DeviceSafetyPanel compact />
 
         <form className="panel intake-panel" onSubmit={handleSubmit}>
           <div className="panel-header">

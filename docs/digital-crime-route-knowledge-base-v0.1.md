@@ -302,3 +302,9 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Added `desktop:export` to build a desktop static export without the GitHub Pages `/jium-ai` basePath and write `out/jium-desktop-manifest.json`.
 - Added redacted desktop release readiness reports for static export, Electron shell files, release channel, HTTPS update URL, and signing-profile presence.
 - Added `desktop:release:check`, `desktop:release:json`, and `desktop:release:markdown` scripts; reports intentionally omit update endpoints, certificate paths, certificate hashes, team IDs, and package signing key IDs.
+
+## Implemented in v3.43
+
+- Expanded device-safety guidance into a readiness engine with required and recommended checks for personal device use, extension isolation, remote-access shutdown, attacker access, malware scan, trusted network, and clipboard/sync exposure.
+- Added a reusable device-safety panel to the intake page and case board so victims see the compromised-device risk before entering sensitive facts or opening encrypted vaults.
+- The panel classifies readiness as BLOCKED, REVIEW, or READY without storing victim data or raw device details.

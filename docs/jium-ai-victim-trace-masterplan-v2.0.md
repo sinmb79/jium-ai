@@ -489,3 +489,10 @@ v3.41 데스크톱 패키징 readiness에서 추가 반영한 항목:
 - 운영 배포 profile: `JIUM_DESKTOP_EXPORT=true`를 도입해 GitHub Pages basePath가 데스크톱 앱에 섞이지 않게 했다.
 - 배포 전 차단 장치: release channel, HTTPS updater endpoint, signing profile이 없으면 `desktop:release:check`가 BLOCKED로 실패한다.
 - 인수인계 리포트: JSON/Markdown readiness report는 설정 존재 여부만 보여주며 updater URL, signing certificate path/hash, team ID, signing key ID, 피해자 지표를 저장하지 않는다.
+
+v3.43 피해자 기기 안전점검에서 추가 반영한 항목:
+
+- 초기 보호: 피해자가 민감한 피해사실을 입력하기 전에 악성 확장프로그램, 원격제어, 공용 PC, 가해자 접근 가능성을 먼저 점검한다.
+- readiness 판정: 필수 점검과 권장 점검을 분리해 `중지 권장`, `추가 확인`, `진행 가능` 상태를 표시한다.
+- 데이터 최소화: 안전점검은 체크 상태만 화면 상태로 다루며 피해자 원문, 기기 식별자, 확장프로그램 목록을 저장하지 않는다.
+- 운영 연결: 같은 안전 원칙을 첫 진단 화면, 사건 보드, 암호화 보관함 흐름에 노출해 패스프레이즈와 복호화 평문 노출 위험을 줄인다.
