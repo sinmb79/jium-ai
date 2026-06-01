@@ -1,6 +1,6 @@
 {
   "name": "jium-ai",
-  "version": "0.3.83",
+  "version": "0.3.84",
   "private": true,
   "description": "무료·로컬 우선 디지털 권리구제 도우미",
   "author": "22B Labs",
@@ -69,6 +69,9 @@
     "ops:go-live:rehearsal": "node scripts/run-operational-go-live-rehearsal.mjs",
     "ops:go-live:rehearsal:json": "node scripts/run-operational-go-live-rehearsal.mjs --json",
     "ops:go-live:rehearsal:markdown": "node scripts/run-operational-go-live-rehearsal.mjs --markdown",
+    "ops:release-dossier": "node scripts/build-operational-release-dossier.mjs",
+    "ops:release-dossier:json": "node scripts/build-operational-release-dossier.mjs --json",
+    "ops:release-dossier:markdown": "node scripts/build-operational-release-dossier.mjs --markdown",
     "ops:hosted-audit:apply": "node scripts/apply-hosted-security-header-audit-env.mjs",
     "ops:hosted-audit:apply:json": "node scripts/apply-hosted-security-header-audit-env.mjs --json",
     "ops:hosted-audit:apply:markdown": "node scripts/apply-hosted-security-header-audit-env.mjs --markdown",

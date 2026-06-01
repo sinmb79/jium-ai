@@ -953,3 +953,17 @@
   - storage decision과 trusted-key candidate 예시는 실제 승인 후 복사·검증하도록 의도적으로 placeholder 상태로 둔다.
 - 검증 범위
   - private scaffold 생성, no-overwrite/force overwrite, JSON CLI, secret redaction, relative path 출력, placeholder 유지 동작을 테스트했다.
+
+## v3.84 operational release dossier
+
+- 외부 심사 증빙 묶음
+  - 앱 version을 `0.3.84`로 올리고 `ops:release-dossier`, JSON, Markdown variants를 추가했다.
+  - dossier는 operational handoff summary, action plan, go-live rehearsal, gate summary, required review files, external records needed, priority actions를 한 곳에 모은다.
+- 운영 연결
+  - 최종 go-live action plan의 verification commands에 `npm run ops:release-dossier`를 추가했다.
+  - 최종 release evidence archiving 전에 redacted review manifest를 만들도록 runbook action을 보강했다.
+- 안전 경계
+  - 원문 URL, 연락처, 이메일, 전화번호, GitHub/OpenAI token, 초대링크, onion 주소, repo root path를 dossier leak scan에서 차단한다.
+  - `READY_FOR_EXTERNAL_REVIEW`는 외부 심사용 준비 상태일 뿐이며, 생산 go-live 승인이나 법률 검토 완료를 뜻하지 않는다.
+- 검증 범위
+  - blocked handoff + ready rehearsal 조합에서 external-review dossier 생성, canonical JSON/Markdown write, CLI source report mode, action-plan run order 연결, redaction과 leak scan을 테스트했다.

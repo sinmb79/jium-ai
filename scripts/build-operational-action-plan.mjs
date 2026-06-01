@@ -176,6 +176,7 @@ const PHASE_BLUEPRINTS = [
       "npm run ops:go-live:check",
       "npm run ops:handoff:bundle",
       "npm run ops:action-plan",
+      "npm run ops:release-dossier",
     ],
     baseActions: [
       "Run npm run ops:go-live:rehearsal to verify the internal gate wiring before collecting real launch approvals.",
@@ -186,10 +187,11 @@ const PHASE_BLUEPRINTS = [
       "Set only approval states and setting-presence values in production env; do not put raw contacts or victim indicators into reports.",
       "Confirm server runtime, storage, desktop publish, onboarding, and private approvals are all READY.",
       "Archive the handoff bundle and action plan with the private release evidence packet.",
+      "Build npm run ops:release-dossier so external reviewers receive a redacted evidence manifest before launch approval.",
     ],
     completionCriteria: [
       "Operational go-live status is READY.",
-      "The redacted handoff bundle and private approval records are archived together.",
+      "The redacted handoff bundle, action plan, release dossier, and private approval records are archived together.",
     ],
   },
 ];
@@ -214,7 +216,7 @@ function writeText(filePath, value) {
   writeFileSync(filePath, value, "utf8");
 }
 
-function redactOperationalText(value, root = repoRoot) {
+export function redactOperationalText(value, root = repoRoot) {
   const rootPath = path.resolve(root);
   return String(value || "")
     .replaceAll(rootPath, "[REDACTED_REPO_ROOT]")

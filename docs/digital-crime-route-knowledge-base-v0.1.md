@@ -520,3 +520,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Desktop publish readiness is explicitly marked `SIMULATED_SIGNED_ARTIFACTS`; the command does not replace signed installer, blockmap, update-feed, or release-upload approval.
 - Rehearsal reports store only statuses, counts, package version, and declared simulation modes.
 - Reports do not store synthetic secrets, origins, public URLs, hosted audit paths, storage paths, contacts, owner names, tokens, victim indicators, invite links, onion addresses, emails, or phone numbers.
+
+## Implemented in v0.3.84
+
+- Added `scripts/build-operational-release-dossier.mjs` and `ops:release-dossier`.
+- The dossier gathers the redacted operational handoff summary, action plan, go-live rehearsal result, gate counts, review-file manifest, external records still needed, and priority remaining actions.
+- The final go-live action plan now includes `npm run ops:release-dossier` before release evidence archiving.
+- Dossier reports run a leak scan for raw URLs, invite links, onion addresses, emails, phone numbers, tokens, and repository root paths.
+- The dossier can be `READY_FOR_EXTERNAL_REVIEW` while final production go-live remains BLOCKED, making external approval collection clearer without weakening the launch gate.

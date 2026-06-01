@@ -156,6 +156,7 @@ npm run build
 - 운영 준비 초안은 `npm run ops:onboarding:init`로 생성하며, server env·approval records·storage/key checklist를 git 제외 private 경로에 둠
 - 운영 오픈 직전에는 `npm run ops:go-live:check`로 서버 readiness, desktop publish readiness, public HTTPS URL, legal/go-live/data-retention 승인, support/incident-response 지정 여부를 한 번에 확인
 - 운영 인수인계 증적은 `npm run ops:handoff:bundle`로 `dist/operational-handoff-bundle`에 모으며, 서버·데스크톱·go-live 리포트와 redacted runbook을 함께 보관
+- 외부 심사·승인용 릴리즈 증빙 묶음은 `npm run ops:release-dossier`로 `dist/operational-release-dossier`에 생성하며, 원문 URL·연락처·토큰·초대링크·onion 주소가 들어가지 않았는지 leak scan을 함께 확인
 - 첫 진단 화면과 사건 보드에는 악성 확장프로그램, 원격제어, 공용 PC, 가해자 접근 가능성을 확인하는 기기 안전점검을 표시
 
 ## 🏷️ 메타
@@ -539,3 +540,14 @@ npm run ops:go-live:rehearsal:json -- --output dist/operational-go-live-rehearsa
 ```
 
 The command creates a temporary private workspace, fills it with synthetic pseudonymous approvals, HTTPS routes, hosted-audit evidence, server env, server storage, and a trusted-key record, then runs the real server/onboarding/approval/hosted-audit/go-live validators. Desktop publish readiness is explicitly marked as `SIMULATED_SIGNED_ARTIFACTS`, because real signed installers and update metadata still require the approved signing flow. The report is redacted and the temporary workspace is removed after validation. Details are in [Operational Go-Live Rehearsal v0.3.83](docs/operational-go-live-rehearsal-v0.3.83.md).
+
+## v0.3.84 Operational Release Dossier
+
+External release reviewers can now receive one redacted evidence manifest:
+
+```bash
+npm run ops:release-dossier
+npm run ops:release-dossier:json -- --output dist/operational-release-dossier/report.json
+```
+
+The dossier gathers the operational handoff summary, owner-routed action plan, synthetic go-live rehearsal result, required review files, gate counts, external records still needed, and priority actions. It runs a leak scan and blocks if raw URLs, contacts, tokens, invite links, onion addresses, phone numbers, repository paths, or similar unsafe values appear in the generated manifest. `ops:action-plan` now routes final go-live archiving through this command as well. Details are in [Operational Release Dossier v0.3.84](docs/operational-release-dossier-v0.3.84.md).

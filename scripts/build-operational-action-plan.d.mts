@@ -77,6 +77,8 @@ export function loadOperationalHandoffSummary(options?: {
   summaryPath?: string;
 }): Promise<OperationalHandoffBundleSummary>;
 
+export function redactOperationalText(value: unknown, root?: string): string;
+
 export function buildOperationalActionPlan(options?: {
   root?: string;
   env?: NodeJS.ProcessEnv;
