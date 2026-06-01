@@ -175,6 +175,7 @@ const PHASE_BLUEPRINTS = [
     verificationCommands: [
       "npm run ops:go-live:rehearsal",
       "npm run public:hosting:bundle",
+      "npm run public:hosting:preflight -- <approved-https-public-app-url>",
       "npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json",
       "npm run ops:hosted-audit:apply -- --audit-report ops/private/production-onboarding/hosted-security-header-audit.json",
       "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
@@ -187,6 +188,7 @@ const PHASE_BLUEPRINTS = [
     baseActions: [
       "Run npm run ops:go-live:rehearsal to verify the internal gate wiring before collecting real launch approvals.",
       "Build the production static hosting bundle with npm run public:hosting:bundle.",
+      "Run npm run public:hosting:preflight against the approved HTTPS public app URL before applying hosted audit evidence.",
       "Deploy dist/static-hosting-bundle/site to Cloudflare Pages, Netlify, or another approved _headers-capable host.",
       "Run hosted security header audit against the approved HTTPS public app URL and apply it with npm run ops:hosted-audit:apply.",
       "Apply approved go-live flags and the pseudonymous incident owner reference with npm run ops:go-live:env:apply.",

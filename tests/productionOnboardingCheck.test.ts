@@ -176,6 +176,7 @@ describe("production onboarding readiness", () => {
     expect(report.nextActions.join("\n")).toContain("ops:onboarding:approve-checklist");
     expect(report.nextActions.join("\n")).toContain("ops:onboarding:approve-storage-decision");
     expect(report.nextActions.join("\n")).toContain("ops:onboarding:approve-public-operations");
+    expect(report.nextActions.join("\n")).toContain("public:hosting:preflight");
     expect(markdown).toContain("JiumAI Production Onboarding Readiness Report");
     expect(serialized).not.toContain("INSTITUTION_SESSION_SECRET=");
     expect(serialized).not.toContain(root);

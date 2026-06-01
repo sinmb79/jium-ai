@@ -173,7 +173,7 @@ function buildReport({ root, generatedAt, readiness, bundleDir }) {
     deploymentCommands: [
       "npm run public:hosting:bundle",
       "Upload dist/static-hosting-bundle/site to a host that supports _headers, such as Cloudflare Pages or Netlify.",
-      "Run npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json after deployment.",
+      "Run npm run public:hosting:preflight -- <approved-https-public-app-url> after deployment.",
     ],
     safetyNotes: [
       "This report stores relative artifact names, counts, version, commit, and readiness states only.",

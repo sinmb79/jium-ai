@@ -382,6 +382,9 @@ describe("operational go-live readiness", () => {
     expect(report.nextActions).toContain(
       "Resolve desktop publish blockers, build npm run desktop:release:digest-evidence, and verify signed artifacts, update feed, and release upload approval.",
     );
+    expect(report.nextActions).toContain(
+      "Run npm run public:hosting:preflight against the approved HTTPS public app URL, then apply the READY redacted hosted audit report with npm run ops:hosted-audit:apply.",
+    );
     expect(readiness.errors.join("\n")).toContain("operational approval records");
     expect(readiness.errors.join("\n")).toContain("operational production onboarding");
     expect(readiness.errors.join("\n")).toContain("operational server runtime");

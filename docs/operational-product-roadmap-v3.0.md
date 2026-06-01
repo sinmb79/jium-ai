@@ -1010,3 +1010,17 @@
   - report는 file name, role, byte count, SHA-256 digest, unsafe pattern ID만 저장하고 feed directory, update endpoint, certificate material, victim indicator는 저장하지 않는다.
 - 검증 범위
   - ready signed desktop evidence digest 생성, unsafe text evidence 차단, CLI output path guard, canonical JSON/Markdown write, action-plan run order 연결을 테스트했다.
+
+## v3.88 public hosting go-live preflight
+
+- 공개 호스팅 운영 전 점검
+  - 앱 version을 `0.3.88`로 올리고 `public:hosting:preflight`, JSON, Markdown variants를 추가했다.
+  - `public:hosting:bundle` 산출물의 `_headers` 정책 준비 상태와 실제 HTTPS 호스트의 보안 헤더 응답을 하나의 preflight report로 묶는다.
+- 운영 연결
+  - go-live phase의 verification commands에 `npm run public:hosting:preflight -- <approved-https-public-app-url>` 단계를 추가했다.
+  - hosted security header audit blocker의 next action을 preflight 중심으로 바꿔 GitHub Pages처럼 headers가 빠지는 배포를 조기에 발견하게 했다.
+- 안전 경계
+  - report는 status, count, header name, relative artifact path, SHA-256 digest만 저장한다.
+  - raw public URL, host, path, query, response header value, contact, incident owner, secret, token, certificate material, victim indicator는 저장하지 않는다.
+- 검증 범위
+  - ready `_headers` capable HTTPS deployment preflight, missing security header BLOCKED case, CLI unsafe output path guard, action-plan/go-live next action 연결을 테스트했다.

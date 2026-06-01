@@ -584,3 +584,15 @@ npm run desktop:release:digest-evidence:json -- --feed-dir <signed-release-folde
 ```
 
 The command hashes the signed installer, blockmap, update metadata, and desktop release-candidate summary, then writes an aggregate `sha256-*` digest for the private publish approval archive. It blocks if text evidence contains raw URLs, contacts, tokens, certificate secrets, private key material, phone-like values, or filesystem paths. Details are in [Desktop Release Evidence Digests v0.3.87](docs/desktop-release-evidence-digests-v0.3.87.md).
+
+## v0.3.88 Public Hosting Go-Live Preflight
+
+Program owners can now verify the public hosting lane before applying hosted security-header evidence:
+
+```bash
+npm run public:hosting:bundle
+npm run public:hosting:preflight -- <approved-https-public-app-url>
+npm run public:hosting:preflight:json -- <approved-https-public-app-url> --output dist/public-hosting-go-live-preflight/report.json
+```
+
+The command checks that the static export is ready for a `_headers`-capable provider and that the approved HTTPS host actually returns every required security header. It writes a redacted hosted-audit candidate that can be applied with `npm run ops:hosted-audit:apply` only when the preflight is `READY`. Details are in [Public Hosting Go-Live Preflight v0.3.88](docs/public-hosting-go-live-preflight-v0.3.88.md).

@@ -49,7 +49,7 @@ describe("production onboarding scaffold", () => {
     expect(readme).toContain("ops:onboarding:approve-checklist");
     expect(readme).toContain("ops:onboarding:approve-storage-decision");
     expect(readme).toContain("ops:onboarding:approve-public-operations");
-    expect(readme).toContain("security:headers:check");
+    expect(readme).toContain("public:hosting:preflight");
     expect(summary.nextCommands).toContain(
       "npm run ops:onboarding:approve-checklist -- --record <checklist-record-id> --evidence-ref <pseudonymous-evidence-reference>",
     );
@@ -60,7 +60,7 @@ describe("production onboarding scaffold", () => {
       "npm run ops:onboarding:approve-public-operations -- --section <public-app|privacy-notice|support-route> --evidence-ref <pseudonymous-public-operations-evidence-reference>",
     );
     expect(summary.nextCommands).toContain(
-      "npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json",
+      "npm run public:hosting:preflight -- <approved-https-public-app-url>",
     );
     expect(await readFile(path.join(root, DEFAULT_PRODUCTION_ONBOARDING_DIR, "public-operations.template.json"), "utf8")).toContain(
       "PENDING_PUBLIC_OPERATIONS_APPROVAL",
