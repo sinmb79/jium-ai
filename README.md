@@ -426,3 +426,13 @@ npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-pri
 ```
 
 The operational action plan now includes this command in the server-runtime phase before `security:trusted-key:review`. Reports intentionally omit private key values, raw public-key modulus values, private filesystem paths, contacts, URLs, and victim indicators. Details are in [Trusted Key Onboarding Init v0.3.72](docs/trusted-key-onboarding-init-v0.3.72.md).
+
+## v0.3.73 Trusted Key Patch Apply Gate
+
+Approved trusted-key registry patches can now be applied through a guarded command instead of a manual file edit:
+
+```bash
+npm run server:trusted-key:apply -- --patch <trusted-key-registry.patch.json> --approval-ref <pseudonymous-approval-reference>
+```
+
+The command validates the registry patch, requires a non-placeholder pseudonymous approval reference, writes a redacted apply report, and only then updates `data/trusted-authorized-feed-keys.json`. Reports intentionally omit raw approval references, raw public-key modulus values, absolute paths, contacts, URLs, and victim indicators. Details are in [Trusted Key Patch Apply Gate v0.3.73](docs/trusted-key-patch-apply-v0.3.73.md).

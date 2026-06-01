@@ -33,11 +33,12 @@ After generating the candidate:
 
 ```bash
 npm run security:trusted-key:review -- --candidate ops/private/production-onboarding/<approved-key-id>.public-candidate.json --patch-output dist/trusted-key-onboarding/<approved-key-id>.registry-patch.json
+npm run server:trusted-key:apply -- --patch dist/trusted-key-onboarding/<approved-key-id>.registry-patch.json --approval-ref <pseudonymous-approval-reference>
 npm run security:feed-keys
 npm run security:server-readiness
 ```
 
-The operational action plan now includes `server:trusted-key:init` in the server-runtime phase before final trusted-key review.
+The operational action plan now includes `server:trusted-key:init` in the server-runtime phase before final trusted-key review. v0.3.73 adds the controlled apply gate after approval; see [Trusted Key Patch Apply Gate v0.3.73](trusted-key-patch-apply-v0.3.73.md).
 
 ## Redaction model
 

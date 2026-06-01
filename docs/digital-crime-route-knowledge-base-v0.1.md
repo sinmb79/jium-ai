@@ -437,3 +437,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Placeholder approval packets can be moved to the current package/release tag without marking records approved.
 - Already approved operational approval records are skipped for manual review so old release evidence is not silently rewritten.
 - Upgrade reports are redacted and store only relative paths, package version, release tag, and artifact status.
+
+## Implemented in v0.3.73
+
+- Added `scripts/apply-trusted-key-registry-patch.mjs` and `server:trusted-key:apply` for the final approved trusted-key registry patch step.
+- The apply gate requires a pseudonymous approval reference, validates the full trusted-key registry patch, blocks private key material, and writes redacted JSON/Markdown evidence.
+- Apply reports exclude raw approval references, raw public-key modulus values, absolute paths, contacts, URLs, invite links, onion addresses, emails, phone numbers, and victim indicators.
+- `server:deployment:bundle`, `ops:action-plan`, and `security:feeds` now include the apply gate so operators do not need an undocumented manual registry edit before server readiness.

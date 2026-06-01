@@ -62,6 +62,7 @@ const PHASE_BLUEPRINTS = [
     verificationCommands: [
       "npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>",
       "npm run security:trusted-key:review -- --candidate <approved-public-key.json> --patch-output <trusted-key-registry.patch.json>",
+      "npm run server:trusted-key:apply -- --patch <trusted-key-registry.patch.json> --approval-ref <pseudonymous-approval-reference>",
       "npm run security:server-readiness",
       "npm run server:deployment:bundle",
     ],
@@ -69,6 +70,7 @@ const PHASE_BLUEPRINTS = [
       "Create or refresh the server env scaffold with npm run server:env:init.",
       "Generate a repo-external private key and public trusted-key candidate with npm run server:trusted-key:init.",
       "Review an approved institution public-key candidate before applying any trusted-key registry patch.",
+      "Apply the approved trusted-key registry patch with a pseudonymous approval reference after fingerprint comparison.",
       "Verify server-only secrets, allowed HTTPS origins, and generated institution route readiness.",
     ],
     completionCriteria: [
