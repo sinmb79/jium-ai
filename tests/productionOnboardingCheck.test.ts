@@ -42,6 +42,9 @@ async function writeReadyServerEnv(root: string, storageRoot: string) {
       `INSTITUTION_AUDIT_LEDGER_DIR=${path.join(storageRoot, "audit-ledger")}`,
       "INSTITUTION_AUDIT_LEDGER_FILE=institution-auth-audit-ledger.jsonl",
       `INSTITUTION_ACCOUNT_REGISTRY_DIR=${path.join(storageRoot, "account-registry")}`,
+      "JIUM_PUBLIC_APP_URL=https://prod.example/jium/",
+      "JIUM_PRIVACY_NOTICE_URL=https://prod.example/jium/privacy/",
+      "JIUM_SUPPORT_CONTACT_ROUTE=https://prod.example/jium/support/",
       "",
     ].join("\n"),
     "utf8",
@@ -103,6 +106,20 @@ async function writeReadyStorageDecision(root: string, version = "0.3.58") {
   await writeFile(path.join(dir, "storage-decision.template.json"), `${JSON.stringify(decision, null, 2)}\n`, "utf8");
 }
 
+async function writeReadyPublicOperations(root: string, version = "0.3.58") {
+  const dir = path.join(root, DEFAULT_PRODUCTION_ONBOARDING_DIR);
+  const publicOps = JSON.parse(await readFile(path.join(dir, "public-operations.template.json"), "utf8"));
+  publicOps.packageVersion = version;
+  publicOps.status = "APPROVED";
+  publicOps.publicApp.status = "APPROVED";
+  publicOps.publicApp.evidenceRef = "PUBLIC-APP-2026";
+  publicOps.privacyNotice.status = "APPROVED";
+  publicOps.privacyNotice.evidenceRef = "PRIVACY-NOTICE-2026";
+  publicOps.supportRoute.status = "APPROVED";
+  publicOps.supportRoute.evidenceRef = "SUPPORT-ROUTE-2026";
+  await writeFile(path.join(dir, "public-operations.template.json"), `${JSON.stringify(publicOps, null, 2)}\n`, "utf8");
+}
+
 afterEach(async () => {
   await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
 });
@@ -122,6 +139,7 @@ describe("production onboarding readiness", () => {
     expect(report.checks.filter((check) => check.status === "BLOCKED").map((check) => check.id)).toEqual(
       expect.arrayContaining(["server-env", "operator-checklist", "storage-decision", "approval-records"]),
     );
+    expect(report.checks.filter((check) => check.status === "BLOCKED").map((check) => check.id)).toContain("public-operations");
     expect(markdown).toContain("JiumAI Production Onboarding Readiness Report");
     expect(serialized).not.toContain("INSTITUTION_SESSION_SECRET=");
     expect(serialized).not.toContain(root);
@@ -136,6 +154,7 @@ describe("production onboarding readiness", () => {
     await writeReadyApprovalRecords(root);
     await writeReadyChecklist(root);
     await writeReadyStorageDecision(root);
+    await writeReadyPublicOperations(root);
 
     const readiness = validateProductionOnboarding({ root });
     const report = buildProductionOnboardingReport(readiness, { generatedAt: "2026-06-01T00:00:00.000Z" });
@@ -145,8 +164,50 @@ describe("production onboarding readiness", () => {
     expect(report.status).toBe("READY");
     expect(report.checks.every((check) => check.status === "PASS")).toBe(true);
     expect(serialized).not.toContain("agency.example");
+    expect(serialized).not.toContain("prod.example");
     expect(serialized).not.toContain(storageRoot);
     expect(serialized).not.toContain("ssssssss");
+  });
+
+  it("blocks incomplete public operations env and approval records without leaking URLs", async () => {
+    const root = await tempRepo();
+    const storageRoot = tempStorageRoot();
+    writeProductionOnboardingScaffold({ root, generatedAt: "2026-06-01T00:00:00.000Z" });
+    await mkdir(path.join(root, "ops", "private"), { recursive: true });
+    await writeReadyServerEnv(root, storageRoot);
+    await writeReadyApprovalRecords(root);
+    await writeReadyChecklist(root);
+    await writeReadyStorageDecision(root);
+
+    await writeFile(
+      path.join(root, ".env.server.local"),
+      [
+        "JIUM_SERVER_ROUTES=true",
+        "NODE_ENV=production",
+        `INSTITUTION_SESSION_SECRET=${"s".repeat(48)}`,
+        "INSTITUTION_ALLOWED_ORIGINS=https://agency.example",
+        "INSTITUTION_SECURE_COOKIES=true",
+        `INSTITUTION_AUDIT_LEDGER_DIR=${path.join(storageRoot, "audit-ledger")}`,
+        "INSTITUTION_AUDIT_LEDGER_FILE=institution-auth-audit-ledger.jsonl",
+        `INSTITUTION_ACCOUNT_REGISTRY_DIR=${path.join(storageRoot, "account-registry")}`,
+        "JIUM_PUBLIC_APP_URL=http://prod.example/jium/",
+        "JIUM_PRIVACY_NOTICE_URL=https://prod.example/jium/privacy/",
+        "JIUM_SUPPORT_CONTACT_ROUTE=",
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const readiness = validateProductionOnboarding({ root });
+    const report = buildProductionOnboardingReport(readiness, { generatedAt: "2026-06-01T00:00:00.000Z" });
+    const serialized = JSON.stringify(report);
+
+    expect(readiness.valid).toBe(false);
+    expect(report.checks.find((check) => check.id === "public-operations")?.status).toBe("BLOCKED");
+    expect(readiness.errors.join("\n")).toContain("public operations env JIUM_PUBLIC_APP_URL must be HTTPS");
+    expect(readiness.errors.join("\n")).toContain("public operations template status must be APPROVED");
+    expect(serialized).not.toContain("prod.example");
+    expect(serialized).not.toContain("agency.example");
   });
 
   it("runs the CLI JSON report and exits blocked for incomplete onboarding", async () => {

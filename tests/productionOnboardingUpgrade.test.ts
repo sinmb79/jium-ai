@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, unlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -78,15 +78,18 @@ describe("production onboarding upgrade", () => {
     const summary = upgradeProductionOnboarding({ root });
     const checklist = await readJson(path.join(root, DEFAULT_PRODUCTION_ONBOARDING_DIR, "operator-checklist.json"));
     const storageDecision = await readJson(path.join(root, DEFAULT_PRODUCTION_ONBOARDING_DIR, "storage-decision.template.json"));
+    const publicOperations = await readJson(path.join(root, DEFAULT_PRODUCTION_ONBOARDING_DIR, "public-operations.template.json"));
     const approvals = await readJson(path.join(root, DEFAULT_OPERATIONAL_APPROVAL_RECORDS_PATH));
     const serialized = JSON.stringify(summary);
 
     expect(summary.status).toBe("UPDATED");
-    expect(summary.artifacts.map((entry) => entry.status)).toEqual(["UPDATED", "UPDATED", "UPDATED", "UPDATED"]);
+    expect(summary.artifacts.map((entry) => entry.status)).toEqual(["UPDATED", "UPDATED", "UPDATED", "UPDATED", "UPDATED"]);
     expect(checklist.packageVersion).toBe("0.3.60");
     expect(checklist.status).toBe("PENDING_EXTERNAL_APPROVALS");
     expect(storageDecision.packageVersion).toBe("0.3.60");
     expect(storageDecision.status).toBe("PENDING_STORAGE_APPROVAL");
+    expect(publicOperations.packageVersion).toBe("0.3.60");
+    expect(publicOperations.status).toBe("PENDING_PUBLIC_OPERATIONS_APPROVAL");
     expect(approvals.packageVersion).toBe("0.3.60");
     expect(approvals.releaseTag).toBe("v0.3.60");
     expect(approvals.records.every((record: { status: string }) => record.status === "PENDING_APPROVAL")).toBe(true);
@@ -109,6 +112,21 @@ describe("production onboarding upgrade", () => {
     expect(approvals.releaseTag).toBe("v0.3.57");
   });
 
+  it("adds the public operations template when upgrading an older onboarding scaffold", async () => {
+    const root = await tempRepo("0.3.64");
+    writeProductionOnboardingScaffold({ root, generatedAt: "2026-06-01T00:00:00.000Z" });
+    await unlink(path.join(root, DEFAULT_PRODUCTION_ONBOARDING_DIR, "public-operations.template.json"));
+    await setPackageVersion(root, "0.3.65");
+
+    const summary = upgradeProductionOnboarding({ root });
+    const publicOperations = await readJson(path.join(root, DEFAULT_PRODUCTION_ONBOARDING_DIR, "public-operations.template.json"));
+
+    expect(summary.artifacts.find((entry) => entry.label === "public-operations")?.status).toBe("CREATED");
+    expect(publicOperations.packageVersion).toBe("0.3.65");
+    expect(publicOperations.status).toBe("PENDING_PUBLIC_OPERATIONS_APPROVAL");
+    expect(JSON.stringify(summary)).not.toContain(root);
+  });
+
   it("supports CLI dry-run JSON without writing changes", async () => {
     const root = await tempRepo("0.3.57");
     writeProductionOnboardingScaffold({ root, generatedAt: "2026-06-01T00:00:00.000Z" });
@@ -125,6 +143,7 @@ describe("production onboarding upgrade", () => {
     expect(run.status).toBe(0);
     expect(summary.status).toBe("UPDATED");
     expect(summary.artifacts.map((entry: { status: string }) => entry.status)).toEqual([
+      "WOULD_UPDATE",
       "WOULD_UPDATE",
       "WOULD_UPDATE",
       "WOULD_UPDATE",

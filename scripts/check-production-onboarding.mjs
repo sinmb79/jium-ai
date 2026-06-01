@@ -28,6 +28,7 @@ export const REQUIRED_ONBOARDING_FILE_NAMES = [
   "README.md",
   "operator-checklist.json",
   "storage-decision.template.json",
+  "public-operations.template.json",
   "trusted-key-candidate.example.json",
 ];
 
@@ -36,6 +37,7 @@ export const REQUIRED_OPERATOR_CHECKLIST_RECORDS = [
   "trusted-public-key-approval",
   "server-storage-decision",
   "desktop-signing-evidence",
+  "public-operations-routes",
   "legal-go-live-approval",
 ];
 
@@ -228,6 +230,75 @@ function validateStorageDecision(value, packageVersion) {
   return { valid: errors.length === 0, errors, approvedSectionCount };
 }
 
+function httpsUrlStatus(value) {
+  const text = String(value || "").trim();
+  if (!text) {
+    return "MISSING";
+  }
+  if (PLACEHOLDER_PATTERN.test(text)) {
+    return "PLACEHOLDER";
+  }
+  try {
+    return new URL(text).protocol === "https:" ? "SET_HTTPS" : "SET_NOT_HTTPS";
+  } catch {
+    return "SET_INVALID";
+  }
+}
+
+function validatePublicOperationsTemplate(value, packageVersion) {
+  const errors = [];
+  if (!isPlainObject(value)) {
+    return { valid: false, errors: ["public operations template must be a JSON object"], approvedSectionCount: 0 };
+  }
+  scanSensitiveStrings(value, "public operations template", errors);
+  if (value.schema !== PRODUCTION_ONBOARDING_SCHEMA) {
+    errors.push(`public operations template schema must be ${PRODUCTION_ONBOARDING_SCHEMA}`);
+  }
+  if (value.packageVersion !== packageVersion) {
+    errors.push("public operations template packageVersion must match package.json version");
+  }
+  if (!Number.isFinite(parseIso(value.generatedAt))) {
+    errors.push("public operations template generatedAt must be an ISO date");
+  }
+  if (value.status !== "APPROVED") {
+    errors.push("public operations template status must be APPROVED");
+  }
+  for (const sectionName of ["publicApp", "privacyNotice", "supportRoute"]) {
+    const section = value[sectionName];
+    if (!isPlainObject(section)) {
+      errors.push(`public operations template ${sectionName} must be a JSON object`);
+      continue;
+    }
+    if (section.status !== "APPROVED") {
+      errors.push(`public operations template ${sectionName} status must be APPROVED`);
+    }
+    errors.push(...safeRefErrors(section.evidenceRef, `public operations template ${sectionName} evidenceRef`));
+  }
+  const approvedSectionCount = ["publicApp", "privacyNotice", "supportRoute"].filter(
+    (sectionName) => isPlainObject(value[sectionName]) && value[sectionName].status === "APPROVED",
+  ).length;
+  return { valid: errors.length === 0, errors, approvedSectionCount };
+}
+
+function validatePublicOperationsEnv(envFilePath) {
+  const env = parseEnvFile(envFilePath);
+  const keyStatuses = {
+    JIUM_PUBLIC_APP_URL: httpsUrlStatus(env.JIUM_PUBLIC_APP_URL),
+    JIUM_PRIVACY_NOTICE_URL: httpsUrlStatus(env.JIUM_PRIVACY_NOTICE_URL),
+    JIUM_SUPPORT_CONTACT_ROUTE: httpsUrlStatus(env.JIUM_SUPPORT_CONTACT_ROUTE),
+  };
+  const errors = Object.entries(keyStatuses)
+    .filter(([, status]) => status !== "SET_HTTPS")
+    .map(([key, status]) => `public operations env ${key} must be HTTPS (status: ${status})`);
+  return {
+    valid: errors.length === 0,
+    errors,
+    keyStatuses,
+    httpsRouteCount: Object.values(keyStatuses).filter((status) => status === "SET_HTTPS").length,
+    requiredRouteCount: Object.keys(keyStatuses).length,
+  };
+}
+
 function validateTrustedKeyExample(value) {
   const errors = [];
   if (!isPlainObject(value)) {
@@ -306,6 +377,9 @@ function nextActionFor(error) {
   if (error.includes("storage decision") || error.includes("INSTITUTION_AUDIT_LEDGER_DIR") || error.includes("INSTITUTION_ACCOUNT_REGISTRY_DIR")) {
     return "Complete the storage decision record and configure repo-external approved storage directories.";
   }
+  if (error.includes("public operations")) {
+    return "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init, then approve public-operations.template.json.";
+  }
   if (error.includes("approval records")) {
     return "Complete the private operational approval records packet and run npm run ops:approvals:check.";
   }
@@ -353,6 +427,18 @@ export function validateProductionOnboarding({
     : { valid: false, errors: storageErrors, approvedSectionCount: 0 };
   errors.push(...storageErrors, ...storageDecision.errors);
 
+  const publicOperationsErrors = [];
+  const publicOperationsValue = parseJsonFile(
+    path.join(resolvedOnboardingDir, "public-operations.template.json"),
+    publicOperationsErrors,
+    "public operations template",
+  );
+  const publicOperationsTemplate = publicOperationsValue
+    ? validatePublicOperationsTemplate(publicOperationsValue, packageVersion)
+    : { valid: false, errors: publicOperationsErrors, approvedSectionCount: 0 };
+  const publicOperationsEnv = validatePublicOperationsEnv(path.resolve(root, DEFAULT_SERVER_RUNTIME_ENV_PATH));
+  errors.push(...publicOperationsErrors, ...publicOperationsTemplate.errors, ...publicOperationsEnv.errors);
+
   const trustedKeyErrors = [];
   const trustedKeyValue = parseJsonFile(path.join(resolvedOnboardingDir, "trusted-key-candidate.example.json"), trustedKeyErrors, "trusted key candidate example");
   const trustedKeyExample = trustedKeyValue ? validateTrustedKeyExample(trustedKeyValue) : { valid: false, errors: trustedKeyErrors };
@@ -376,6 +462,14 @@ export function validateProductionOnboarding({
       valid: storageDecision.valid,
       approvedSectionCount: storageDecision.approvedSectionCount,
       requiredSectionCount: 2,
+    },
+    publicOperations: {
+      valid: publicOperationsTemplate.valid && publicOperationsEnv.valid,
+      approvedSectionCount: publicOperationsTemplate.approvedSectionCount,
+      requiredSectionCount: 3,
+      httpsRouteCount: publicOperationsEnv.httpsRouteCount,
+      requiredRouteCount: publicOperationsEnv.requiredRouteCount,
+      envKeyStatuses: publicOperationsEnv.keyStatuses,
     },
     trustedKeyExample: {
       valid: trustedKeyExample.valid,
@@ -415,6 +509,11 @@ export function buildProductionOnboardingReport(readiness, options = {}) {
       status: readiness.storageDecision.valid ? "PASS" : "BLOCKED",
     },
     {
+      id: "public-operations",
+      label: "Public app, privacy notice, and support route are approved HTTPS routes",
+      status: readiness.publicOperations?.valid ? "PASS" : "BLOCKED",
+    },
+    {
       id: "approval-records",
       label: "Operational approval records packet is complete",
       status: approvalReport.status === "READY" ? "PASS" : "BLOCKED",
@@ -439,6 +538,10 @@ export function buildProductionOnboardingReport(readiness, options = {}) {
       checklistRequiredRecordCount: readiness.checklist.requiredRecordCount,
       storageApprovedSectionCount: readiness.storageDecision.approvedSectionCount,
       storageRequiredSectionCount: readiness.storageDecision.requiredSectionCount,
+      publicOperationsApprovedSectionCount: readiness.publicOperations?.approvedSectionCount || 0,
+      publicOperationsRequiredSectionCount: readiness.publicOperations?.requiredSectionCount || 3,
+      publicOperationsHttpsRouteCount: readiness.publicOperations?.httpsRouteCount || 0,
+      publicOperationsRequiredRouteCount: readiness.publicOperations?.requiredRouteCount || 3,
       approvalRecordsStatus: approvalReport.status,
       serverStorageStatus: readiness.serverEnv.storageStatus,
     },
@@ -466,6 +569,7 @@ export function formatProductionOnboardingMarkdown(report) {
     `- Required files: ${report.summary.foundFileCount}/${report.summary.requiredFileCount}`,
     `- Operator checklist: ${report.summary.checklistApprovedRecordCount}/${report.summary.checklistRequiredRecordCount}`,
     `- Storage decision: ${report.summary.storageApprovedSectionCount}/${report.summary.storageRequiredSectionCount}`,
+    `- Public operations: ${report.summary.publicOperationsApprovedSectionCount}/${report.summary.publicOperationsRequiredSectionCount} approved, ${report.summary.publicOperationsHttpsRouteCount}/${report.summary.publicOperationsRequiredRouteCount} HTTPS routes`,
     `- Approval records: ${report.summary.approvalRecordsStatus}`,
     `- Server storage: ${report.summary.serverStorageStatus}`,
     "",

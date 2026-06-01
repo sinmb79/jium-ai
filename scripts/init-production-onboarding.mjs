@@ -53,6 +53,7 @@ function onboardingReadme({ generatedAt, packageVersion }) {
     "- `ops/private/operational-approval-records.json`: replace every placeholder after real human approval.",
     "- `operator-checklist.json`: record pseudonymous evidence references only.",
     "- `storage-decision.template.json`: record storage readiness decisions without victim data.",
+    "- `public-operations.template.json`: record public app, privacy notice, and support route approval without raw URLs.",
     "- `trusted-key-candidate.example.json`: copy to a real candidate file only after receiving an approved public key.",
     "",
     "## Verification Order",
@@ -60,11 +61,12 @@ function onboardingReadme({ generatedAt, packageVersion }) {
     "1. `npm run security:trusted-key:review -- --candidate <approved-public-key.json> --patch-output <trusted-key-registry.patch.json>`",
     "2. `npm run security:server-storage`",
     "3. `npm run security:server-readiness`",
-    "4. `npm run server:deployment:bundle`",
-    "5. `npm run desktop:publish:check -- --feed-dir <signed-desktop-folder>`",
-    "6. `npm run ops:approvals:check`",
-    "7. `npm run ops:go-live:check`",
-    "8. `npm run ops:handoff:bundle`",
+    "4. `npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env`",
+    "5. `npm run server:deployment:bundle`",
+    "6. `npm run desktop:publish:check -- --feed-dir <signed-desktop-folder>`",
+    "7. `npm run ops:approvals:check`",
+    "8. `npm run ops:go-live:check`",
+    "9. `npm run ops:handoff:bundle`",
     "",
     "## Safety Rules",
     "",
@@ -107,6 +109,12 @@ function operatorChecklist({ generatedAt, packageVersion }) {
         requiredCheck: "Signed installer, blockmap, and update metadata are from the same approved build.",
       },
       {
+        id: "public-operations-routes",
+        status: "PENDING_APPROVAL",
+        evidenceRef: "REPLACE-ME-PUBLIC-OPERATIONS-REF",
+        requiredCheck: "Public app URL, privacy notice URL, and support route are approved HTTPS routes and are set in private env.",
+      },
+      {
         id: "legal-go-live-approval",
         status: "PENDING_APPROVAL",
         evidenceRef: "REPLACE-ME-GO-LIVE-REF",
@@ -144,6 +152,31 @@ function storageDecisionTemplate({ generatedAt, packageVersion }) {
       requiredProperties: ["absolute-path", "repo-external", "not-public-or-build-artifact", "separate-from-audit-ledger", "server-process-writable"],
     },
     verificationCommand: "npm run security:server-storage",
+  };
+}
+
+function publicOperationsTemplate({ generatedAt, packageVersion }) {
+  return {
+    schema: PRODUCTION_ONBOARDING_SCHEMA,
+    generatedAt,
+    packageVersion,
+    status: "PENDING_PUBLIC_OPERATIONS_APPROVAL",
+    publicApp: {
+      status: "PENDING_APPROVAL",
+      evidenceRef: "REPLACE-ME-PUBLIC-APP-REF",
+      requiredCheck: "JIUM_PUBLIC_APP_URL points to the approved HTTPS public app route.",
+    },
+    privacyNotice: {
+      status: "PENDING_APPROVAL",
+      evidenceRef: "REPLACE-ME-PRIVACY-NOTICE-REF",
+      requiredCheck: "JIUM_PRIVACY_NOTICE_URL points to the approved HTTPS privacy notice route.",
+    },
+    supportRoute: {
+      status: "PENDING_APPROVAL",
+      evidenceRef: "REPLACE-ME-SUPPORT-ROUTE-REF",
+      requiredCheck: "JIUM_SUPPORT_CONTACT_ROUTE points to the approved HTTPS support route without exposing case details.",
+    },
+    verificationCommand: "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
   };
 }
 
@@ -219,6 +252,7 @@ export function writeProductionOnboardingScaffold({
   const readmePath = path.join(resolvedOnboardingDir, "README.md");
   const checklistPath = path.join(resolvedOnboardingDir, "operator-checklist.json");
   const storageDecisionPath = path.join(resolvedOnboardingDir, "storage-decision.template.json");
+  const publicOperationsPath = path.join(resolvedOnboardingDir, "public-operations.template.json");
   const trustedKeyPath = path.join(resolvedOnboardingDir, "trusted-key-candidate.example.json");
 
   artifacts.push(
@@ -236,6 +270,14 @@ export function writeProductionOnboardingScaffold({
     ),
   );
   artifacts.push(
+    artifactRecord(
+      root,
+      publicOperationsPath,
+      writeJson(publicOperationsPath, publicOperationsTemplate({ generatedAt, packageVersion }), force),
+      "public-operations-template",
+    ),
+  );
+  artifacts.push(
     artifactRecord(root, trustedKeyPath, writeJson(trustedKeyPath, trustedKeyCandidateExample({ generatedAt }), force), "trusted-key-candidate-example"),
   );
 
@@ -250,6 +292,7 @@ export function writeProductionOnboardingScaffold({
       "npm run security:trusted-key:review -- --candidate <approved-public-key.json> --patch-output <trusted-key-registry.patch.json>",
       "npm run security:server-storage",
       "npm run security:server-readiness",
+      "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
       "npm run server:deployment:bundle",
       "npm run ops:approvals:check",
       "npm run ops:go-live:check",

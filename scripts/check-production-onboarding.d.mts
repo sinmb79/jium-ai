@@ -31,6 +31,18 @@ export type ProductionOnboardingReadiness = {
     approvedSectionCount: number;
     requiredSectionCount: number;
   };
+  publicOperations: {
+    valid: boolean;
+    approvedSectionCount: number;
+    requiredSectionCount: number;
+    httpsRouteCount: number;
+    requiredRouteCount: number;
+    envKeyStatuses: {
+      JIUM_PUBLIC_APP_URL: "MISSING" | "PLACEHOLDER" | "SET_HTTPS" | "SET_NOT_HTTPS" | "SET_INVALID";
+      JIUM_PRIVACY_NOTICE_URL: "MISSING" | "PLACEHOLDER" | "SET_HTTPS" | "SET_NOT_HTTPS" | "SET_INVALID";
+      JIUM_SUPPORT_CONTACT_ROUTE: "MISSING" | "PLACEHOLDER" | "SET_HTTPS" | "SET_NOT_HTTPS" | "SET_INVALID";
+    };
+  };
   trustedKeyExample: {
     valid: boolean;
   };
@@ -49,6 +61,10 @@ export type ProductionOnboardingReport = {
     checklistRequiredRecordCount: number;
     storageApprovedSectionCount: number;
     storageRequiredSectionCount: number;
+    publicOperationsApprovedSectionCount: number;
+    publicOperationsRequiredSectionCount: number;
+    publicOperationsHttpsRouteCount: number;
+    publicOperationsRequiredRouteCount: number;
     approvalRecordsStatus: "READY" | "BLOCKED";
     serverStorageStatus: "READY" | "BLOCKED";
   };

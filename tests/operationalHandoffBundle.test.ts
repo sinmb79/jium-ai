@@ -140,6 +140,7 @@ function productionOnboarding(valid = true): ProductionOnboardingReadiness {
       { fileName: "README.md", status: "FOUND" },
       { fileName: "operator-checklist.json", status: "FOUND" },
       { fileName: "storage-decision.template.json", status: "FOUND" },
+      { fileName: "public-operations.template.json", status: "FOUND" },
       { fileName: "trusted-key-candidate.example.json", status: "FOUND" },
     ],
     serverEnv: {
@@ -152,11 +153,12 @@ function productionOnboarding(valid = true): ProductionOnboardingReadiness {
     approvalRecords: approvalRecords(valid),
     checklist: {
       valid,
-      approvedRecordCount: valid ? 5 : 0,
-      requiredRecordCount: 5,
+      approvedRecordCount: valid ? 6 : 0,
+      requiredRecordCount: 6,
       presentRecordIds: [
         "desktop-signing-evidence",
         "legal-go-live-approval",
+        "public-operations-routes",
         "server-origin-approval",
         "server-storage-decision",
         "trusted-public-key-approval",
@@ -166,6 +168,18 @@ function productionOnboarding(valid = true): ProductionOnboardingReadiness {
       valid,
       approvedSectionCount: valid ? 2 : 0,
       requiredSectionCount: 2,
+    },
+    publicOperations: {
+      valid,
+      approvedSectionCount: valid ? 3 : 0,
+      requiredSectionCount: 3,
+      httpsRouteCount: valid ? 3 : 0,
+      requiredRouteCount: 3,
+      envKeyStatuses: {
+        JIUM_PUBLIC_APP_URL: valid ? ("SET_HTTPS" as const) : ("MISSING" as const),
+        JIUM_PRIVACY_NOTICE_URL: valid ? ("SET_HTTPS" as const) : ("MISSING" as const),
+        JIUM_SUPPORT_CONTACT_ROUTE: valid ? ("SET_HTTPS" as const) : ("MISSING" as const),
+      },
     },
     trustedKeyExample: {
       valid: true,
@@ -184,7 +198,7 @@ function goLive(valid = true) {
       JIUM_DATA_RETENTION_POLICY_ACK: "APPROVED" as const,
       JIUM_PUBLIC_APP_URL: "SET_HTTPS" as const,
       JIUM_PRIVACY_NOTICE_URL: "SET_HTTPS" as const,
-      JIUM_SUPPORT_CONTACT_ROUTE: "SET" as const,
+      JIUM_SUPPORT_CONTACT_ROUTE: "SET_HTTPS" as const,
       JIUM_INCIDENT_RESPONSE_OWNER: "SET" as const,
       JIUM_OPERATIONAL_APPROVAL_RECORDS: "SET" as const,
     },

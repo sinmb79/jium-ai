@@ -107,6 +107,45 @@ function updateJsonPackageVersion({ root, filePath, label, packageVersion, dryRu
   return artifact(root, filePath, label, dryRun ? "WOULD_UPDATE" : "UPDATED", { previousPackageVersion, packageVersion });
 }
 
+function publicOperationsTemplate({ generatedAt, packageVersion }) {
+  return {
+    schema: PRODUCTION_ONBOARDING_SCHEMA,
+    generatedAt,
+    packageVersion,
+    status: "PENDING_PUBLIC_OPERATIONS_APPROVAL",
+    publicApp: {
+      status: "PENDING_APPROVAL",
+      evidenceRef: "REPLACE-ME-PUBLIC-APP-REF",
+      requiredCheck: "JIUM_PUBLIC_APP_URL points to the approved HTTPS public app route.",
+    },
+    privacyNotice: {
+      status: "PENDING_APPROVAL",
+      evidenceRef: "REPLACE-ME-PRIVACY-NOTICE-REF",
+      requiredCheck: "JIUM_PRIVACY_NOTICE_URL points to the approved HTTPS privacy notice route.",
+    },
+    supportRoute: {
+      status: "PENDING_APPROVAL",
+      evidenceRef: "REPLACE-ME-SUPPORT-ROUTE-REF",
+      requiredCheck: "JIUM_SUPPORT_CONTACT_ROUTE points to the approved HTTPS support route without exposing case details.",
+    },
+    verificationCommand: "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
+  };
+}
+
+function updatePublicOperationsTemplate({ root, filePath, packageVersion, dryRun }) {
+  if (!existsSync(filePath)) {
+    writeJson(filePath, publicOperationsTemplate({ generatedAt: new Date().toISOString(), packageVersion }), dryRun);
+    return artifact(root, filePath, "public-operations", dryRun ? "WOULD_CREATE" : "CREATED", { packageVersion });
+  }
+  return updateJsonPackageVersion({
+    root,
+    filePath,
+    label: "public-operations",
+    packageVersion,
+    dryRun,
+  });
+}
+
 function updateReadme({ root, filePath, packageVersion, dryRun }) {
   const text = readTextSafely(filePath);
   if (!text) {
@@ -197,6 +236,12 @@ export function upgradeProductionOnboarding({
       root,
       filePath: path.join(resolvedOnboardingDir, "storage-decision.template.json"),
       label: "storage-decision",
+      packageVersion,
+      dryRun,
+    }),
+    updatePublicOperationsTemplate({
+      root,
+      filePath: path.join(resolvedOnboardingDir, "public-operations.template.json"),
       packageVersion,
       dryRun,
     }),

@@ -38,12 +38,16 @@ describe("production onboarding scaffold", () => {
     const markdown = formatProductionOnboardingMarkdown(summary);
     const serialized = JSON.stringify(summary);
 
-    expect(summary.artifacts.map((artifact) => artifact.status)).toEqual(["CREATED", "CREATED", "CREATED", "CREATED", "CREATED", "CREATED"]);
+    expect(summary.artifacts.map((artifact) => artifact.status)).toEqual(["CREATED", "CREATED", "CREATED", "CREATED", "CREATED", "CREATED", "CREATED"]);
     expect(serverEnv).toContain("INSTITUTION_SESSION_SECRET=");
     expect(serverEnv).toContain("REPLACE-ME-https-origin");
     expect(approvals).toContain("PENDING_APPROVAL");
     expect(checklist).toContain("PENDING_EXTERNAL_APPROVALS");
     expect(readme).toContain("Verification Order");
+    expect(readme).toContain("ops:public-env:init");
+    expect(await readFile(path.join(root, DEFAULT_PRODUCTION_ONBOARDING_DIR, "public-operations.template.json"), "utf8")).toContain(
+      "PENDING_PUBLIC_OPERATIONS_APPROVAL",
+    );
     expect(markdown).toContain("JiumAI Production Onboarding Scaffold");
     expect(serialized).not.toContain("INSTITUTION_SESSION_SECRET=");
     expect(serialized).not.toContain("https://");
@@ -89,6 +93,7 @@ describe("production onboarding scaffold", () => {
     expect(run.status).toBe(0);
     expect(summary.onboardingDir).toBe("ops/private/custom-onboarding");
     expect(summary.artifacts.some((artifact: { path: string }) => artifact.path === "ops/private/custom-onboarding/operator-checklist.json")).toBe(true);
+    expect(summary.artifacts.some((artifact: { path: string }) => artifact.path === "ops/private/custom-onboarding/public-operations.template.json")).toBe(true);
     expect(run.stdout).not.toContain("INSTITUTION_SESSION_SECRET=");
   });
 });

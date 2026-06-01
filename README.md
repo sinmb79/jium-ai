@@ -332,3 +332,15 @@ npm run ops:public-env:markdown -- --base-url https://example.org/jium-ai/ --wri
 The report redacts raw URLs and records only route paths, URL validity states, counts, and env key statuses. The private env file may contain real URLs and must stay out of git.
 
 The static app now also exposes `/privacy/` and `/support/`, so operators can point `JIUM_PRIVACY_NOTICE_URL` and `JIUM_SUPPORT_CONTACT_ROUTE` at reviewed HTTPS pages before the final go-live gate.
+
+## v0.3.65 Public Operations in Production Onboarding
+
+Production onboarding now includes public operations readiness before final go-live:
+
+```bash
+npm run ops:onboarding:init
+npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env
+npm run ops:onboarding:check
+```
+
+`ops:onboarding:init` creates `public-operations.template.json`, and `ops:onboarding:check` requires approved pseudonymous evidence for the public app, privacy notice, and support route. The actual URLs stay in private env/deployment settings and are redacted from reports.

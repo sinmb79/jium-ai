@@ -2,7 +2,7 @@
 
 작성일: 2026-05-31
 
-최신 구현 메모: v3.64에서 공개 앱 URL, 개인정보 안내 URL, 지원 경로를 준비하는 `ops:public-env:init`과 `/privacy/`, `/support/` 공개 페이지를 추가했다. 세부 runbook은 `docs/public-operations-env-v0.3.64.md`를 기준으로 한다.
+최신 구현 메모: v3.65에서 공개 앱 URL, 개인정보 안내 URL, 지원 경로 준비를 production onboarding 게이트까지 확장했다. `ops:onboarding:init`은 `public-operations.template.json`을 만들고, `ops:onboarding:check`는 공개 경로 HTTPS 상태와 승인 evidence를 함께 검증한다. 세부 runbook은 `docs/production-onboarding-public-operations-v0.3.65.md`를 기준으로 한다.
 
 ## 운영제품 기준
 

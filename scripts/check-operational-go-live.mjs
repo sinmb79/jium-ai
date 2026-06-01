@@ -49,7 +49,7 @@ export function summarizeOperationalGoLiveEnv(env = process.env) {
     JIUM_DATA_RETENTION_POLICY_ACK: approvalStatus(env.JIUM_DATA_RETENTION_POLICY_ACK),
     JIUM_PUBLIC_APP_URL: httpsUrlStatus(env.JIUM_PUBLIC_APP_URL),
     JIUM_PRIVACY_NOTICE_URL: httpsUrlStatus(env.JIUM_PRIVACY_NOTICE_URL),
-    JIUM_SUPPORT_CONTACT_ROUTE: present(env.JIUM_SUPPORT_CONTACT_ROUTE) ? "SET" : "MISSING",
+    JIUM_SUPPORT_CONTACT_ROUTE: httpsUrlStatus(env.JIUM_SUPPORT_CONTACT_ROUTE),
     JIUM_INCIDENT_RESPONSE_OWNER: present(env.JIUM_INCIDENT_RESPONSE_OWNER) ? "SET" : "MISSING",
     JIUM_OPERATIONAL_APPROVAL_RECORDS: present(env.JIUM_OPERATIONAL_APPROVAL_RECORDS) ? "SET" : "DEFAULT_PRIVATE_PATH",
   };
@@ -115,8 +115,8 @@ function envErrors(envSummary) {
   if (envSummary.JIUM_PRIVACY_NOTICE_URL !== "SET_HTTPS") {
     errors.push("operational privacy notice URL must be HTTPS: JIUM_PRIVACY_NOTICE_URL");
   }
-  if (envSummary.JIUM_SUPPORT_CONTACT_ROUTE !== "SET") {
-    errors.push("operational support contact route missing: JIUM_SUPPORT_CONTACT_ROUTE");
+  if (envSummary.JIUM_SUPPORT_CONTACT_ROUTE !== "SET_HTTPS") {
+    errors.push("operational support contact route must be HTTPS: JIUM_SUPPORT_CONTACT_ROUTE");
   }
   if (envSummary.JIUM_INCIDENT_RESPONSE_OWNER !== "SET") {
     errors.push("operational incident response owner missing: JIUM_INCIDENT_RESPONSE_OWNER");
@@ -203,7 +203,7 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
       id: "support-operations",
       label: "Support contact route and incident response owner are assigned",
       status:
-        readiness.envSummary.JIUM_SUPPORT_CONTACT_ROUTE === "SET" &&
+        readiness.envSummary.JIUM_SUPPORT_CONTACT_ROUTE === "SET_HTTPS" &&
         readiness.envSummary.JIUM_INCIDENT_RESPONSE_OWNER === "SET"
           ? "PASS"
           : "BLOCKED",

@@ -151,6 +151,7 @@ function readyProductionOnboarding(valid = true): ProductionOnboardingReadiness 
       { fileName: "README.md", status: "FOUND" },
       { fileName: "operator-checklist.json", status: "FOUND" },
       { fileName: "storage-decision.template.json", status: "FOUND" },
+      { fileName: "public-operations.template.json", status: "FOUND" },
       { fileName: "trusted-key-candidate.example.json", status: "FOUND" },
     ],
     serverEnv: {
@@ -176,11 +177,12 @@ function readyProductionOnboarding(valid = true): ProductionOnboardingReadiness 
     },
     checklist: {
       valid,
-      approvedRecordCount: valid ? 5 : 0,
-      requiredRecordCount: 5,
+      approvedRecordCount: valid ? 6 : 0,
+      requiredRecordCount: 6,
       presentRecordIds: [
         "desktop-signing-evidence",
         "legal-go-live-approval",
+        "public-operations-routes",
         "server-origin-approval",
         "server-storage-decision",
         "trusted-public-key-approval",
@@ -190,6 +192,18 @@ function readyProductionOnboarding(valid = true): ProductionOnboardingReadiness 
       valid,
       approvedSectionCount: valid ? 2 : 0,
       requiredSectionCount: 2,
+    },
+    publicOperations: {
+      valid,
+      approvedSectionCount: valid ? 3 : 0,
+      requiredSectionCount: 3,
+      httpsRouteCount: valid ? 3 : 0,
+      requiredRouteCount: 3,
+      envKeyStatuses: {
+        JIUM_PUBLIC_APP_URL: valid ? "SET_HTTPS" : "MISSING",
+        JIUM_PRIVACY_NOTICE_URL: valid ? "SET_HTTPS" : "MISSING",
+        JIUM_SUPPORT_CONTACT_ROUTE: valid ? "SET_HTTPS" : "MISSING",
+      },
     },
     trustedKeyExample: {
       valid: true,
@@ -214,6 +228,7 @@ describe("operational go-live readiness", () => {
     expect(summary.JIUM_GO_LIVE_APPROVAL).toBe("APPROVED");
     expect(summary.JIUM_PUBLIC_APP_URL).toBe("SET_HTTPS");
     expect(summary.JIUM_PRIVACY_NOTICE_URL).toBe("SET_NOT_HTTPS");
+    expect(summary.JIUM_SUPPORT_CONTACT_ROUTE).toBe("SET_INVALID");
     expect(JSON.stringify(summary)).not.toContain("prod.example.com");
     expect(JSON.stringify(summary)).not.toContain("support@example.com");
   });
@@ -230,7 +245,7 @@ describe("operational go-live readiness", () => {
         JIUM_DATA_RETENTION_POLICY_ACK: "APPROVED",
         JIUM_PUBLIC_APP_URL: "https://prod.example.com/jium",
         JIUM_PRIVACY_NOTICE_URL: "https://prod.example.com/privacy",
-        JIUM_SUPPORT_CONTACT_ROUTE: "support-route-redacted",
+        JIUM_SUPPORT_CONTACT_ROUTE: "https://prod.example.com/support",
         JIUM_INCIDENT_RESPONSE_OWNER: "owner-redacted",
       } as unknown as NodeJS.ProcessEnv,
       validations: {
