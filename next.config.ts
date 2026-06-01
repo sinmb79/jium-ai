@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
   ...(isGithubPages || isDesktopExport
     ? {
         output: "export" as const,
+        trailingSlash: true,
         images: {
           unoptimized: true,
         },
