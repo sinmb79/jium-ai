@@ -15,6 +15,11 @@ import {
   OPERATIONAL_GO_LIVE_REHEARSAL_BUNDLE_DIR,
   runOperationalGoLiveRehearsal,
 } from "./run-operational-go-live-rehearsal.mjs";
+import {
+  SERVER_ORIGIN_CANDIDATE_DIR,
+  SERVER_ORIGIN_CANDIDATE_JSON,
+  SERVER_ORIGIN_CANDIDATE_MARKDOWN,
+} from "./build-server-origin-candidate.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -124,6 +129,18 @@ function buildRequiredReviewFiles() {
       label: "Operational go-live rehearsal Markdown",
       path: `${OPERATIONAL_GO_LIVE_REHEARSAL_BUNDLE_DIR}/operational-go-live-rehearsal-report.md`,
       purpose: "Simulation boundary and rehearsal result for reviewers.",
+    },
+    {
+      id: "server-origin-candidate-json",
+      label: "Server origin candidate JSON",
+      path: `${SERVER_ORIGIN_CANDIDATE_DIR}/${SERVER_ORIGIN_CANDIDATE_JSON}`,
+      purpose: "Redacted server origin approval candidate and private command digest.",
+    },
+    {
+      id: "server-origin-candidate-markdown",
+      label: "Server origin candidate Markdown",
+      path: `${SERVER_ORIGIN_CANDIDATE_DIR}/${SERVER_ORIGIN_CANDIDATE_MARKDOWN}`,
+      purpose: "Human-readable server origin approval candidate summary.",
     },
     {
       id: "release-dossier-json",

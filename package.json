@@ -1,6 +1,6 @@
 {
   "name": "jium-ai",
-  "version": "0.3.89",
+  "version": "0.3.90",
   "private": true,
   "description": "무료·로컬 우선 디지털 권리구제 도우미",
   "author": "22B Labs",
@@ -29,6 +29,9 @@
     "security:server-readiness:json": "node scripts/check-server-readiness.mjs --json",
     "security:server-readiness:markdown": "node scripts/check-server-readiness.mjs --markdown",
     "server:env:init": "node scripts/init-server-runtime-env.mjs",
+    "server:origin:candidate": "node scripts/build-server-origin-candidate.mjs",
+    "server:origin:candidate:json": "node scripts/build-server-origin-candidate.mjs --json",
+    "server:origin:candidate:markdown": "node scripts/build-server-origin-candidate.mjs --markdown",
     "server:origin:apply": "node scripts/apply-server-origin-approval.mjs",
     "server:origin:apply:json": "node scripts/apply-server-origin-approval.mjs --json",
     "server:origin:apply:markdown": "node scripts/apply-server-origin-approval.mjs --markdown",

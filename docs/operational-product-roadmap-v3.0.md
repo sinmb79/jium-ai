@@ -1040,3 +1040,20 @@
   - report는 readiness state, expected command, required ignore entry, unsafe pattern ID만 저장하고 Netlify token, public URL, host, owner, victim indicator는 저장하지 않는다.
 - 검증 범위
   - valid Netlify static-hosting config, unsafe config 차단, CLI output path guard, action-plan run order 연결을 테스트했다.
+
+## v3.90 Server origin candidate
+
+- 서버 origin 승인 후보 생성
+  - 앱 version을 `0.3.90`으로 올리고 `server:origin:candidate`, JSON, Markdown variants를 추가했다.
+  - `--from-public-env`로 `.env.server.local`의 public app, privacy, support HTTPS URL에서 origin 후보를 도출한다.
+  - raw origin이 필요한 실제 `server:origin:apply` 명령은 `ops/private/server-origin-candidate/server-origin-apply-command.md`에만 기록한다.
+- 운영 연결
+  - server-runtime phase의 verification commands에 `npm run server:origin:candidate -- --from-public-env`를 추가했다.
+  - 승인 전 후보 생성, 외부 검토, `server:origin:apply`, `security:server-readiness` 순서가 액션 플랜에 드러나도록 정리했다.
+  - release dossier와 approval evidence digest 기본 증거 묶음에 redacted server origin candidate report를 포함했다.
+- 안전 경계
+  - public report에는 URL key status, origin count, private command path, SHA-256 digest만 저장한다.
+  - raw origin, public URL, contact, owner, victim indicator, invite, onion, email, phone, password, token, certificate material은 report에 저장하지 않는다.
+  - 이 도구는 승인이나 적용을 하지 않고 승인 후보만 준비한다.
+- 검증 범위
+  - public env 기반 후보 생성, non-HTTPS 차단, private command 분리, raw URL 비노출, CLI output path guard, action-plan run order 연결을 테스트했다.

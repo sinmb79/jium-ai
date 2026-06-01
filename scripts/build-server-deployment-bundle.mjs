@@ -79,7 +79,7 @@ function redactLocalPaths(message, root, templateRoot) {
 
 function routeNextActionFor(error) {
   if (error.includes("JIUM_SERVER_ROUTES=true")) {
-    return "Apply approved server origins with npm run server:origin:apply before materializing routes.";
+    return "Prepare a redacted origin candidate with npm run server:origin:candidate, then apply approved server origins with npm run server:origin:apply before materializing routes.";
   }
   if (error.includes("GITHUB_PAGES=true")) {
     return "Disable GITHUB_PAGES for the server deployment profile.";
@@ -231,6 +231,7 @@ export async function buildServerDeploymentBundle({
     },
     deploymentCommands: [
       "npm run server:env:init",
+      "npm run server:origin:candidate -- --from-public-env",
       "npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>",
       "npm run server:origin:apply -- --origin <approved-https-operator-origin> --approval-ref <pseudonymous-origin-approval-reference>",
       "npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env",

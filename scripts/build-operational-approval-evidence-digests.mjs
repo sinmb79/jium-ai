@@ -11,6 +11,12 @@ import {
 } from "./build-operational-release-dossier.mjs";
 import { OPERATIONAL_HANDOFF_BUNDLE_DIR } from "./build-operational-handoff-bundle.mjs";
 import { OPERATIONAL_GO_LIVE_REHEARSAL_BUNDLE_DIR } from "./run-operational-go-live-rehearsal.mjs";
+import {
+  SERVER_ORIGIN_CANDIDATE_DIR,
+  SERVER_ORIGIN_CANDIDATE_JSON,
+  SERVER_ORIGIN_CANDIDATE_MARKDOWN,
+  buildServerOriginCandidate,
+} from "./build-server-origin-candidate.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -26,6 +32,8 @@ const DEFAULT_EVIDENCE_FILES = [
   `${OPERATIONAL_HANDOFF_BUNDLE_DIR}/operational-handoff-summary.json`,
   `${OPERATIONAL_HANDOFF_BUNDLE_DIR}/operational-action-plan.json`,
   `${OPERATIONAL_GO_LIVE_REHEARSAL_BUNDLE_DIR}/operational-go-live-rehearsal-report.json`,
+  `${SERVER_ORIGIN_CANDIDATE_DIR}/${SERVER_ORIGIN_CANDIDATE_JSON}`,
+  `${SERVER_ORIGIN_CANDIDATE_DIR}/${SERVER_ORIGIN_CANDIDATE_MARKDOWN}`,
 ];
 
 const UNSAFE_PATTERNS = [
@@ -139,6 +147,7 @@ async function ensureDefaultEvidenceFiles({ root, env, platform, generatedAt, no
   if (noBuild) {
     return DEFAULT_EVIDENCE_FILES;
   }
+  await buildServerOriginCandidate({ root, env, fromPublicEnv: true, generatedAt });
   const dossier = await buildOperationalReleaseDossier({ root, env, platform, generatedAt });
   writeOperationalReleaseDossierFiles({ root, dossier });
   return DEFAULT_EVIDENCE_FILES;

@@ -610,3 +610,16 @@ npm run public:hosting:preflight -- <approved-netlify-https-url>
 Netlify is configured to run `npm run public:hosting:bundle` and publish `dist/static-hosting-bundle/site`, so the generated `_headers` file is deployed with the app. The checker blocks raw URLs, contacts, tokens, private paths, and secret-like assignments in `netlify.toml`, and verifies `.netlifyignore` excludes local dependencies, generated artifacts, and private operating files. Details are in [Netlify Hosting Config v0.3.89](docs/netlify-hosting-config-v0.3.89.md).
 
 For the Netlify MCP upload lane, build the bundle first and run the generated deploy command from `dist/static-hosting-bundle/site`. This keeps the deployment focused on the exported static app and the `_headers` policy.
+
+## v0.3.90 Server Origin Candidate
+
+After public routes are configured, operators can now prepare the server origin approval step without leaking raw origins into public reports:
+
+```bash
+npm run server:origin:candidate -- --from-public-env
+npm run server:origin:candidate:json -- --from-public-env --output dist/server-origin-candidate/report.json
+```
+
+The command derives HTTPS origin candidates from the private public-operations env, writes the raw `server:origin:apply` command only under `ops/private/server-origin-candidate`, and emits a redacted report with counts and SHA-256 digests. It does not approve or apply server origins. Details are in [Server Origin Candidate v0.3.90](docs/server-origin-candidate-v0.3.90.md).
+
+The operational release dossier and approval evidence digest now include this redacted candidate report so origin approval can be reviewed without exposing raw URLs in public evidence.
