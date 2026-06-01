@@ -466,3 +466,13 @@ npm run ops:onboarding:approve-storage-decision -- --section <audit-ledger|accou
 ```
 
 The command updates only `ops/private/production-onboarding/storage-decision.template.json`, rejects placeholders/raw URLs/contacts/secrets/storage paths in evidence refs, and writes a redacted report with only a SHA-256 digest of the evidence reference. Details are in [Production Onboarding Storage Decision Approval v0.3.76](docs/production-onboarding-storage-decision-approval-v0.3.76.md).
+
+## v0.3.77 Production Onboarding Public Operations Approval
+
+Private onboarding public-operations sections can now be marked approved through a guarded CLI:
+
+```bash
+npm run ops:onboarding:approve-public-operations -- --section <public-app|privacy-notice|support-route> --evidence-ref <pseudonymous-public-operations-evidence-reference>
+```
+
+The command updates only `ops/private/production-onboarding/public-operations.template.json`, rejects placeholders/raw URLs/contacts/secrets in evidence refs, and writes a redacted report with only a SHA-256 digest of the evidence reference. Details are in [Production Onboarding Public Operations Approval v0.3.77](docs/production-onboarding-public-operations-approval-v0.3.77.md).

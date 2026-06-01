@@ -465,3 +465,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The command updates only the ignored private `storage-decision.template.json`, rejects placeholders, raw URLs, contacts, invite links, onion addresses, phone numbers, secrets, and private key material, and writes redacted JSON/Markdown reports.
 - Reports store only section id, counts, decision status, and SHA-256 evidence-reference digests; the raw pseudonymous storage evidence reference remains in the private onboarding packet.
 - `ops:onboarding:init`, `ops:onboarding:check`, and `ops:action-plan` now point operators to the guarded storage decision command so storage approvals can advance without undocumented JSON editing.
+
+## Implemented in v0.3.77
+
+- Added `scripts/approve-production-onboarding-public-operations.mjs` and `ops:onboarding:approve-public-operations` for recording externally approved public app, privacy notice, and support route sections.
+- The command updates only the ignored private `public-operations.template.json`, rejects placeholders, raw URLs, contacts, invite links, onion addresses, phone numbers, secrets, and private key material, and writes redacted JSON/Markdown reports.
+- Reports store only section id, counts, public-operations status, and SHA-256 evidence-reference digests; the raw pseudonymous evidence reference remains in the private onboarding packet.
+- `ops:onboarding:init`, `ops:onboarding:check`, and `ops:action-plan` now point operators to the guarded public operations command so public route approvals can advance without undocumented JSON editing.

@@ -387,7 +387,7 @@ function nextActionFor(error) {
     return "Complete the storage decision record with npm run ops:onboarding:approve-storage-decision and configure repo-external approved storage directories.";
   }
   if (error.includes("public operations")) {
-    return "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init, then approve public-operations.template.json.";
+    return "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init, then record route approvals with npm run ops:onboarding:approve-public-operations.";
   }
   if (error.includes("hosted security header audit")) {
     return "Run npm run security:headers:check against the approved HTTPS public app URL, set JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT, then rerun onboarding.";

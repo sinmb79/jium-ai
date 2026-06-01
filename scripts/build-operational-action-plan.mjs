@@ -41,6 +41,7 @@ const PHASE_BLUEPRINTS = [
     verificationCommands: [
       "npm run ops:onboarding:approve-checklist -- --record <checklist-record-id> --evidence-ref <pseudonymous-evidence-reference>",
       "npm run ops:onboarding:approve-storage-decision -- --section <audit-ledger|account-registry> --evidence-ref <pseudonymous-storage-evidence-reference>",
+      "npm run ops:onboarding:approve-public-operations -- --section <public-app|privacy-notice|support-route> --evidence-ref <pseudonymous-public-operations-evidence-reference>",
       "npm run ops:onboarding:check",
       "npm run ops:onboarding:check:markdown -- --output <redacted-onboarding-report.md>",
     ],
@@ -48,6 +49,7 @@ const PHASE_BLUEPRINTS = [
       "Run npm run ops:onboarding:init if private onboarding files do not exist.",
       "Record each externally approved onboarding checklist item with npm run ops:onboarding:approve-checklist.",
       "Record each externally approved storage decision section with npm run ops:onboarding:approve-storage-decision.",
+      "Record each externally approved public operations route section with npm run ops:onboarding:approve-public-operations.",
       "Replace onboarding placeholders with approved operator checklist, storage decision, trusted-key review, and release evidence references.",
       "Run npm run ops:onboarding:upgrade after each app version bump, then re-check readiness.",
     ],
