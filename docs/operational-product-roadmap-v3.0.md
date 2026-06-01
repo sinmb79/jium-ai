@@ -1089,6 +1089,22 @@
 - Verification scope
   - Tested filled private input apply readiness, hosted-audit readiness, server-storage ready-to-create status, desktop blocker surfacing, redaction of raw values, report writing, CLI output, and output path guard.
 
+## v3.102 Desktop release upload verification
+
+- Release upload proof
+  - Version was raised to `0.3.102`.
+  - Added `desktop:release-upload:check`, with JSON and Markdown variants.
+  - The command verifies an existing GitHub Release contains the signed Windows installer, blockmap, `latest.yml`, and signed release evidence archive for the approved tag.
+- Operational wiring
+  - Desktop release readiness now requires the upload verifier script and package scripts.
+  - The Desktop Signed Release workflow runs the verifier after `gh release upload` and uploads the redacted verification report to the release.
+  - Operational action plans and release dossiers now route release managers through the upload verification report before final go-live review.
+- Safety boundary
+  - Reports store release tag status, asset names, sizes, counts, and SHA-256 digests only.
+  - Reports do not store GitHub tokens, repository URLs, asset download URLs, update endpoints, certificate material, victim indicators, invite links, onion addresses, emails, phone numbers, or private paths.
+- Verification scope
+  - Tested uploaded asset acceptance, missing asset and draft release blockers, raw download URL redaction, CLI source-file mode, output path guard, workflow inclusion, action-plan routing, release dossier inclusion, and desktop readiness registration.
+
 ## v3.101 Operational launch receipt
 
 - Launch archive receipt

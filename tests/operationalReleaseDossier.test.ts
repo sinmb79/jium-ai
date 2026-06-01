@@ -237,6 +237,9 @@ describe("operational release dossier", () => {
       "dist/desktop-publish-candidate/desktop-publish-candidate-report.md",
     );
     expect(dossier.requiredReviewFiles.map((file) => file.path)).toContain(
+      "dist/desktop-release-upload/desktop-release-upload-report.md",
+    );
+    expect(dossier.requiredReviewFiles.map((file) => file.path)).toContain(
       "dist/operational-approval-command-packet/operational-approval-command-packet.md",
     );
     expect(dossier.requiredReviewFiles.map((file) => file.path)).toContain(
@@ -257,6 +260,7 @@ describe("operational release dossier", () => {
     expect(dossier.nextCommands).toContain("npm run ops:launch-inputs:commands -- --input <private-approved-launch-inputs.json>");
     expect(dossier.nextCommands).toContain("npm run ops:launch-inputs:receipt -- --input <private-approved-launch-inputs.json>");
     expect(dossier.nextCommands).toContain("npm run ops:approvals:input-template");
+    expect(dossier.nextCommands).toContain("npm run desktop:release-upload:check -- --release-tag <approved-release-tag>");
     expect(dossier.priorityActions[0]).toMatchObject({
       phaseId: "production-onboarding",
       ownerRole: "OPERATIONS_LEAD",

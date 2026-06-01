@@ -36,6 +36,7 @@ async function writeDesktopRepo(root: string) {
     "scripts/check-desktop-update-feed.mjs",
     "scripts/build-desktop-release-bundle.mjs",
     "scripts/check-desktop-signing-secrets.mjs",
+    "scripts/check-desktop-release-upload.mjs",
   ]) {
     await mkdir(path.dirname(path.join(root, relativePath)), { recursive: true });
     await writeFile(path.join(root, relativePath), "export {};\n", "utf8");
@@ -56,6 +57,9 @@ async function writeDesktopRepo(root: string) {
           "desktop:distribution:check": "node scripts/check-desktop-distribution.mjs",
           "desktop:update-feed:check": "node scripts/check-desktop-update-feed.mjs",
           "desktop:release:bundle": "node scripts/build-desktop-release-bundle.mjs",
+          "desktop:release-upload:check": "node scripts/check-desktop-release-upload.mjs",
+          "desktop:release-upload:check:json": "node scripts/check-desktop-release-upload.mjs --json",
+          "desktop:release-upload:check:markdown": "node scripts/check-desktop-release-upload.mjs --markdown",
           "desktop:signing-secrets:check": "node scripts/check-desktop-signing-secrets.mjs",
           "desktop:release-env:apply": "node scripts/apply-desktop-release-env.mjs",
           "desktop:release-env:apply:json": "node scripts/apply-desktop-release-env.mjs --json",

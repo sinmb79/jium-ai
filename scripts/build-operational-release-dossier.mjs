@@ -31,6 +31,11 @@ import {
   DESKTOP_PUBLISH_CANDIDATE_MARKDOWN,
 } from "./build-desktop-publish-candidate.mjs";
 import {
+  DESKTOP_RELEASE_UPLOAD_DIR,
+  DESKTOP_RELEASE_UPLOAD_JSON,
+  DESKTOP_RELEASE_UPLOAD_MARKDOWN,
+} from "./check-desktop-release-upload.mjs";
+import {
   OPERATIONAL_APPROVAL_COMMAND_PACKET_DIR,
   OPERATIONAL_APPROVAL_COMMAND_PACKET_JSON,
   OPERATIONAL_APPROVAL_COMMAND_PACKET_MARKDOWN,
@@ -200,6 +205,18 @@ function buildRequiredReviewFiles() {
       label: "Desktop publish candidate Markdown",
       path: `${DESKTOP_PUBLISH_CANDIDATE_DIR}/${DESKTOP_PUBLISH_CANDIDATE_MARKDOWN}`,
       purpose: "Human-readable desktop publish approval candidate summary.",
+    },
+    {
+      id: "desktop-release-upload-json",
+      label: "Desktop release upload verification JSON",
+      path: `${DESKTOP_RELEASE_UPLOAD_DIR}/${DESKTOP_RELEASE_UPLOAD_JSON}`,
+      purpose: "Redacted proof that signed installer, blockmap, update metadata, and evidence archive were uploaded.",
+    },
+    {
+      id: "desktop-release-upload-markdown",
+      label: "Desktop release upload verification Markdown",
+      path: `${DESKTOP_RELEASE_UPLOAD_DIR}/${DESKTOP_RELEASE_UPLOAD_MARKDOWN}`,
+      purpose: "Human-readable GitHub Release upload verification summary.",
     },
     {
       id: "operational-approval-command-packet-json",
@@ -504,6 +521,7 @@ export async function buildOperationalReleaseDossier({
       "npm run ops:launch-inputs:commands -- --input <private-approved-launch-inputs.json>",
       "npm run ops:launch-inputs:receipt -- --input <private-approved-launch-inputs.json>",
       "npm run ops:approvals:input-template",
+      "npm run desktop:release-upload:check -- --release-tag <approved-release-tag>",
       "npm run ops:go-live:rehearsal",
       "npm run ops:release-dossier",
       "npm run ops:go-live:check",

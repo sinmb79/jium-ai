@@ -30,6 +30,7 @@ async function tempRepo() {
     "check-desktop-update-feed.mjs",
     "build-desktop-release-bundle.mjs",
     "check-desktop-signing-secrets.mjs",
+    "check-desktop-release-upload.mjs",
   ]) {
     await writeFile(path.join(dir, "scripts", scriptName), "export {};\n", "utf8");
   }
@@ -65,6 +66,9 @@ async function tempRepo() {
           "desktop:distribution:check": "node scripts/check-desktop-distribution.mjs",
           "desktop:update-feed:check": "node scripts/check-desktop-update-feed.mjs",
           "desktop:release:bundle": "node scripts/build-desktop-release-bundle.mjs",
+          "desktop:release-upload:check": "node scripts/check-desktop-release-upload.mjs",
+          "desktop:release-upload:check:json": "node scripts/check-desktop-release-upload.mjs --json",
+          "desktop:release-upload:check:markdown": "node scripts/check-desktop-release-upload.mjs --markdown",
           "desktop:signing-secrets:check": "node scripts/check-desktop-signing-secrets.mjs",
           "desktop:release-env:apply": "node scripts/apply-desktop-release-env.mjs",
           "desktop:release-env:apply:json": "node scripts/apply-desktop-release-env.mjs --json",

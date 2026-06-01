@@ -17,6 +17,7 @@ export const REQUIRED_DESKTOP_FILES = [
   "scripts/check-desktop-update-feed.mjs",
   "scripts/build-desktop-release-bundle.mjs",
   "scripts/check-desktop-signing-secrets.mjs",
+  "scripts/check-desktop-release-upload.mjs",
 ];
 
 export const REQUIRED_DESKTOP_PACKAGE_SCRIPTS = [
@@ -28,6 +29,9 @@ export const REQUIRED_DESKTOP_PACKAGE_SCRIPTS = [
   "desktop:distribution:check",
   "desktop:update-feed:check",
   "desktop:release:bundle",
+  "desktop:release-upload:check",
+  "desktop:release-upload:check:json",
+  "desktop:release-upload:check:markdown",
   "desktop:signing-secrets:check",
   "desktop:release-env:apply",
   "desktop:release-env:apply:json",

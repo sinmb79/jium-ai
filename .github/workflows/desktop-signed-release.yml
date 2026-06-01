@@ -13,7 +13,7 @@ on:
       release_tag:
         description: Existing GitHub Release tag that matches package.json version
         required: true
-        default: v0.3.101
+        default: v0.3.102
       publish_to_github_release:
         description: Upload signed installer assets to the existing GitHub Release
         required: true
@@ -149,4 +149,16 @@ jobs:
             dist/desktop/*.blockmap \
             dist/desktop/latest.yml \
             dist/jium-ai-windows-signed-release-evidence.tgz \
+            --clobber
+
+      - name: Verify release upload
+        run: npm run desktop:release-upload:check -- --release-tag "$JIUM_DESKTOP_RELEASE_TAG"
+
+      - name: Upload release upload verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release upload "$JIUM_DESKTOP_RELEASE_TAG" \
+            dist/desktop-release-upload/desktop-release-upload-report.json \
+            dist/desktop-release-upload/desktop-release-upload-report.md \
             --clobber

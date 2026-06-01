@@ -746,3 +746,13 @@ npm run ops:launch-inputs:receipt -- --input ops/private/production-onboarding/a
 ```
 
 The receipt checks that the private command packet is under `ops/private`, the command sequence is complete, the command packet input digest matches the reviewed launch input, and the current apply-readiness/go-live gates are captured without raw command text, URLs, paths, contacts, refs, or secrets. Details are in [Operational Launch Receipt v0.3.101](docs/operational-launch-receipt-v0.3.101.md).
+
+## v0.3.102 Desktop Release Upload Verification
+
+After the signed desktop release workflow uploads installer assets, operators can verify the existing GitHub Release:
+
+```bash
+npm run desktop:release-upload:check -- --release-tag v0.3.102
+```
+
+The report checks the release tag, draft state, signed installer, blockmap, `latest.yml`, and signed release evidence archive. It is wired into the Desktop Signed Release workflow, the desktop release readiness gate, the action plan, and the release dossier without storing raw GitHub URLs, tokens, update endpoints, certificate material, contacts, invite links, onion addresses, or private paths. Details are in [Desktop Release Upload Verification v0.3.102](docs/desktop-release-upload-verification-v0.3.102.md).

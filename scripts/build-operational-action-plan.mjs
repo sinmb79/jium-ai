@@ -131,6 +131,7 @@ const PHASE_BLUEPRINTS = [
       "npm run desktop:release:digest-evidence -- --feed-dir <signed-release-folder>",
       "npm run desktop:publish:candidate -- --feed-dir <signed-release-folder>",
       "npm run desktop:publish:check -- --feed-dir <signed-release-folder>",
+      "npm run desktop:release-upload:check -- --release-tag <approved-release-tag>",
     ],
     baseActions: [
       "Apply approved non-secret desktop release env with npm run desktop:release-env:apply before signing checks.",
@@ -139,6 +140,7 @@ const PHASE_BLUEPRINTS = [
       "Build the signed desktop release evidence digest with npm run desktop:release:digest-evidence before publish approval archive.",
       "Build a redacted desktop publish approval candidate with npm run desktop:publish:candidate before final upload approval.",
       "Validate installer, blockmap, update metadata, and publish approval before uploading assets.",
+      "Verify the uploaded GitHub Release assets with npm run desktop:release-upload:check after the publish job completes.",
     ],
     completionCriteria: [
       "Desktop publish readiness is READY.",
