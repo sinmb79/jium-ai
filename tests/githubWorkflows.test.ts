@@ -73,4 +73,25 @@ describe("GitHub Actions security gates", () => {
     expect(workflow).not.toContain("WINDOWS_SIGNING_CERT_PATH");
     expect(workflow).not.toContain("WINDOWS_SIGNING_CERT_PASSWORD");
   });
+
+  it("has a manual signed desktop release workflow guarded by signing preflight", () => {
+    const workflow = readFileSync(".github/workflows/desktop-signed-release.yml", "utf8");
+
+    expect(workflow).toContain("workflow_dispatch:");
+    expect(workflow).toContain("runs-on: windows-latest");
+    expect(workflow).toContain("JIUM_DESKTOP_RELEASE_CHANNEL: ${{ inputs.release_channel }}");
+    expect(workflow).toContain("JIUM_DESKTOP_UPDATE_URL: ${{ inputs.update_url }}");
+    expect(workflow).toContain("CSC_LINK: ${{ secrets.JIUM_WINDOWS_CSC_LINK }}");
+    expect(workflow).toContain("CSC_KEY_PASSWORD: ${{ secrets.JIUM_WINDOWS_CSC_KEY_PASSWORD }}");
+    expect(workflow).toContain("npm run desktop:signing-secrets:check");
+    expect(workflow).toContain("npm run desktop:release:check");
+    expect(workflow).toContain("npm run desktop:package:signed");
+    expect(workflow).toContain("npm run desktop:update-feed:check -- --feed-dir ./dist/desktop");
+    expect(workflow).toContain("npm run desktop:release:bundle");
+    expect(workflow).toContain("uses: actions/upload-artifact@v6");
+    expect(workflow).toContain("dist/desktop/latest.yml");
+    expect(workflow).toContain("dist/desktop-release-bundle");
+    expect(workflow).not.toContain("JIUM_WINDOWS_CSC_KEY_PASSWORD=");
+    expect(workflow).not.toContain("WINDOWS_SIGNING_CERT_PASSWORD");
+  });
 });

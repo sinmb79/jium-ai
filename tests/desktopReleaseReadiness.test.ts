@@ -32,6 +32,7 @@ async function writeDesktopRepo(root: string) {
   await writeFile(path.join(root, "scripts", "check-desktop-distribution.mjs"), "export {};\n", "utf8");
   await writeFile(path.join(root, "scripts", "check-desktop-update-feed.mjs"), "export {};\n", "utf8");
   await writeFile(path.join(root, "scripts", "build-desktop-release-bundle.mjs"), "export {};\n", "utf8");
+  await writeFile(path.join(root, "scripts", "check-desktop-signing-secrets.mjs"), "export {};\n", "utf8");
   await writeFile(
     path.join(root, "package.json"),
     JSON.stringify(
@@ -52,6 +53,7 @@ async function writeDesktopRepo(root: string) {
           "desktop:distribution:check": "node scripts/check-desktop-distribution.mjs",
           "desktop:update-feed:check": "node scripts/check-desktop-update-feed.mjs",
           "desktop:release:bundle": "node scripts/build-desktop-release-bundle.mjs",
+          "desktop:signing-secrets:check": "node scripts/check-desktop-signing-secrets.mjs",
           "desktop:release:check": "node scripts/check-desktop-release-readiness.mjs",
           "desktop:release:json": "node scripts/check-desktop-release-readiness.mjs --json",
           "desktop:release:markdown": "node scripts/check-desktop-release-readiness.mjs --markdown",
@@ -84,7 +86,8 @@ function releaseEnv(overrides: Record<string, string | undefined> = {}) {
     JIUM_DESKTOP_RELEASE_CHANNEL: "stable",
     JIUM_DESKTOP_UPDATE_URL: "https://updates.example.com/jium-ai",
     WINDOWS_SIGNING_CERT_SHA256: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-    WINDOWS_SIGNING_CERT_PATH: "C:/secrets/jium-ai-signing.pfx",
+    CSC_LINK: "base64-redacted",
+    CSC_KEY_PASSWORD: "password-redacted",
     APPLE_TEAM_ID: "ABCDE12345",
     APPLE_SIGNING_IDENTITY: "Developer ID Application: Example",
     LINUX_PACKAGE_SIGNING_KEY_ID: "linux-secret-key-id",
@@ -122,7 +125,8 @@ describe("desktop release readiness", () => {
     expect(report.checks.every((check) => check.status === "PASS")).toBe(true);
     expect(markdown).toContain("JiumAI Desktop Release Readiness Report");
     expect(serialized).not.toContain("updates.example.com");
-    expect(serialized).not.toContain("jium-ai-signing.pfx");
+    expect(serialized).not.toContain("base64-redacted");
+    expect(serialized).not.toContain("password-redacted");
     expect(serialized).not.toContain("ABCDE12345");
     expect(markdown).not.toContain("linux-secret-key-id");
   });
@@ -135,6 +139,7 @@ describe("desktop release readiness", () => {
     expect(summary.SIGNING_PROFILE_COUNT).toBe(3);
     expect(JSON.stringify(summary)).not.toContain("updates.example.com");
     expect(JSON.stringify(summary)).not.toContain("0123456789abcdef");
+    expect(JSON.stringify(summary)).not.toContain("base64-redacted");
   });
 
   it("writes CLI JSON and Markdown reports to operator-selected files", async () => {

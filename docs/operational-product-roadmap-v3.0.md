@@ -734,3 +734,19 @@
   - update metadata가 없으면 update-feed gate는 BLOCKED로 남아야 정상이다.
 - 검증 범위
   - bundle 파일 생성, redaction, gate summary, 수동 workflow 구조, artifact upload 설정을 테스트했다.
+
+## v3.47 데스크톱 코드서명 secret preflight와 signed workflow
+
+- 실제 서명 가능 조건 강화
+  - `desktop:signing-secrets:check`는 electron-builder가 사용할 수 있는 Windows 서명 조합을 확인한다.
+  - 권장 조건은 `CSC_LINK`와 `CSC_KEY_PASSWORD`이며, Windows 전용 `WIN_CSC_LINK`/`WIN_CSC_KEY_PASSWORD`, 로컬 인증서 `WINDOWS_SIGNING_CERT_PATH`/`WINDOWS_SIGNING_CERT_PASSWORD`, Azure Trusted Signing 조합도 판정한다.
+  - 단순 인증서 hash는 검증용 보조 정보일 뿐 signed artifact를 만들 수 없으므로 signing profile로 세지 않는다.
+- signed release workflow
+  - `Desktop Signed Release` 수동 workflow를 추가했다.
+  - GitHub Secrets의 `JIUM_WINDOWS_CSC_LINK`, `JIUM_WINDOWS_CSC_KEY_PASSWORD`, 선택적 `JIUM_WINDOWS_SIGNING_CERT_SHA256`를 runner 환경변수로 주입한다.
+  - signing preflight, release readiness, signed packaging, distribution check, update feed check, release bundle 생성을 순서대로 실행한다.
+- 개인정보와 secret 최소화
+  - preflight report는 설정 존재 여부만 저장하고 certificate payload, password, endpoint 원문, 피해자 지표를 저장하지 않는다.
+  - workflow에는 secret 값이 아니라 GitHub Secrets 참조만 남긴다.
+- 검증 범위
+  - signing secret 조합, redacted CLI report, release readiness 강화, signed workflow 구조를 테스트했다.

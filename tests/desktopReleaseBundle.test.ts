@@ -29,6 +29,7 @@ async function tempRepo() {
     "check-desktop-distribution.mjs",
     "check-desktop-update-feed.mjs",
     "build-desktop-release-bundle.mjs",
+    "check-desktop-signing-secrets.mjs",
   ]) {
     await writeFile(path.join(dir, "scripts", scriptName), "export {};\n", "utf8");
   }
@@ -64,6 +65,7 @@ async function tempRepo() {
           "desktop:distribution:check": "node scripts/check-desktop-distribution.mjs",
           "desktop:update-feed:check": "node scripts/check-desktop-update-feed.mjs",
           "desktop:release:bundle": "node scripts/build-desktop-release-bundle.mjs",
+          "desktop:signing-secrets:check": "node scripts/check-desktop-signing-secrets.mjs",
           "desktop:release:check": "node scripts/check-desktop-release-readiness.mjs",
           "desktop:release:json": "node scripts/check-desktop-release-readiness.mjs --json",
           "desktop:release:markdown": "node scripts/check-desktop-release-readiness.mjs --markdown",
@@ -116,7 +118,8 @@ describe("desktop release candidate bundle", () => {
       env: {
         JIUM_DESKTOP_RELEASE_CHANNEL: "stable",
         JIUM_DESKTOP_UPDATE_URL: "https://updates.example.com/jium-ai",
-        WINDOWS_SIGNING_CERT_SHA256: "0".repeat(64),
+        CSC_LINK: "base64-redacted",
+        CSC_KEY_PASSWORD: "password-redacted",
       } as unknown as NodeJS.ProcessEnv,
     });
     const summaryMarkdown = await readFile(path.join(root, "dist", "desktop-release-bundle", "desktop-release-candidate-summary.md"), "utf8");

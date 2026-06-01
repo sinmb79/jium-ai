@@ -140,6 +140,7 @@ npm run security:server-readiness:markdown -- --output ./server-readiness.md
 ```bash
 npm run desktop:export
 npm run desktop:release:check
+npm run desktop:signing-secrets:check
 npm run desktop:distribution:check
 npm run desktop:update-feed:check -- --feed-dir ./dist/desktop
 npm run desktop:release:bundle
@@ -149,11 +150,15 @@ npm run desktop:release:markdown -- --output ./desktop-readiness.md
 
 `desktop:release:check`는 승인된 release channel, HTTPS updater endpoint, 최소 1개 플랫폼 signing profile이 설정되기 전까지 차단되어야 정상입니다. JSON/Markdown 리포트는 설정 존재 여부만 표시하며 updater URL 원문, signing certificate path, certificate hash, Apple team ID, Linux signing key ID, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호를 저장하지 않습니다.
 
+`desktop:signing-secrets:check`는 electron-builder가 실제로 사용할 수 있는 Windows 서명 조합을 확인합니다. 기본 권장 조합은 `CSC_LINK`와 `CSC_KEY_PASSWORD`이며, Windows 전용으로 `WIN_CSC_LINK`와 `WIN_CSC_KEY_PASSWORD`를 사용할 수 있습니다. 로컬 파일 인증서를 쓰는 경우 `WINDOWS_SIGNING_CERT_PATH`와 `WINDOWS_SIGNING_CERT_PASSWORD`가 함께 있어야 합니다. 단순 인증서 hash만으로는 signed package를 만들 수 없으므로 readiness 통과 조건으로 보지 않습니다.
+
 `desktop:distribution:check`는 이미 생성된 로컬 데스크톱 산출물의 실행 파일, `app.asar`, 필수 정적 export, OS 보안 저장소 브리지, `electron-updater` 포함 여부를 확인하고 SHA-256 지문을 기록합니다. 이 리포트는 artifact 이름·크기·digest만 남기며 로컬 절대경로나 피해자 지표를 저장하지 않습니다.
 
 `desktop:update-feed:check`는 generic updater metadata(`latest.yml`, macOS는 `latest-mac.yml`, Linux는 `latest-linux.yml`)와 같은 폴더의 artifact가 같은 빌드에서 나온 것인지 확인합니다. version, releaseDate, path, files 목록, SHA-512, 파일 크기가 일치해야 하며, metadata가 없으면 BLOCKED가 정상입니다. signed installer와 update metadata를 다른 빌드에서 섞어 올리면 안 됩니다.
 
 `desktop:release:bundle`은 distribution, release readiness, update feed 리포트와 요약을 `dist/desktop-release-bundle`에 모읍니다. 이 bundle은 운영자 검토용 증적이며, legal/institutional sign-off, 코드서명, update hosting 완료를 대신하지 않습니다. GitHub Actions의 `Desktop Release Candidate` 수동 workflow는 Windows runner에서 unsigned release candidate를 만들고 이 bundle과 unpacked package를 artifact로 보관합니다. workflow에는 signing certificate path/password 같은 secret을 직접 넣지 않습니다.
+
+실제 signed installer 생성은 `Desktop Signed Release` 수동 workflow로 분리합니다. 이 workflow는 GitHub Secrets의 `JIUM_WINDOWS_CSC_LINK`, `JIUM_WINDOWS_CSC_KEY_PASSWORD`, 선택적 `JIUM_WINDOWS_SIGNING_CERT_SHA256`를 `CSC_*` 환경변수로 주입한 뒤 signing preflight, release readiness, signed packaging, update-feed 검증, evidence bundle 생성을 순서대로 실행합니다. secret 값은 로그나 bundle에 기록하지 않습니다.
 
 ### 기기 안전점검
 

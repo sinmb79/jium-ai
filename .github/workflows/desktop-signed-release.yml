@@ -1,0 +1,77 @@
+name: Desktop Signed Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_channel:
+        description: Approved desktop release channel
+        required: true
+        default: stable
+      update_url:
+        description: HTTPS generic updater endpoint
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  windows-signed-release:
+    runs-on: windows-latest
+    env:
+      JIUM_DESKTOP_RELEASE_CHANNEL: ${{ inputs.release_channel }}
+      JIUM_DESKTOP_UPDATE_URL: ${{ inputs.update_url }}
+      CSC_LINK: ${{ secrets.JIUM_WINDOWS_CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.JIUM_WINDOWS_CSC_KEY_PASSWORD }}
+      WINDOWS_SIGNING_CERT_SHA256: ${{ secrets.JIUM_WINDOWS_SIGNING_CERT_SHA256 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Secret scan
+        run: npm run security:secrets
+
+      - name: Signing secret preflight
+        run: npm run desktop:signing-secrets:check
+
+      - name: Release readiness
+        run: npm run desktop:release:check
+
+      - name: Build signed desktop package
+        run: npm run desktop:package:signed
+
+      - name: Validate desktop distribution
+        run: npm run desktop:distribution:check
+
+      - name: Validate update feed
+        run: npm run desktop:update-feed:check -- --feed-dir ./dist/desktop
+
+      - name: Build release evidence bundle
+        run: npm run desktop:release:bundle
+
+      - name: Upload signed desktop artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: jium-ai-windows-signed-desktop-artifacts
+          path: |
+            dist/desktop/*.exe
+            dist/desktop/*.blockmap
+            dist/desktop/latest.yml
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload release evidence bundle
+        uses: actions/upload-artifact@v6
+        with:
+          name: jium-ai-windows-signed-release-evidence
+          path: dist/desktop-release-bundle
+          if-no-files-found: error
+          retention-days: 30

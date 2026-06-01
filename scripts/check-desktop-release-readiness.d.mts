@@ -12,6 +12,7 @@ export type DesktopReleaseEnvSummary = {
   APPLE_SIGNING_PROFILE: "SET" | "MISSING";
   LINUX_SIGNING_PROFILE: "SET" | "MISSING";
   SIGNING_PROFILE_COUNT: number;
+  WINDOWS_ELECTRON_BUILDER_SIGNING_PROFILE: "SET" | "MISSING";
 };
 
 export type DesktopReleaseReadiness = {

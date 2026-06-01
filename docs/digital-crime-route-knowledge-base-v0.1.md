@@ -331,3 +331,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Added a manual `Desktop Release Candidate` GitHub Actions workflow that builds an unsigned Windows release candidate, creates the evidence bundle, and uploads both as artifacts.
 - The bundle summary records gate status, version, commit, relative artifact names, byte sizes, and digest values while keeping update URLs, signing secrets, and victim indicators out of the evidence packet.
 - The workflow is intentionally manual and does not embed signing certificate paths, passwords, or key material.
+
+## Implemented in v3.47
+
+- Added `scripts/check-desktop-signing-secrets.mjs` and `desktop:signing-secrets:check` to verify that a signed Windows release has an electron-builder-compatible signing profile.
+- Tightened desktop release readiness so a certificate hash alone no longer counts as a signing profile; `CSC_LINK`/`CSC_KEY_PASSWORD`, `WIN_CSC_LINK`/`WIN_CSC_KEY_PASSWORD`, file/password, or Azure Trusted Signing settings must be present.
+- Added a manual `Desktop Signed Release` workflow that injects GitHub Secrets into `CSC_*` environment variables, runs signing preflight, builds signed artifacts, validates update feed metadata, and uploads release evidence.
+- Signing reports continue to redact certificate payloads, passwords, endpoint values, and victim indicators.

@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { verifyDesktopExport } from "./build-desktop-export.mjs";
+import { summarizeDesktopSigningSecrets } from "./check-desktop-signing-secrets.mjs";
 
 export const REQUIRED_DESKTOP_FILES = [
   "desktop/electron-main.cjs",
@@ -14,6 +15,7 @@ export const REQUIRED_DESKTOP_FILES = [
   "scripts/check-desktop-distribution.mjs",
   "scripts/check-desktop-update-feed.mjs",
   "scripts/build-desktop-release-bundle.mjs",
+  "scripts/check-desktop-signing-secrets.mjs",
 ];
 
 export const REQUIRED_DESKTOP_PACKAGE_SCRIPTS = [
@@ -25,6 +27,7 @@ export const REQUIRED_DESKTOP_PACKAGE_SCRIPTS = [
   "desktop:distribution:check",
   "desktop:update-feed:check",
   "desktop:release:bundle",
+  "desktop:signing-secrets:check",
   "desktop:release:check",
   "desktop:release:json",
   "desktop:release:markdown",
@@ -66,7 +69,8 @@ function updateUrlStatus(value) {
 }
 
 export function summarizeDesktopReleaseEnv(env = process.env) {
-  const windowsSigning = present(env.WINDOWS_SIGNING_CERT_SHA256) || present(env.WINDOWS_SIGNING_CERT_PATH);
+  const signingSecrets = summarizeDesktopSigningSecrets(env);
+  const windowsSigning = signingSecrets.WINDOWS_ELECTRON_BUILDER_SIGNING_PROFILE === "SET";
   const appleSigning = present(env.APPLE_TEAM_ID) && present(env.APPLE_SIGNING_IDENTITY);
   const linuxSigning = present(env.LINUX_PACKAGE_SIGNING_KEY_ID);
   return {
@@ -76,6 +80,7 @@ export function summarizeDesktopReleaseEnv(env = process.env) {
     APPLE_SIGNING_PROFILE: appleSigning ? "SET" : "MISSING",
     LINUX_SIGNING_PROFILE: linuxSigning ? "SET" : "MISSING",
     SIGNING_PROFILE_COUNT: [windowsSigning, appleSigning, linuxSigning].filter(Boolean).length,
+    WINDOWS_ELECTRON_BUILDER_SIGNING_PROFILE: signingSecrets.WINDOWS_ELECTRON_BUILDER_SIGNING_PROFILE,
   };
 }
 
