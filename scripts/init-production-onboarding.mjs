@@ -64,12 +64,13 @@ function onboardingReadme({ generatedAt, packageVersion }) {
     "3. `npm run security:server-readiness`",
     "4. `npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env`",
     "5. `npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json`",
-    "6. Set `JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT=ops/private/production-onboarding/hosted-security-header-audit.json` in the private go-live environment.",
-    "7. `npm run server:deployment:bundle`",
-    "8. `npm run desktop:publish:check -- --feed-dir <signed-desktop-folder>`",
-    "9. `npm run ops:approvals:check`",
-    "10. `npm run ops:go-live:check`",
-    "11. `npm run ops:handoff:bundle`",
+    "6. `npm run ops:onboarding:approve-checklist -- --record <checklist-record-id> --evidence-ref <pseudonymous-evidence-reference>`",
+    "7. Set `JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT=ops/private/production-onboarding/hosted-security-header-audit.json` in the private go-live environment.",
+    "8. `npm run server:deployment:bundle`",
+    "9. `npm run desktop:publish:check -- --feed-dir <signed-desktop-folder>`",
+    "10. `npm run ops:approvals:check`",
+    "11. `npm run ops:go-live:check`",
+    "12. `npm run ops:handoff:bundle`",
     "",
     "## Safety Rules",
     "",
@@ -303,6 +304,7 @@ export function writeProductionOnboardingScaffold({
       "npm run security:server-readiness",
       "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
       "npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json",
+      "npm run ops:onboarding:approve-checklist -- --record <checklist-record-id> --evidence-ref <pseudonymous-evidence-reference>",
       "npm run server:deployment:bundle",
       "npm run ops:approvals:check",
       "npm run ops:go-live:check",
@@ -338,7 +340,7 @@ export function formatProductionOnboardingMarkdown(summary) {
 }
 
 function parseCliArgs(argv) {
-  const args = { format: "text", onboardingDir: DEFAULT_PRODUCTION_ONBOARDING_DIR, force: false };
+  const args = { format: "text", root: repoRoot, onboardingDir: DEFAULT_PRODUCTION_ONBOARDING_DIR, force: false };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === "--json") {
@@ -347,6 +349,11 @@ function parseCliArgs(argv) {
       args.format = "markdown";
     } else if (arg === "--force") {
       args.force = true;
+    } else if (arg === "--root") {
+      args.root = path.resolve(argv[index + 1] || args.root);
+      index += 1;
+    } else if (arg.startsWith("--root=")) {
+      args.root = path.resolve(arg.slice("--root=".length));
     } else if (arg === "--dir") {
       args.onboardingDir = argv[index + 1] || args.onboardingDir;
       index += 1;
@@ -361,6 +368,7 @@ if (path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1
   const args = parseCliArgs(process.argv.slice(2));
   try {
     const summary = writeProductionOnboardingScaffold({
+      root: args.root,
       onboardingDir: args.onboardingDir,
       force: args.force,
     });

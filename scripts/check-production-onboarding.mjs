@@ -381,7 +381,7 @@ function nextActionFor(error) {
     return "Replace server env placeholders with approved deployment values, then rerun onboarding and server readiness checks.";
   }
   if (error.includes("operator checklist")) {
-    return "Complete every operator checklist record with APPROVED status and pseudonymous evidence references.";
+    return "Complete every operator checklist record with APPROVED status using npm run ops:onboarding:approve-checklist.";
   }
   if (error.includes("storage decision") || error.includes("INSTITUTION_AUDIT_LEDGER_DIR") || error.includes("INSTITUTION_ACCOUNT_REGISTRY_DIR")) {
     return "Complete the storage decision record and configure repo-external approved storage directories.";

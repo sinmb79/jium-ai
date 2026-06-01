@@ -94,6 +94,9 @@ describe("operational action plan", () => {
     expect(plan.runOrder.find((entry) => entry.phaseId === "server-storage")?.verificationCommands).toContain(
       "npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env",
     );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "production-onboarding")?.verificationCommands).toContain(
+      "npm run ops:onboarding:approve-checklist -- --record <checklist-record-id> --evidence-ref <pseudonymous-evidence-reference>",
+    );
     expect(plan.runOrder.find((entry) => entry.phaseId === "server-runtime")?.verificationCommands).toContain(
       "npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>",
     );

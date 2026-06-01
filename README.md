@@ -436,3 +436,13 @@ npm run server:trusted-key:apply -- --patch <trusted-key-registry.patch.json> --
 ```
 
 The command validates the registry patch, requires a non-placeholder pseudonymous approval reference, writes a redacted apply report, and only then updates `data/trusted-authorized-feed-keys.json`. Reports intentionally omit raw approval references, raw public-key modulus values, absolute paths, contacts, URLs, and victim indicators. Details are in [Trusted Key Patch Apply Gate v0.3.73](docs/trusted-key-patch-apply-v0.3.73.md).
+
+## v0.3.74 Production Onboarding Checklist Approval
+
+Private production onboarding checklist records can now be marked approved through a guarded CLI:
+
+```bash
+npm run ops:onboarding:approve-checklist -- --record <checklist-record-id> --evidence-ref <pseudonymous-evidence-reference>
+```
+
+The command updates only `ops/private/production-onboarding/operator-checklist.json`, rejects placeholders/raw URLs/contacts/secrets, and writes a redacted evidence report with only a digest of the evidence reference. Details are in [Production Onboarding Checklist Approval v0.3.74](docs/production-onboarding-checklist-approval-v0.3.74.md).

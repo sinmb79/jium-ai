@@ -46,7 +46,11 @@ describe("production onboarding scaffold", () => {
     expect(checklist).toContain("hosted-security-header-audit");
     expect(readme).toContain("Verification Order");
     expect(readme).toContain("ops:public-env:init");
+    expect(readme).toContain("ops:onboarding:approve-checklist");
     expect(readme).toContain("security:headers:check");
+    expect(summary.nextCommands).toContain(
+      "npm run ops:onboarding:approve-checklist -- --record <checklist-record-id> --evidence-ref <pseudonymous-evidence-reference>",
+    );
     expect(summary.nextCommands).toContain(
       "npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json",
     );
@@ -89,16 +93,18 @@ describe("production onboarding scaffold", () => {
     const root = await tempRepo();
     const scriptPath = path.join(process.cwd(), "scripts", "init-production-onboarding.mjs");
 
-    const run = spawnSync(process.execPath, [scriptPath, "--json", "--dir", "ops/private/custom-onboarding"], {
-      cwd: root,
+    const run = spawnSync(process.execPath, [scriptPath, "--json", "--root", root, "--dir", "ops/private/custom-onboarding"], {
+      cwd: process.cwd(),
       encoding: "utf8",
     });
     const summary = JSON.parse(run.stdout);
+    const checklist = await readFile(path.join(root, "ops", "private", "custom-onboarding", "operator-checklist.json"), "utf8");
 
     expect(run.status).toBe(0);
     expect(summary.onboardingDir).toBe("ops/private/custom-onboarding");
     expect(summary.artifacts.some((artifact: { path: string }) => artifact.path === "ops/private/custom-onboarding/operator-checklist.json")).toBe(true);
     expect(summary.artifacts.some((artifact: { path: string }) => artifact.path === "ops/private/custom-onboarding/public-operations.template.json")).toBe(true);
+    expect(checklist).toContain("PENDING_EXTERNAL_APPROVALS");
     expect(run.stdout).not.toContain("INSTITUTION_SESSION_SECRET=");
   });
 });

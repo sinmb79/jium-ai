@@ -444,3 +444,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The apply gate requires a pseudonymous approval reference, validates the full trusted-key registry patch, blocks private key material, and writes redacted JSON/Markdown evidence.
 - Apply reports exclude raw approval references, raw public-key modulus values, absolute paths, contacts, URLs, invite links, onion addresses, emails, phone numbers, and victim indicators.
 - `server:deployment:bundle`, `ops:action-plan`, and `security:feeds` now include the apply gate so operators do not need an undocumented manual registry edit before server readiness.
+
+## Implemented in v0.3.74
+
+- Added `scripts/approve-production-onboarding-checklist.mjs` and `ops:onboarding:approve-checklist` for recording externally approved onboarding checklist evidence.
+- The command updates only the ignored private `operator-checklist.json`, rejects placeholders, raw URLs, contacts, invite links, onion addresses, phone numbers, secrets, and private key material, and writes redacted JSON/Markdown reports.
+- Reports store only record IDs, counts, status, and SHA-256 evidence-reference digests; the raw pseudonymous evidence reference stays in the private checklist.
+- `ops:onboarding:init` and `ops:action-plan` now show the checklist approval command so production onboarding can advance without undocumented JSON editing.
