@@ -2,6 +2,8 @@ import type { DesktopExportVerification } from "./build-desktop-export.mjs";
 
 export const REQUIRED_DESKTOP_FILES: string[];
 export const REQUIRED_DESKTOP_PACKAGE_SCRIPTS: string[];
+export const REQUIRED_DESKTOP_RUNTIME_DEPENDENCIES: string[];
+export const REQUIRED_DESKTOP_DEV_DEPENDENCIES: string[];
 
 export type DesktopReleaseEnvSummary = {
   JIUM_DESKTOP_RELEASE_CHANNEL: "SET" | "MISSING";
@@ -19,6 +21,8 @@ export type DesktopReleaseReadiness = {
   staticExport: DesktopExportVerification;
   requiredFiles: string[];
   requiredScripts: string[];
+  requiredRuntimeDependencies: string[];
+  requiredDevDependencies: string[];
 };
 
 export type DesktopReleaseReadinessReport = {

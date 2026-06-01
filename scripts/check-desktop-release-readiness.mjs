@@ -7,17 +7,25 @@ import { verifyDesktopExport } from "./build-desktop-export.mjs";
 export const REQUIRED_DESKTOP_FILES = [
   "desktop/electron-main.cjs",
   "desktop/electron-preload.cjs",
+  "electron-builder.config.cjs",
   "scripts/native-secure-vault-bridge.mjs",
+  "scripts/prepare-desktop-app-dir.mjs",
+  "scripts/package-desktop-dir.mjs",
 ];
 
 export const REQUIRED_DESKTOP_PACKAGE_SCRIPTS = [
   "desktop:vault",
   "desktop:vault:describe",
   "desktop:export",
+  "desktop:package:dir",
+  "desktop:package:signed",
   "desktop:release:check",
   "desktop:release:json",
   "desktop:release:markdown",
 ];
+
+export const REQUIRED_DESKTOP_RUNTIME_DEPENDENCIES = ["electron-updater"];
+export const REQUIRED_DESKTOP_DEV_DEPENDENCIES = ["electron", "electron-builder"];
 
 function present(value) {
   return Boolean(String(value || "").trim());
@@ -75,6 +83,15 @@ function nextActionFor(error) {
   if (error.includes("JIUM_DESKTOP_EXPORT")) {
     return "Keep the desktop export profile in next.config.ts so Electron can load static files without the Pages basePath.";
   }
+  if (error.includes("desktop dependency missing")) {
+    return "Install and commit the required Electron packaging dependencies.";
+  }
+  if (error.includes("electron-builder config")) {
+    return "Restore electron-builder.config.cjs with out/** files, native vault bridge, generic publish, and signed package targets.";
+  }
+  if (error.includes("desktop staging")) {
+    return "Restore the lean Electron app staging step before packaging.";
+  }
   if (error.includes("static export")) {
     return "Run npm run desktop:export and review the generated out/jium-desktop-manifest.json.";
   }
@@ -94,7 +111,10 @@ export function validateDesktopReleaseReadiness({ root = process.cwd(), env = pr
   const errors = [];
   const packageJson = readJsonSafe(path.join(root, "package.json")) || {};
   const scripts = packageJson.scripts || {};
+  const dependencies = packageJson.dependencies || {};
+  const devDependencies = packageJson.devDependencies || {};
   const nextConfigText = readTextSafe(path.join(root, "next.config.ts"));
+  const builderConfigText = readTextSafe(path.join(root, "electron-builder.config.cjs"));
   const envSummary = summarizeDesktopReleaseEnv(env);
   const staticExport = verifyDesktopExport({ root, outDir });
 
@@ -110,8 +130,34 @@ export function validateDesktopReleaseReadiness({ root = process.cwd(), env = pr
     }
   }
 
+  for (const dependency of REQUIRED_DESKTOP_RUNTIME_DEPENDENCIES) {
+    if (!present(dependencies[dependency])) {
+      errors.push(`desktop dependency missing: ${dependency}`);
+    }
+  }
+
+  for (const dependency of REQUIRED_DESKTOP_DEV_DEPENDENCIES) {
+    if (!present(devDependencies[dependency])) {
+      errors.push(`desktop dev dependency missing: ${dependency}`);
+    }
+  }
+
   if (!nextConfigText.includes("JIUM_DESKTOP_EXPORT")) {
     errors.push("next.config.ts missing JIUM_DESKTOP_EXPORT desktop static profile");
+  }
+
+  for (const requiredConfigNeedle of [
+    "out/**",
+    "dist/electron-app",
+    "node_modules/**",
+    "desktop/electron-main.cjs",
+    "desktop/electron-preload.cjs",
+    "scripts/native-secure-vault-bridge.mjs",
+    "provider: \"generic\"",
+  ]) {
+    if (!builderConfigText.includes(requiredConfigNeedle)) {
+      errors.push(`electron-builder config missing: ${requiredConfigNeedle}`);
+    }
   }
 
   for (const error of staticExport.errors) {
@@ -137,6 +183,8 @@ export function validateDesktopReleaseReadiness({ root = process.cwd(), env = pr
     staticExport,
     requiredFiles: [...REQUIRED_DESKTOP_FILES],
     requiredScripts: [...REQUIRED_DESKTOP_PACKAGE_SCRIPTS],
+    requiredRuntimeDependencies: [...REQUIRED_DESKTOP_RUNTIME_DEPENDENCIES],
+    requiredDevDependencies: [...REQUIRED_DESKTOP_DEV_DEPENDENCIES],
   };
 }
 
@@ -162,6 +210,13 @@ export function buildDesktopReleaseReadinessReport(readiness, options = {}) {
       id: "desktop-static-export",
       label: "Static export exists without the GitHub Pages basePath",
       status: readiness.staticExport.valid ? "PASS" : "BLOCKED",
+    },
+    {
+      id: "packaging-config",
+      label: "Electron builder configuration and packaging dependencies are present",
+      status: readiness.errors.some((error) => error.includes("desktop dependency missing") || error.includes("electron-builder config"))
+        ? "BLOCKED"
+        : "PASS",
     },
     {
       id: "release-channel",

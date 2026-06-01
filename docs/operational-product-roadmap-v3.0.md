@@ -687,3 +687,18 @@
   - 암호화 보관함의 기존 기기 확인 흐름과 같은 안전 원칙을 공유한다.
 - 검증 범위
   - readiness 판정, 패널 상호작용, 사건 보드 통합, 모바일 패널 헤더 배치 보정을 테스트했다.
+## v3.44 경량 데스크톱 패키징 파이프라인
+
+- 배포 구조 보강
+  - `dist/electron-app` 전용 스테이징 폴더를 만들고, electron-builder의 app 디렉터리를 이 폴더로 고정한다.
+  - 패키지에는 Electron main/preload, OS 보안 저장소 브리지, 정적 export, `electron-updater` 런타임 의존성만 포함한다.
+  - Next.js, React, Prisma, 테스트 파일 같은 루트 웹 개발 의존성이 `app.asar`에 들어가는 상황을 차단한다.
+- 운영 안전성
+  - `desktop:package:dir`와 `desktop:package:signed`는 항상 정적 export 후 스테이징을 먼저 수행한다.
+  - `app.asar` 크기 상한 검사를 추가해 과도하게 큰 패키지를 release-ready로 오판하지 않도록 했다.
+  - 자동 업데이트는 명시적으로 켜고 HTTPS update URL과 release channel이 있을 때만 feed를 구성한다.
+- 보안 저장소 연결
+  - preload가 앱 실행 파일을 Node처럼 재실행하지 않고, Electron main IPC를 통해 `scripts/native-secure-vault-bridge.mjs` 기능을 호출한다.
+  - 패키지 환경에서도 Windows DPAPI, macOS Keychain, Linux Secret Service 연결 경로를 유지할 수 있게 했다.
+- 검증 범위
+  - 스테이징 package manifest, 경량 패키징 helper, archive 크기 guard, main-process vault IPC, release readiness 검사를 테스트했다.

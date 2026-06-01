@@ -308,3 +308,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Expanded device-safety guidance into a readiness engine with required and recommended checks for personal device use, extension isolation, remote-access shutdown, attacker access, malware scan, trusted network, and clipboard/sync exposure.
 - Added a reusable device-safety panel to the intake page and case board so victims see the compromised-device risk before entering sensitive facts or opening encrypted vaults.
 - The panel classifies readiness as BLOCKED, REVIEW, or READY without storing victim data or raw device details.
+
+## Implemented in v3.44
+
+- Added a lean Electron app staging directory at `dist/electron-app` so desktop packaging does not pull the full Next.js, React, Prisma, and test workspace into `app.asar`.
+- Added `scripts/prepare-desktop-app-dir.mjs` and wired `desktop:package:dir` and `desktop:package:signed` to stage the static export before electron-builder runs.
+- Added a package-size guard to reject unexpectedly large desktop `app.asar` output, preventing accidental root dependency inclusion from being treated as release-ready.
+- Moved the OS secure-vault bridge behind Electron main-process IPC, so packaged desktop builds do not rely on spawning the app executable as if it were Node.js.
+- Desktop update checks remain opt-in and require an explicit HTTPS update URL plus release channel; readiness reports continue to redact endpoint and signing details.

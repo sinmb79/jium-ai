@@ -27,14 +27,25 @@ async function writeDesktopRepo(root: string) {
   await writeFile(path.join(root, "desktop", "electron-main.cjs"), "module.exports = {};\n", "utf8");
   await writeFile(path.join(root, "desktop", "electron-preload.cjs"), "module.exports = {};\n", "utf8");
   await writeFile(path.join(root, "scripts", "native-secure-vault-bridge.mjs"), "export {};\n", "utf8");
+  await writeFile(path.join(root, "scripts", "prepare-desktop-app-dir.mjs"), "export {};\n", "utf8");
+  await writeFile(path.join(root, "scripts", "package-desktop-dir.mjs"), "export {};\n", "utf8");
   await writeFile(
     path.join(root, "package.json"),
     JSON.stringify(
       {
+        dependencies: {
+          "electron-updater": "^6.8.3",
+        },
+        devDependencies: {
+          electron: "^42.3.0",
+          "electron-builder": "^26.8.1",
+        },
         scripts: {
           "desktop:vault": "node scripts/native-secure-vault-bridge.mjs",
           "desktop:vault:describe": "node scripts/native-secure-vault-bridge.mjs describe",
           "desktop:export": "node scripts/build-desktop-export.mjs",
+          "desktop:package:dir": "npm run desktop:export && node scripts/prepare-desktop-app-dir.mjs && node scripts/package-desktop-dir.mjs",
+          "desktop:package:signed": "npm run desktop:export && node scripts/prepare-desktop-app-dir.mjs && npm run desktop:release:check && electron-builder --config electron-builder.config.cjs --publish never",
           "desktop:release:check": "node scripts/check-desktop-release-readiness.mjs",
           "desktop:release:json": "node scripts/check-desktop-release-readiness.mjs --json",
           "desktop:release:markdown": "node scripts/check-desktop-release-readiness.mjs --markdown",
@@ -46,6 +57,18 @@ async function writeDesktopRepo(root: string) {
     "utf8",
   );
   await writeFile(path.join(root, "next.config.ts"), "process.env.JIUM_DESKTOP_EXPORT;\n", "utf8");
+  await writeFile(
+    path.join(root, "electron-builder.config.cjs"),
+    [
+      "module.exports = {",
+      "  directories: { app: \"dist/electron-app\" },",
+      "  files: [\"node_modules/**\", \"out/**\", \"desktop/electron-main.cjs\", \"desktop/electron-preload.cjs\", \"scripts/native-secure-vault-bridge.mjs\"],",
+      "  publish: [{ provider: \"generic\", url: \"https://updates.invalid/jium-ai\" }],",
+      "};",
+      "",
+    ].join("\n"),
+    "utf8",
+  );
   await writeFile(path.join(root, "out", "index.html"), "<!doctype html><script src=\"/_next/app.js\"></script>", "utf8");
   await writeFile(path.join(root, "out", "dashboard", "index.html"), "<!doctype html><script src=\"/_next/app.js\"></script>", "utf8");
 }
