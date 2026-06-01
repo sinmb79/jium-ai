@@ -139,7 +139,7 @@ function approvalNextActionFor(error) {
     return "Confirm the public app and privacy notice URLs externally, then store only SET_HTTPS status in the packet.";
   }
   if (error.includes("missing required approval record")) {
-    return "Add one approved pseudonymous record for every required operating approval type.";
+    return "Record one approved pseudonymous record for every required operating approval type with npm run ops:approvals:approve-record.";
   }
   if (error.includes("expired")) {
     return "Refresh expired approval evidence before go-live.";

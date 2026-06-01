@@ -87,6 +87,7 @@ describe("operational approval records", () => {
     expect(readiness.errors.join("\n")).toContain("contains raw URL");
     expect(readiness.errors.join("\n")).toContain("missing required approval record");
     expect(report.status).toBe("BLOCKED");
+    expect(report.nextActions.join("\n")).toContain("ops:approvals:approve-record");
     expect(JSON.stringify(report)).not.toContain("prod.example.com");
   });
 

@@ -446,3 +446,13 @@ npm run ops:onboarding:approve-checklist -- --record <checklist-record-id> --evi
 ```
 
 The command updates only `ops/private/production-onboarding/operator-checklist.json`, rejects placeholders/raw URLs/contacts/secrets, and writes a redacted evidence report with only a digest of the evidence reference. Details are in [Production Onboarding Checklist Approval v0.3.74](docs/production-onboarding-checklist-approval-v0.3.74.md).
+
+## v0.3.75 Operational Approval Record Approval
+
+Private operational approval records can now be marked approved through a guarded CLI instead of manual JSON editing:
+
+```bash
+npm run ops:approvals:approve-record -- --type <approval-record-type> --approved-by-ref <pseudonymous-approver-ref> --reference-id <pseudonymous-approval-reference> --scope <approval-scope> --evidence-digest <sha256-evidence-digest>
+```
+
+The command updates only `ops/private/operational-approval-records.json`, accepts the configured desktop release tag, rejects placeholders/raw URLs/contacts/secrets, and writes a redacted evidence report with only SHA-256 digests of pseudonymous approval references. Details are in [Operational Approval Record Approval v0.3.75](docs/operational-approval-record-approval-v0.3.75.md).

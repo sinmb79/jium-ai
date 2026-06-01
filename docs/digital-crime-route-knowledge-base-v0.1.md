@@ -451,3 +451,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The command updates only the ignored private `operator-checklist.json`, rejects placeholders, raw URLs, contacts, invite links, onion addresses, phone numbers, secrets, and private key material, and writes redacted JSON/Markdown reports.
 - Reports store only record IDs, counts, status, and SHA-256 evidence-reference digests; the raw pseudonymous evidence reference stays in the private checklist.
 - `ops:onboarding:init` and `ops:action-plan` now show the checklist approval command so production onboarding can advance without undocumented JSON editing.
+
+## Implemented in v0.3.75
+
+- Added `scripts/approve-operational-approval-record.mjs` and `ops:approvals:approve-record` for recording externally approved operational approval records.
+- The command updates only the ignored private `operational-approval-records.json`, rejects placeholders, raw URLs, contacts, invite links, onion addresses, phone numbers, secrets, and private key material, and writes redacted JSON/Markdown reports.
+- Reports store only approval type, counts, readiness status, and SHA-256 digests of pseudonymous approval references; the raw pseudonymous approval values remain in the private approval packet.
+- `ops:approvals:check` and `ops:action-plan` now point operators to the guarded approval command so go-live approvals can advance without undocumented JSON editing.
