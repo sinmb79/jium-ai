@@ -280,3 +280,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Account approvals require a simple approval reference, a pseudonymous approving operator ID, an approval timestamp, and an independent reviewer when an acting operator is known.
 - PROGRAM_ADMIN provisioning is stored with a separate `PROGRAM_ADMIN_PROVISION` approval scope.
 - Approval records reject raw URLs, invite links, onion addresses, emails, and phone-like identifiers in refs, reviewer IDs, and notes.
+
+## Implemented in v3.39
+
+- Added privacy-minimized account lifecycle fields to institution audit events.
+- Provision and revoke audit events now carry pseudonymous account ID, approval reference, approval scope, target role, and target account status.
+- Revocation audit events also carry the safe reason code so registry records and audit ledgers can be reconciled.
+- Audit event validation keeps rejecting raw URLs, invite links, onion addresses, emails, phone-like identifiers, and unsafe free-text approval references.

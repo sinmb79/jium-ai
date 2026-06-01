@@ -3,6 +3,7 @@ import type {
   InstitutionEvidenceAccessScope,
   InstitutionRole,
 } from "@/lib/institutionAuth";
+import type { InstitutionAccountApprovalScope } from "@/lib/institutionAccountApproval";
 
 export type InstitutionAuditEventType =
   | "INSTITUTION_LOGIN_SUCCESS"
@@ -32,6 +33,11 @@ export type InstitutionAuditEvent = {
   organizationName?: string;
   subjectId?: string;
   role?: InstitutionRole;
+  accountId?: string;
+  approvalRef?: string;
+  approvalScope?: InstitutionAccountApprovalScope;
+  targetRole?: InstitutionRole;
+  targetAccountStatus?: "ACTIVE" | "SUSPENDED" | "REVOKED";
   capabilityIds?: InstitutionCapability[];
   evidenceAccessScope?: InstitutionEvidenceAccessScope;
   sessionExpiresAt?: string;
@@ -48,7 +54,7 @@ export const INSTITUTION_AUDIT_DATA_MINIMIZATION_RULES = [
   "No raw credential envelope",
   "No server session token",
   "No original URL, invite link, handle, onion address, email, or phone number",
-  "Only pseudonymous subject, organization label, role, capability, outcome, and reason code",
+  "Only pseudonymous subject, account approval reference, organization label, role, capability, outcome, and reason code",
 ];
 
 const UNSAFE_AUDIT_MARKERS = [
@@ -62,6 +68,7 @@ const UNSAFE_AUDIT_MARKERS = [
 ];
 const PHONE_PATTERN = /\b(?:\+82[-.\s]?)?0(?:1[016789]|2|[3-6]\d)[-.\s]?\d{3,4}[-.\s]?\d{4}\b/;
 const SAFE_REQUEST_ID_PATTERN = /^[a-zA-Z0-9._:-]{1,80}$/;
+const SAFE_AUDIT_LABEL_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,120}$/;
 
 function randomSuffix() {
   return globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2, 12);
@@ -102,6 +109,14 @@ export function classifyInstitutionRequestOrigin(
 }
 
 export function assertInstitutionAuditEventSafe(event: InstitutionAuditEvent) {
+  ([
+    ["accountId", event.accountId],
+    ["approvalRef", event.approvalRef],
+  ] as const).forEach(([field, value]) => {
+    if (value && !SAFE_AUDIT_LABEL_PATTERN.test(value)) {
+      throw new Error(`institution audit event ${field} must be a simple pseudonymous reference`);
+    }
+  });
   const markers = institutionAuditContainsUnsafeMarker(event);
   if (markers.length) {
     throw new Error(`institution audit event contains unsafe raw indicators: ${Array.from(new Set(markers)).join(", ")}`);

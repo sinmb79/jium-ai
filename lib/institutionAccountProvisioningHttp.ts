@@ -124,7 +124,15 @@ async function auditAccountAdminEvent(
   config: Pick<InstitutionAccountProvisioningHttpConfig, "allowedOrigins" | "auditSink" | "requestId" | "now">,
   eventType: InstitutionAuditEventType,
   outcome: InstitutionAuditOutcome,
-  details: { reasonCode?: string; session?: InstitutionAccountSession } = {},
+  details: {
+    reasonCode?: string;
+    session?: InstitutionAccountSession;
+    accountId?: string;
+    approvalRef?: string;
+    approvalScope?: "PROVISION" | "PROGRAM_ADMIN_PROVISION" | "REVOKE";
+    targetRole?: InstitutionAccountSession["role"];
+    targetAccountStatus?: "ACTIVE" | "SUSPENDED" | "REVOKED";
+  } = {},
 ) {
   const now = config.now ?? Date.now();
   const session = safeSessionView(details.session);
@@ -140,6 +148,11 @@ async function auditAccountAdminEvent(
         organizationName: session?.organizationName,
         subjectId: session?.subjectId,
         role: session?.role,
+        accountId: details.accountId,
+        approvalRef: details.approvalRef,
+        approvalScope: details.approvalScope,
+        targetRole: details.targetRole,
+        targetAccountStatus: details.targetAccountStatus,
         capabilityIds: session?.capabilityIds,
         evidenceAccessScope: session?.evidenceAccessScope,
         sessionExpiresAt: session?.expiresAt,
@@ -242,7 +255,14 @@ export async function handleInstitutionAccountAdminRequest(
         config.now,
       );
       await config.accountStore.write(nextRegistry);
-      await auditAccountAdminEvent(request, config, actionEventType(body.action), "SUCCESS", { session });
+      await auditAccountAdminEvent(request, config, actionEventType(body.action), "SUCCESS", {
+        session,
+        accountId: account.accountId,
+        approvalRef: account.approval?.approvalRef,
+        approvalScope: account.approval?.scope,
+        targetRole: account.role,
+        targetAccountStatus: account.status,
+      });
       return jsonResponse(200, { ok: true, account: publicInstitutionAccountView(account) });
     }
     if (body.action === "REVOKE" && body.revocation) {
@@ -255,7 +275,15 @@ export async function handleInstitutionAccountAdminRequest(
         config.now,
       );
       await config.accountStore.write(nextRegistry);
-      await auditAccountAdminEvent(request, config, actionEventType(body.action), "SUCCESS", { session });
+      await auditAccountAdminEvent(request, config, actionEventType(body.action), "SUCCESS", {
+        session,
+        reasonCode: account.revokedReasonCode,
+        accountId: account.accountId,
+        approvalRef: account.revocationApproval?.approvalRef,
+        approvalScope: account.revocationApproval?.scope,
+        targetRole: account.role,
+        targetAccountStatus: account.status,
+      });
       return jsonResponse(200, { ok: true, account: publicInstitutionAccountView(account) });
     }
     await auditAccountAdminEvent(request, config, "INSTITUTION_ACCOUNT_ADMIN_DENIED", "DENIED", {

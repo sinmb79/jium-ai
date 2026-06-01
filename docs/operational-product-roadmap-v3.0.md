@@ -559,6 +559,18 @@
 - 검증 범위
   - registry, HTTP handler, 서버 저장소, 대시보드 계정 관리자 패널 테스트에 승인 기록 필수화와 self-approval 거부를 추가 검증
 
+## v3.39 기관 계정 lifecycle 감사 연결
+
+- 감사 원장 대조성
+  - 계정 발급·해지 감사 이벤트에 가명 accountId, approvalRef, approvalScope, targetRole, targetAccountStatus를 기록
+  - 해지 이벤트에는 safe reasonCode도 함께 기록해 계정 registry의 해지 사유와 감사 원장 이벤트를 대조할 수 있음
+- 개인정보 최소화
+  - 감사 이벤트에는 승인자 실명, 이메일, 전화번호, URL, 초대링크, onion 주소를 저장하지 않음
+  - accountId와 approvalRef는 단순 가명 참조 형식만 허용하고 free-text 승인 메모는 감사 원장에 넣지 않음
+- 운영 확인
+  - 감사 원장 검증 패널과 서버 요약 API는 기존 redacted ledger 흐름을 유지하면서 새 lifecycle 필드를 recent record 안에서 확인할 수 있음
+  - 발급·해지 HTTP handler 테스트와 감사 로그 안전 테스트로 registry-approval-audit 연결을 검증
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -620,6 +632,7 @@
 - 기관 계정 발급·해지 backend: 1차 구현 완료
 - 기관 계정 관리자 UI 서버 연동: 1차 구현 완료
 - 기관 계정 승인 workflow: 1차 구현 완료
+- 기관 계정 lifecycle 감사 연결: 1차 구현 완료
 - 운영 배포 전 과제: 실제 파트너 공개키 값 등록과 승인 기록 보관, 데스크톱 앱 패키징·서명·자동 업데이트, 운영 승인 워크플로와 배포 환경 hardening
 
 ## 공식 경로 기준

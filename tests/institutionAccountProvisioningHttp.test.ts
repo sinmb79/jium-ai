@@ -145,6 +145,21 @@ describe("institution account provisioning HTTP handler", () => {
       "INSTITUTION_ACCOUNT_LISTED",
       "INSTITUTION_ACCOUNT_REVOKED",
     ]);
+    expect(auditEvents[0]).toMatchObject({
+      accountId: provisionBody.account.accountId,
+      approvalRef: "APPROVAL-2026-001",
+      approvalScope: "PROVISION",
+      targetRole: "VICTIM_SUPPORT_CASEWORKER",
+      targetAccountStatus: "ACTIVE",
+    });
+    expect(auditEvents[2]).toMatchObject({
+      accountId: provisionBody.account.accountId,
+      approvalRef: "REVOKE-2026-001",
+      approvalScope: "REVOKE",
+      reasonCode: "offboarding",
+      targetRole: "VICTIM_SUPPORT_CASEWORKER",
+      targetAccountStatus: "REVOKED",
+    });
     expect(JSON.stringify(auditEvents)).not.toContain(cookie);
     expect(JSON.stringify(auditEvents)).not.toContain(origin);
   });
