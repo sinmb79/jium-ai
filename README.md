@@ -661,3 +661,14 @@ npm run desktop:publish:candidate:json -- --feed-dir <signed-release-folder> --o
 ```
 
 The candidate can be `READY_FOR_PUBLISH_APPROVAL` even before `publish_approval=APPROVED` or a GitHub upload token is present, as long as the signed artifacts, update metadata, and release evidence digest are technically ready. It is included in operational release dossiers, approval evidence digests, and the signed release workflow evidence archive. Details are in [Desktop Publish Candidate v0.3.93](docs/desktop-publish-candidate-v0.3.93.md).
+
+## v0.3.94 Operational Approval Command Packet
+
+Operators can now generate one redacted packet of the guarded commands needed after external approvals:
+
+```bash
+npm run ops:approvals:command-packet
+npm run ops:approvals:command-packet:json -- --output dist/operational-approval-command-packet/report.json
+```
+
+The packet covers operational approval records, production onboarding checklist records, storage decisions, public operations route approvals, and final verification commands. It is a command template packet only; it does not approve anything or write private records. Details are in [Operational Approval Command Packet v0.3.94](docs/operational-approval-command-packet-v0.3.94.md).

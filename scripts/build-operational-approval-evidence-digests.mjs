@@ -29,6 +29,12 @@ import {
   DESKTOP_PUBLISH_CANDIDATE_MARKDOWN,
   buildDesktopPublishCandidate,
 } from "./build-desktop-publish-candidate.mjs";
+import {
+  OPERATIONAL_APPROVAL_COMMAND_PACKET_DIR,
+  OPERATIONAL_APPROVAL_COMMAND_PACKET_JSON,
+  OPERATIONAL_APPROVAL_COMMAND_PACKET_MARKDOWN,
+  buildOperationalApprovalCommandPacket,
+} from "./build-operational-approval-command-packet.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -50,6 +56,8 @@ const DEFAULT_EVIDENCE_FILES = [
   `${TRUSTED_KEY_APPROVAL_CANDIDATE_DIR}/${TRUSTED_KEY_APPROVAL_CANDIDATE_MARKDOWN}`,
   `${DESKTOP_PUBLISH_CANDIDATE_DIR}/${DESKTOP_PUBLISH_CANDIDATE_JSON}`,
   `${DESKTOP_PUBLISH_CANDIDATE_DIR}/${DESKTOP_PUBLISH_CANDIDATE_MARKDOWN}`,
+  `${OPERATIONAL_APPROVAL_COMMAND_PACKET_DIR}/${OPERATIONAL_APPROVAL_COMMAND_PACKET_JSON}`,
+  `${OPERATIONAL_APPROVAL_COMMAND_PACKET_DIR}/${OPERATIONAL_APPROVAL_COMMAND_PACKET_MARKDOWN}`,
 ];
 
 const UNSAFE_PATTERNS = [
@@ -166,6 +174,7 @@ async function ensureDefaultEvidenceFiles({ root, env, platform, generatedAt, no
   await buildServerOriginCandidate({ root, env, fromPublicEnv: true, generatedAt });
   await buildTrustedKeyApprovalCandidate({ root, generatedAt });
   await buildDesktopPublishCandidate({ root, env, platform, generatedAt });
+  await buildOperationalApprovalCommandPacket({ root, generatedAt });
   const dossier = await buildOperationalReleaseDossier({ root, env, platform, generatedAt });
   writeOperationalReleaseDossierFiles({ root, dossier });
   return DEFAULT_EVIDENCE_FILES;

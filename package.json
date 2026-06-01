@@ -1,6 +1,6 @@
 {
   "name": "jium-ai",
-  "version": "0.3.93",
+  "version": "0.3.94",
   "private": true,
   "description": "무료·로컬 우선 디지털 권리구제 도우미",
   "author": "22B Labs",
@@ -96,6 +96,9 @@
     "ops:approvals:digest-evidence": "node scripts/build-operational-approval-evidence-digests.mjs",
     "ops:approvals:digest-evidence:json": "node scripts/build-operational-approval-evidence-digests.mjs --json",
     "ops:approvals:digest-evidence:markdown": "node scripts/build-operational-approval-evidence-digests.mjs --markdown",
+    "ops:approvals:command-packet": "node scripts/build-operational-approval-command-packet.mjs",
+    "ops:approvals:command-packet:json": "node scripts/build-operational-approval-command-packet.mjs --json",
+    "ops:approvals:command-packet:markdown": "node scripts/build-operational-approval-command-packet.mjs --markdown",
     "ops:approvals:init": "node scripts/init-operational-approval-records.mjs",
     "ops:approvals:approve-record": "node scripts/approve-operational-approval-record.mjs",
     "ops:approvals:approve-record:json": "node scripts/approve-operational-approval-record.mjs --json",

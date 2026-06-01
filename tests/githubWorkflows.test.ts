@@ -79,6 +79,7 @@ describe("GitHub Actions security gates", () => {
 
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("release_tag:");
+    expect(workflow).toContain("default: v0.3.94");
     expect(workflow).toContain("publish_to_github_release:");
     expect(workflow).toContain("publish_approval:");
     expect(workflow).toContain("runs-on: windows-latest");

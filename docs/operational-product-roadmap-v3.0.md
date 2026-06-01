@@ -1041,6 +1041,22 @@
 - 검증 범위
   - valid Netlify static-hosting config, unsafe config 차단, CLI output path guard, action-plan run order 연결을 테스트했다.
 
+## v3.94 Operational approval command packet
+
+- External approval command packet
+  - Version was raised to `0.3.94`.
+  - Added `ops:approvals:command-packet`, JSON, and Markdown variants.
+  - The packet groups guarded command templates for operational approval records, production onboarding checklist approvals, storage decision approvals, public operations approvals, and final verification.
+- Operational wiring
+  - Approval-record action plans now include `ops:approvals:command-packet` after evidence digesting and before private approval recording.
+  - Operational release dossiers and approval evidence digests include the command packet JSON/Markdown reports.
+- Safety boundary
+  - The packet does not approve anything and does not write private records.
+  - Operators must replace placeholders only with pseudonymous references and reviewed `sha256-*` evidence digests.
+  - Reports do not store raw public URLs, contacts, owner names, victim indicators, invite links, onion addresses, emails, phone numbers, tokens, certificate material, or private paths.
+- Verification scope
+  - Tested packet command counts, redaction/leak scan, canonical JSON/Markdown output, CLI output path guard, action-plan routing, and release dossier inclusion.
+
 ## v3.93 Desktop publish candidate
 
 - Desktop publish approval evidence

@@ -46,6 +46,8 @@ When run without `--file`, the command refreshes the release dossier and digests
 - `dist/trusted-key-approval-candidate/trusted-key-approval-candidate-report.md`
 - `dist/desktop-publish-candidate/desktop-publish-candidate-report.json`
 - `dist/desktop-publish-candidate/desktop-publish-candidate-report.md`
+- `dist/operational-approval-command-packet/operational-approval-command-packet.json`
+- `dist/operational-approval-command-packet/operational-approval-command-packet.md`
 
 For an already frozen review packet:
 

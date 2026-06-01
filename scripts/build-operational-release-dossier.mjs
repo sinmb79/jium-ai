@@ -30,6 +30,11 @@ import {
   DESKTOP_PUBLISH_CANDIDATE_JSON,
   DESKTOP_PUBLISH_CANDIDATE_MARKDOWN,
 } from "./build-desktop-publish-candidate.mjs";
+import {
+  OPERATIONAL_APPROVAL_COMMAND_PACKET_DIR,
+  OPERATIONAL_APPROVAL_COMMAND_PACKET_JSON,
+  OPERATIONAL_APPROVAL_COMMAND_PACKET_MARKDOWN,
+} from "./build-operational-approval-command-packet.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -175,6 +180,18 @@ function buildRequiredReviewFiles() {
       label: "Desktop publish candidate Markdown",
       path: `${DESKTOP_PUBLISH_CANDIDATE_DIR}/${DESKTOP_PUBLISH_CANDIDATE_MARKDOWN}`,
       purpose: "Human-readable desktop publish approval candidate summary.",
+    },
+    {
+      id: "operational-approval-command-packet-json",
+      label: "Operational approval command packet JSON",
+      path: `${OPERATIONAL_APPROVAL_COMMAND_PACKET_DIR}/${OPERATIONAL_APPROVAL_COMMAND_PACKET_JSON}`,
+      purpose: "Redacted command templates for external approval recording and onboarding evidence updates.",
+    },
+    {
+      id: "operational-approval-command-packet-markdown",
+      label: "Operational approval command packet Markdown",
+      path: `${OPERATIONAL_APPROVAL_COMMAND_PACKET_DIR}/${OPERATIONAL_APPROVAL_COMMAND_PACKET_MARKDOWN}`,
+      purpose: "Human-readable approval and onboarding command packet for operators.",
     },
     {
       id: "release-dossier-json",

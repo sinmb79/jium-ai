@@ -223,6 +223,9 @@ describe("operational release dossier", () => {
     expect(dossier.requiredReviewFiles.map((file) => file.path)).toContain(
       "dist/desktop-publish-candidate/desktop-publish-candidate-report.md",
     );
+    expect(dossier.requiredReviewFiles.map((file) => file.path)).toContain(
+      "dist/operational-approval-command-packet/operational-approval-command-packet.md",
+    );
     expect(dossier.priorityActions[0]).toMatchObject({
       phaseId: "production-onboarding",
       ownerRole: "OPERATIONS_LEAD",
