@@ -133,6 +133,19 @@ npm run security:server-readiness:json -- --output ./server-readiness.json
 npm run security:server-readiness:markdown -- --output ./server-readiness.md
 ```
 
+### 데스크톱 release readiness
+
+데스크톱 빌드는 GitHub Pages용 `/jium-ai` basePath를 상속하지 않는 별도 정적 export profile을 사용합니다.
+
+```bash
+npm run desktop:export
+npm run desktop:release:check
+npm run desktop:release:json -- --output ./desktop-readiness.json
+npm run desktop:release:markdown -- --output ./desktop-readiness.md
+```
+
+`desktop:release:check`는 승인된 release channel, HTTPS updater endpoint, 최소 1개 플랫폼 signing profile이 설정되기 전까지 차단되어야 정상입니다. JSON/Markdown 리포트는 설정 존재 여부만 표시하며 updater URL 원문, signing certificate path, certificate hash, Apple team ID, Linux signing key ID, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호를 저장하지 않습니다.
+
 대시보드의 "기관 공개키 승인" 패널은 후보 JWK 공개키를 검토하고 registry patch JSON을 만들기 위한 보조 도구입니다. fingerprint와 checklist를 승인 기록에 남기는 용도이며, 개인키·PEM private key·서명 key material은 입력하거나 저장하지 않습니다.
 
 같은 패널에서 registry 수명주기 검토를 실행하면 활성, 곧 만료, 만료, 만료일 없음, 활성 전 상태를 집계하고 운영 차단 항목을 표시합니다. 운영자는 폐기할 keyId와 폐기 시각을 입력해 검토 가능한 retirement patch를 만들 수 있습니다. 실제 교체 때는 새 공개키를 먼저 승인한 뒤 기존 키를 폐기하고, readiness 검사로 최소 1개의 활성 공개키가 남는지 확인해야 합니다.

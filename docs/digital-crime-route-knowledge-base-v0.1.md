@@ -294,3 +294,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The readiness report summarizes env presence, trusted key counts, required route templates, blocked checks, and next actions.
 - Secret values, trusted origin strings, and filesystem paths are intentionally excluded from report output.
 - Added `security:server-readiness:json` and `security:server-readiness:markdown` scripts for repeatable deployment review.
+
+## Implemented in v3.41
+
+- Added an Electron desktop shell entrypoint that loads the static app through the private `jium://app` protocol.
+- The desktop shell keeps Node integration disabled, exposes the OS-backed secure vault only through the preload bridge, blocks file/javascript/http navigation, and sends approved HTTPS external links to the system browser.
+- Added `desktop:export` to build a desktop static export without the GitHub Pages `/jium-ai` basePath and write `out/jium-desktop-manifest.json`.
+- Added redacted desktop release readiness reports for static export, Electron shell files, release channel, HTTPS update URL, and signing-profile presence.
+- Added `desktop:release:check`, `desktop:release:json`, and `desktop:release:markdown` scripts; reports intentionally omit update endpoints, certificate paths, certificate hashes, team IDs, and package signing key IDs.

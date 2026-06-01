@@ -657,3 +657,20 @@
 ## 운영 판단
 
 현재 지움AI는 해커톤 시연 MVP를 넘어 실제 운영제품의 뼈대에 들어섰다. 다만 법률·기관 협업·데스크톱 보안 저장소·배포 보안·증거 제출 포맷까지 완성되어야 "현장 운영 가능"이라고 부를 수 있다.
+
+## v3.41 데스크톱 패키징 readiness
+
+- 데스크톱 shell
+  - `desktop/electron-main.cjs`를 추가해 정적 export를 `jium://app` private protocol로 로드한다.
+  - Electron은 Node integration을 끄고 preload bridge만 노출하며, 외부 이동은 HTTPS 링크만 시스템 브라우저로 넘긴다.
+  - `jium://app/../`, encoded traversal, file/javascript/http 이동은 차단한다.
+- 데스크톱 export
+  - `JIUM_DESKTOP_EXPORT=true` profile을 추가해 GitHub Pages의 `/jium-ai` basePath 없이 `out`을 만든다.
+  - `npm run desktop:export`는 Next build 후 `out/index.html`, dashboard route, `_next` asset을 검증하고 `out/jium-desktop-manifest.json`을 기록한다.
+- release readiness
+  - `npm run desktop:release:check`는 Electron shell 파일, export 산출물, release channel, HTTPS update URL, signing profile 존재 여부를 확인한다.
+  - `desktop:release:json`과 `desktop:release:markdown`은 운영자 인수인계용 redacted report를 만든다.
+  - 리포트는 update endpoint, 인증서 경로, 인증서 hash, team ID, signing key ID, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호를 저장하지 않는다.
+- 검증 범위
+  - Electron route resolver, static export profile, desktop release report redaction, 실제 `npm run desktop:export`를 검증했다.
+  - 기본 공개 repo 상태에서는 signing/update/channel 값이 없으므로 `desktop:release:check`가 BLOCKED로 실패해야 정상이다.

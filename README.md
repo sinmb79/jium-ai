@@ -143,6 +143,8 @@ npm run build
 - 데스크톱 운영에서는 `npm run desktop:vault:describe`로 Windows DPAPI, macOS Keychain, Linux Secret Service bridge 연결 상태를 확인
 - 수동 저장 점검은 PowerShell 파이프 인코딩을 피하기 위해 `npm run desktop:vault -- write <key> <utf8-file>` 형식을 권장
 - Electron 기반 로컬 앱은 `desktop/electron-preload.cjs`를 preload로 연결해 `window.jiumSecureVault`를 제공
+- 데스크톱 정적 산출물은 `npm run desktop:export`로 생성하며, release 전에는 `npm run desktop:release:check`로 channel, HTTPS update URL, signing profile 준비 여부를 확인
+- `desktop:release:json`과 `desktop:release:markdown`은 updater URL 원문, 인증서 경로·hash, team ID, signing key ID, 피해자 지표를 저장하지 않는 redacted 인수인계 리포트를 생성
 
 ## 🏷️ 메타
 

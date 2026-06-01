@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import { SECURITY_HEADERS } from "@/lib/securityHeaders";
 
 const isGithubPages = process.env.GITHUB_PAGES === "true";
+const isDesktopExport = process.env.JIUM_DESKTOP_EXPORT === "true";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -14,14 +15,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  ...(isGithubPages
+  ...(isGithubPages || isDesktopExport
     ? {
         output: "export" as const,
-        basePath: "/jium-ai",
-        assetPrefix: "/jium-ai/",
         images: {
           unoptimized: true,
         },
+        ...(isGithubPages
+          ? {
+              basePath: "/jium-ai",
+              assetPrefix: "/jium-ai/",
+            }
+          : {}),
       }
     : {}),
 };

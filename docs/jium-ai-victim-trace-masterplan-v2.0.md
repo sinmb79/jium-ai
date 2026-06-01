@@ -481,3 +481,11 @@ v3.40 서버 운영 readiness 리포트에서 추가 반영한 항목:
 - INTERPOL, Victim identification: https://www.interpol.int/en/Crimes/Crimes-against-children/Victim-identification
 - NIST SP 800-86, Guide to Integrating Forensic Techniques into Incident Response: https://csrc.nist.gov/pubs/sp/800/86/final
 - NIST AI Risk Management Framework: https://www.nist.gov/itl/ai-risk-management-framework
+
+v3.41 데스크톱 패키징 readiness에서 추가 반영한 항목:
+
+- 피해자 로컬 실행: Electron shell이 정적 export를 `jium://app` private protocol로 로드해 브라우저 확장프로그램과 일반 웹 저장소 노출면을 줄인다.
+- 안전한 네비게이션: 앱 내부 경로와 승인된 dev server origin만 내부 이동으로 허용하고, 외부 이동은 HTTPS만 시스템 브라우저로 위임한다.
+- 운영 배포 profile: `JIUM_DESKTOP_EXPORT=true`를 도입해 GitHub Pages basePath가 데스크톱 앱에 섞이지 않게 했다.
+- 배포 전 차단 장치: release channel, HTTPS updater endpoint, signing profile이 없으면 `desktop:release:check`가 BLOCKED로 실패한다.
+- 인수인계 리포트: JSON/Markdown readiness report는 설정 존재 여부만 보여주며 updater URL, signing certificate path/hash, team ID, signing key ID, 피해자 지표를 저장하지 않는다.
