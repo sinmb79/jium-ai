@@ -269,3 +269,14 @@ npm run ops:handoff:bundle
 ```
 
 `ops:go-live:check` now blocks if `ops:onboarding:check` would fail. `ops:handoff:bundle` now includes `production-onboarding-readiness-report.json` and `.md` beside server, desktop, approval, and go-live reports.
+
+## v0.3.60 Production Onboarding Upgrade
+
+Operators can safely refresh private onboarding scaffold metadata after an app version bump:
+
+```bash
+npm run ops:onboarding:upgrade
+npm run ops:onboarding:upgrade:json -- --dry-run
+```
+
+The upgrade updates package/release metadata for placeholder scaffolds without marking anything approved. If operational approval records already contain approved release evidence, the command skips them and asks for manual review instead of rewriting old approvals.

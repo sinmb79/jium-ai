@@ -429,3 +429,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - `ops:handoff:bundle` now writes `production-onboarding-readiness-report.json` and `.md` into the operational handoff bundle.
 - Go-live cannot become READY if the private operator checklist, storage decision, approval records, or server env onboarding scaffold is incomplete.
 - Handoff summaries include the onboarding gate beside server runtime, server storage, desktop publish, operational approval records, and go-live status.
+
+## Implemented in v3.60
+
+- Added `scripts/upgrade-production-onboarding.mjs` and `ops:onboarding:upgrade`.
+- The upgrade command refreshes package/release metadata in private onboarding scaffolds after app version bumps.
+- Placeholder approval packets can be moved to the current package/release tag without marking records approved.
+- Already approved operational approval records are skipped for manual review so old release evidence is not silently rewritten.
+- Upgrade reports are redacted and store only relative paths, package version, release tag, and artifact status.

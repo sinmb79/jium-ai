@@ -2,7 +2,7 @@
 
 작성일: 2026-05-31
 
-최신 구현 메모: v3.59에서 production onboarding readiness를 go-live와 handoff bundle에 연결했다. 세부 runbook은 `docs/production-onboarding-gate-v0.3.59.md`를 기준으로 한다.
+최신 구현 메모: v3.60에서 private onboarding scaffold의 안전한 version upgrade 명령을 추가했다. 세부 runbook은 `docs/production-onboarding-upgrade-v0.3.60.md`를 기준으로 한다.
 
 ## 운영제품 기준
 
@@ -908,6 +908,14 @@
 - Operational handoff status now considers six gates: server runtime, server storage, desktop publish, operational approval records, production onboarding, and operational go-live.
 - This closes the gap where a separate onboarding command could be skipped during final launch review.
 - Verification covered ready and blocked handoff bundles, go-live report integration, redaction, and report file generation.
+
+## v3.60 production onboarding upgrade
+
+- Added `scripts/upgrade-production-onboarding.mjs` with `ops:onboarding:upgrade`, JSON, and Markdown variants.
+- The command updates private onboarding package/release metadata after a package version bump.
+- Placeholder scaffolds are updated without changing approval status.
+- Already approved operational approval records are not rewritten automatically; the report marks them for manual review.
+- Verification covered placeholder upgrade, approved-record skip behavior, dry-run CLI output, and redaction.
 
 ## v3.57 production onboarding scaffold
 

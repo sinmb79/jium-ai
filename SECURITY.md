@@ -194,6 +194,8 @@ npm run ops:handoff:bundle
 
 `ops:onboarding:check`는 운영 투입 전에 private onboarding scaffold가 실제 승인자료로 채워졌는지 검증합니다. private file 존재, `.env.server.local` readiness, repo-external server storage 상태, private operational approval records, 승인된 operator checklist records, 승인된 storage decisions, trusted-key example safety를 함께 확인합니다. JSON/Markdown 리포트는 readiness 상태, count, package version, 상대 private path만 저장하며 generated session secret, trusted origin 원문, storage directory path, support contact, incident owner name, victim indicator, raw URL, invite link, onion 주소, 이메일, 전화번호, password, token, certificate material을 저장하지 않아야 합니다.
 
+`ops:onboarding:upgrade`는 버전 업그레이드 후 private onboarding scaffold의 release metadata만 동기화합니다. 이 명령은 approval status를 `APPROVED`로 바꾸지 않으며, 이미 승인된 operational approval records는 자동으로 새 release tag로 고치지 않고 manual review 상태로 남깁니다. 리포트에는 상대 경로, package version, release tag, 상태만 남겨야 하며 secret, raw URL, 연락처, 피해자 지표, storage path, token, certificate material을 저장하지 않아야 합니다.
+
 `ops:go-live:check`는 운영 출시 직전의 종합 게이트입니다. 서버 runtime readiness와 desktop publish readiness가 모두 통과해야 하며, `JIUM_GO_LIVE_APPROVAL=APPROVED`, `JIUM_LEGAL_REVIEW_APPROVAL=APPROVED`, `JIUM_RELEASE_EVIDENCE_REVIEW=APPROVED`, `JIUM_DATA_RETENTION_POLICY_ACK=APPROVED`, HTTPS `JIUM_PUBLIC_APP_URL`, HTTPS `JIUM_PRIVACY_NOTICE_URL`, `JIUM_SUPPORT_CONTACT_ROUTE`, `JIUM_INCIDENT_RESPONSE_OWNER`, private approval records packet이 필요합니다. 리포트에는 URL 원문, support 연락처, 담당자명, secret, token, 인증서 material, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호를 저장하지 않습니다.
 
 `ops:go-live:check`는 private production onboarding readiness도 함께 요구합니다. 따라서 operator checklist, storage decision, private approval records, server env scaffold가 승인 상태가 아니면 다른 운영 env flag가 있어도 READY가 될 수 없습니다.
