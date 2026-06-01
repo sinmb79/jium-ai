@@ -476,3 +476,13 @@ npm run ops:onboarding:approve-public-operations -- --section <public-app|privac
 ```
 
 The command updates only `ops/private/production-onboarding/public-operations.template.json`, rejects placeholders/raw URLs/contacts/secrets in evidence refs, and writes a redacted report with only a SHA-256 digest of the evidence reference. Details are in [Production Onboarding Public Operations Approval v0.3.77](docs/production-onboarding-public-operations-approval-v0.3.77.md).
+
+## v0.3.78 Server Origin Approval
+
+Approved institution operator origins can now be applied to `.env.server.local` through a guarded CLI instead of manual editing:
+
+```bash
+npm run server:origin:apply -- --origin <approved-https-operator-origin> --approval-ref <pseudonymous-origin-approval-reference>
+```
+
+The command writes only to the private server runtime env file, validates HTTPS origin-only values, blocks placeholders/raw contacts/invites/onion values/secrets, and emits redacted approval reports with only origin count plus SHA-256 digests. `security:server-readiness`, `server:deployment:bundle`, and `ops:action-plan` now point operators to this command before server deployment. Details are in [Server Origin Approval v0.3.78](docs/server-origin-approval-v0.3.78.md).

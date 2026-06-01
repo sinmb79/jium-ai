@@ -472,3 +472,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The command updates only the ignored private `public-operations.template.json`, rejects placeholders, raw URLs, contacts, invite links, onion addresses, phone numbers, secrets, and private key material, and writes redacted JSON/Markdown reports.
 - Reports store only section id, counts, public-operations status, and SHA-256 evidence-reference digests; the raw pseudonymous evidence reference remains in the private onboarding packet.
 - `ops:onboarding:init`, `ops:onboarding:check`, and `ops:action-plan` now point operators to the guarded public operations command so public route approvals can advance without undocumented JSON editing.
+
+## Implemented in v0.3.78
+
+- Added `scripts/apply-server-origin-approval.mjs` and `server:origin:apply` for applying approved HTTPS institution operator origins to the private server runtime env.
+- The command updates `.env.server.local` with `JIUM_SERVER_ROUTES=true`, `INSTITUTION_ALLOWED_ORIGINS`, and `INSTITUTION_SECURE_COOKIES=true` only after validating origin-only HTTPS values and a pseudonymous approval reference.
+- Reports store only origin count, env update status, and SHA-256 digests; raw origins and raw approval references remain out of generated reports.
+- `security:server-readiness`, `server:deployment:bundle`, and `ops:action-plan` now route origin/profile blockers to the guarded command instead of undocumented manual env edits.

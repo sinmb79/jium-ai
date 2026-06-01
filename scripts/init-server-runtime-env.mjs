@@ -87,7 +87,7 @@ if (path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1
     console.log("Secret status: GENERATED");
     console.log("Origin status: PLACEHOLDER_BLOCKED");
     console.log(
-      "Replace INSTITUTION_ALLOWED_ORIGINS and the server storage directories with approved deployment values, then run npm run security:server-readiness.",
+      "Apply approved origins with npm run server:origin:apply, configure server storage with npm run server:storage:init, then run npm run security:server-readiness.",
     );
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));

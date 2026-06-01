@@ -67,6 +67,7 @@ const PHASE_BLUEPRINTS = [
     evidenceTarget: ".env.server.local, data/trusted-authorized-feed-keys.json, and server deployment evidence bundle",
     verificationCommands: [
       "npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>",
+      "npm run server:origin:apply -- --origin <approved-https-operator-origin> --approval-ref <pseudonymous-origin-approval-reference>",
       "npm run security:trusted-key:review -- --candidate <approved-public-key.json> --patch-output <trusted-key-registry.patch.json>",
       "npm run server:trusted-key:apply -- --patch <trusted-key-registry.patch.json> --approval-ref <pseudonymous-approval-reference>",
       "npm run security:server-readiness",
@@ -74,6 +75,7 @@ const PHASE_BLUEPRINTS = [
     ],
     baseActions: [
       "Create or refresh the server env scaffold with npm run server:env:init.",
+      "Apply the approved HTTPS operator origin list with npm run server:origin:apply before server readiness.",
       "Generate a repo-external private key and public trusted-key candidate with npm run server:trusted-key:init.",
       "Review an approved institution public-key candidate before applying any trusted-key registry patch.",
       "Apply the approved trusted-key registry patch with a pseudonymous approval reference after fingerprint comparison.",

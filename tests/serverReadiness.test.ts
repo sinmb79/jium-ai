@@ -209,7 +209,7 @@ describe("server runtime readiness", () => {
 
     expect(report.status).toBe("BLOCKED");
     expect(report.checks.some((check) => check.status === "BLOCKED")).toBe(true);
-    expect(report.nextActions.join("\n")).toContain("JIUM_SERVER_ROUTES=true");
+    expect(report.nextActions.join("\n")).toContain("server:origin:apply");
     expect(JSON.stringify(report)).not.toContain("0123456789abcdef0123456789abcdef");
     expect(JSON.stringify(report)).not.toContain("https://agency.example");
   });

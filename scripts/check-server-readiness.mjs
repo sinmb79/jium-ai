@@ -170,7 +170,7 @@ function statusFor(errorNeedle, errors) {
 
 function nextActionFor(error) {
   if (error.includes("JIUM_SERVER_ROUTES=true")) {
-    return "Set JIUM_SERVER_ROUTES=true only for server deployments.";
+    return "Apply approved server origins with npm run server:origin:apply before rerunning server readiness.";
   }
   if (error.includes("GITHUB_PAGES=true")) {
     return "Disable GITHUB_PAGES for the server runtime profile.";
@@ -179,7 +179,7 @@ function nextActionFor(error) {
     return "Set a server-only high-entropy INSTITUTION_SESSION_SECRET and keep it out of NEXT_PUBLIC_*.";
   }
   if (error.includes("INSTITUTION_ALLOWED_ORIGINS")) {
-    return "Set INSTITUTION_ALLOWED_ORIGINS to the exact trusted operator origin list.";
+    return "Apply the exact approved HTTPS operator origin list with npm run server:origin:apply.";
   }
   if (error.includes("INSTITUTION_AUDIT_LEDGER_DIR")) {
     return "Set INSTITUTION_AUDIT_LEDGER_DIR to an access-controlled append-only storage path.";
