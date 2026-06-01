@@ -767,3 +767,18 @@
   - GitHub token, update endpoint 원문, 인증서 material, 피해자 지표, URL, 초대 링크, onion 주소, 이메일, 전화번호는 저장하지 않는다.
 - 검증 범위
   - release tag parsing, version alignment, approval/token gate, workflow publish job 구조를 테스트했다.
+
+## v3.49 운영 go-live 종합 gate
+
+- 종합 출시 판정
+  - 앱 version을 `0.3.49`로 올리고 `ops:go-live:check`, `ops:go-live:json`, `ops:go-live:markdown`을 추가했다.
+  - go-live gate는 서버 runtime readiness와 desktop publish readiness를 함께 평가한다.
+  - 공개 앱 URL, 개인정보 처리 안내 URL, 지원 연락 경로, incident response 담당, 법무·운영 승인, release evidence review, 데이터 보존 정책 승인을 한 리포트로 묶는다.
+- 외부 의존성 명시
+  - 승인 기관 공개키, 서버 secret/env, signed installer, update feed, GitHub Release publish, human approval이 없으면 BLOCKED가 정상이다.
+  - 이 gate는 기능 테스트 통과와 실제 운영 오픈 승인을 분리해, 기술 빌드 성공을 운영 완료로 오인하지 않게 한다.
+- 개인정보와 secret 최소화
+  - go-live report는 승인 상태, URL 유효성 상태, 카운트, release tag, package version만 저장한다.
+  - URL 원문, support 연락처, 담당자명, secret, token, 인증서 material, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호는 저장하지 않는다.
+- 검증 범위
+  - 승인/URL 요약, 완전 승인 profile, 서버·데스크톱 downstream blocker, redaction을 테스트했다.

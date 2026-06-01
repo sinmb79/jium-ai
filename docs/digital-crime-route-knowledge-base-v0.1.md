@@ -338,3 +338,17 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Tightened desktop release readiness so a certificate hash alone no longer counts as a signing profile; `CSC_LINK`/`CSC_KEY_PASSWORD`, `WIN_CSC_LINK`/`WIN_CSC_KEY_PASSWORD`, file/password, or Azure Trusted Signing settings must be present.
 - Added a manual `Desktop Signed Release` workflow that injects GitHub Secrets into `CSC_*` environment variables, runs signing preflight, builds signed artifacts, validates update feed metadata, and uploads release evidence.
 - Signing reports continue to redact certificate payloads, passwords, endpoint values, and victim indicators.
+
+## Implemented in v3.48
+
+- Added `scripts/check-desktop-publish-readiness.mjs` and `desktop:publish:check` to gate GitHub Release asset publication.
+- The publish gate checks release tag/package version/update metadata alignment, human approval, GitHub upload context, signed desktop artifacts, update feed metadata, and publishable installer/blockmap assets.
+- The `Desktop Signed Release` workflow gained an optional GitHub Release upload job that only runs with explicit publish approval and uses write permissions only for the upload job.
+- Publish readiness reports store version, tag, artifact counts, and setting presence only, while redacting tokens, update endpoints, certificate material, and victim indicators.
+
+## Implemented in v3.49
+
+- Added `scripts/check-operational-go-live.mjs` and `ops:go-live:check` for one final operational launch gate.
+- The go-live gate combines server runtime readiness, desktop publish readiness, public HTTPS URL checks, legal/go-live/release-evidence/data-retention approvals, support route, and incident-response assignment.
+- Default public-repo operation remains BLOCKED until institution keys, server env, signed desktop artifacts, update feed metadata, release approval, and human operating approvals are present.
+- Go-live reports store approval states, URL validity states, counts, release tag, and package version only, while excluding public URL values, support contacts, owner names, secrets, tokens, certificate material, and victim indicators.

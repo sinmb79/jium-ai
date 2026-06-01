@@ -147,6 +147,7 @@ npm run desktop:publish:check -- --feed-dir ./dist/desktop
 npm run desktop:release:bundle
 npm run desktop:release:json -- --output ./desktop-readiness.json
 npm run desktop:release:markdown -- --output ./desktop-readiness.md
+npm run ops:go-live:check
 ```
 
 `desktop:release:check`는 승인된 release channel, HTTPS updater endpoint, 최소 1개 플랫폼 signing profile이 설정되기 전까지 차단되어야 정상입니다. JSON/Markdown 리포트는 설정 존재 여부만 표시하며 updater URL 원문, signing certificate path, certificate hash, Apple team ID, Linux signing key ID, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호를 저장하지 않습니다.
@@ -162,6 +163,8 @@ npm run desktop:release:markdown -- --output ./desktop-readiness.md
 `desktop:release:bundle`은 distribution, release readiness, update feed 리포트와 요약을 `dist/desktop-release-bundle`에 모읍니다. 이 bundle은 운영자 검토용 증적이며, legal/institutional sign-off, 코드서명, update hosting 완료를 대신하지 않습니다. GitHub Actions의 `Desktop Release Candidate` 수동 workflow는 Windows runner에서 unsigned release candidate를 만들고 이 bundle과 unpacked package를 artifact로 보관합니다. workflow에는 signing certificate path/password 같은 secret을 직접 넣지 않습니다.
 
 실제 signed installer 생성은 `Desktop Signed Release` 수동 workflow로 분리합니다. 이 workflow는 GitHub Secrets의 `JIUM_WINDOWS_CSC_LINK`, `JIUM_WINDOWS_CSC_KEY_PASSWORD`, 선택적 `JIUM_WINDOWS_SIGNING_CERT_SHA256`를 `CSC_*` 환경변수로 주입한 뒤 signing preflight, release readiness, signed packaging, update-feed 검증, evidence bundle 생성을 순서대로 실행합니다. secret 값은 로그나 bundle에 기록하지 않습니다. 기존 GitHub Release에 installer asset을 업로드하려면 `release_tag`가 앱 버전과 일치해야 하며, `publish_to_github_release=true`와 `publish_approval=APPROVED`를 명시해야 합니다. 업로드 job만 `contents: write` 권한을 가지며, 기본 signed build job은 release artifact를 Actions artifact로만 보관합니다.
+
+`ops:go-live:check`는 운영 출시 직전의 종합 게이트입니다. 서버 runtime readiness와 desktop publish readiness가 모두 통과해야 하며, `JIUM_GO_LIVE_APPROVAL=APPROVED`, `JIUM_LEGAL_REVIEW_APPROVAL=APPROVED`, `JIUM_RELEASE_EVIDENCE_REVIEW=APPROVED`, `JIUM_DATA_RETENTION_POLICY_ACK=APPROVED`, HTTPS `JIUM_PUBLIC_APP_URL`, HTTPS `JIUM_PRIVACY_NOTICE_URL`, `JIUM_SUPPORT_CONTACT_ROUTE`, `JIUM_INCIDENT_RESPONSE_OWNER`가 필요합니다. 리포트에는 URL 원문, support 연락처, 담당자명, secret, token, 인증서 material, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호를 저장하지 않습니다.
 
 ### 기기 안전점검
 

@@ -1,0 +1,298 @@
+#!/usr/bin/env node
+import { mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  buildDesktopPublishReadinessReport,
+  validateDesktopPublishReadiness,
+} from "./check-desktop-publish-readiness.mjs";
+import {
+  buildServerRuntimeReadinessReport,
+  validateServerRuntimeReadiness,
+} from "./check-server-readiness.mjs";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(__dirname, "..");
+
+function present(value) {
+  return Boolean(String(value || "").trim());
+}
+
+function approvalStatus(value) {
+  return String(value || "") === "APPROVED" ? "APPROVED" : "MISSING_OR_NOT_APPROVED";
+}
+
+function httpsUrlStatus(value) {
+  if (!present(value)) {
+    return "MISSING";
+  }
+  try {
+    return new URL(String(value)).protocol === "https:" ? "SET_HTTPS" : "SET_NOT_HTTPS";
+  } catch {
+    return "SET_INVALID";
+  }
+}
+
+export function summarizeOperationalGoLiveEnv(env = process.env) {
+  return {
+    JIUM_GO_LIVE_APPROVAL: approvalStatus(env.JIUM_GO_LIVE_APPROVAL),
+    JIUM_LEGAL_REVIEW_APPROVAL: approvalStatus(env.JIUM_LEGAL_REVIEW_APPROVAL),
+    JIUM_RELEASE_EVIDENCE_REVIEW: approvalStatus(env.JIUM_RELEASE_EVIDENCE_REVIEW),
+    JIUM_DATA_RETENTION_POLICY_ACK: approvalStatus(env.JIUM_DATA_RETENTION_POLICY_ACK),
+    JIUM_PUBLIC_APP_URL: httpsUrlStatus(env.JIUM_PUBLIC_APP_URL),
+    JIUM_PRIVACY_NOTICE_URL: httpsUrlStatus(env.JIUM_PRIVACY_NOTICE_URL),
+    JIUM_SUPPORT_CONTACT_ROUTE: present(env.JIUM_SUPPORT_CONTACT_ROUTE) ? "SET" : "MISSING",
+    JIUM_INCIDENT_RESPONSE_OWNER: present(env.JIUM_INCIDENT_RESPONSE_OWNER) ? "SET" : "MISSING",
+  };
+}
+
+function goLiveNextActionFor(error) {
+  if (error.includes("JIUM_GO_LIVE_APPROVAL")) {
+    return "Record explicit human go-live approval with JIUM_GO_LIVE_APPROVAL=APPROVED.";
+  }
+  if (error.includes("JIUM_LEGAL_REVIEW_APPROVAL")) {
+    return "Complete legal and institution operating review before production go-live.";
+  }
+  if (error.includes("JIUM_RELEASE_EVIDENCE_REVIEW")) {
+    return "Review the redacted release evidence bundle and mark it approved.";
+  }
+  if (error.includes("JIUM_DATA_RETENTION_POLICY_ACK")) {
+    return "Approve the data retention and deletion policy for production operation.";
+  }
+  if (error.includes("JIUM_PUBLIC_APP_URL")) {
+    return "Set JIUM_PUBLIC_APP_URL to the approved HTTPS production URL.";
+  }
+  if (error.includes("JIUM_PRIVACY_NOTICE_URL")) {
+    return "Set JIUM_PRIVACY_NOTICE_URL to the approved HTTPS privacy notice URL.";
+  }
+  if (error.includes("JIUM_SUPPORT_CONTACT_ROUTE")) {
+    return "Set a production support contact route without storing contact details in reports.";
+  }
+  if (error.includes("JIUM_INCIDENT_RESPONSE_OWNER")) {
+    return "Assign an incident response owner before go-live.";
+  }
+  if (error.includes("server runtime")) {
+    return "Resolve server runtime readiness blockers, including trusted keys and server-only env.";
+  }
+  if (error.includes("desktop publish")) {
+    return "Resolve desktop publish blockers, including signed artifacts, update feed, and release upload approval.";
+  }
+  return "Resolve this go-live blocker before production launch.";
+}
+
+function envErrors(envSummary) {
+  const errors = [];
+  if (envSummary.JIUM_GO_LIVE_APPROVAL !== "APPROVED") {
+    errors.push("operational go-live approval missing: JIUM_GO_LIVE_APPROVAL=APPROVED");
+  }
+  if (envSummary.JIUM_LEGAL_REVIEW_APPROVAL !== "APPROVED") {
+    errors.push("operational legal review approval missing: JIUM_LEGAL_REVIEW_APPROVAL=APPROVED");
+  }
+  if (envSummary.JIUM_RELEASE_EVIDENCE_REVIEW !== "APPROVED") {
+    errors.push("operational release evidence review missing: JIUM_RELEASE_EVIDENCE_REVIEW=APPROVED");
+  }
+  if (envSummary.JIUM_DATA_RETENTION_POLICY_ACK !== "APPROVED") {
+    errors.push("operational data retention policy acknowledgement missing: JIUM_DATA_RETENTION_POLICY_ACK=APPROVED");
+  }
+  if (envSummary.JIUM_PUBLIC_APP_URL !== "SET_HTTPS") {
+    errors.push("operational public app URL must be HTTPS: JIUM_PUBLIC_APP_URL");
+  }
+  if (envSummary.JIUM_PRIVACY_NOTICE_URL !== "SET_HTTPS") {
+    errors.push("operational privacy notice URL must be HTTPS: JIUM_PRIVACY_NOTICE_URL");
+  }
+  if (envSummary.JIUM_SUPPORT_CONTACT_ROUTE !== "SET") {
+    errors.push("operational support contact route missing: JIUM_SUPPORT_CONTACT_ROUTE");
+  }
+  if (envSummary.JIUM_INCIDENT_RESPONSE_OWNER !== "SET") {
+    errors.push("operational incident response owner missing: JIUM_INCIDENT_RESPONSE_OWNER");
+  }
+  return errors;
+}
+
+export async function validateOperationalGoLive({
+  root = repoRoot,
+  env = process.env,
+  platform = process.platform,
+  validations,
+} = {}) {
+  const envSummary = summarizeOperationalGoLiveEnv(env);
+  const errors = envErrors(envSummary);
+  const serverRuntime = validations?.serverRuntime || validateServerRuntimeReadiness({ root, env });
+  const desktopPublish =
+    validations?.desktopPublish ||
+    (await validateDesktopPublishReadiness({ root, env, platform, feedDir: path.join(root, "dist", "desktop") }));
+
+  if (!serverRuntime.valid) {
+    serverRuntime.errors.forEach((error) => errors.push(`operational server runtime: ${error}`));
+  }
+  if (!desktopPublish.valid) {
+    desktopPublish.errors.forEach((error) => errors.push(`operational desktop publish: ${error}`));
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    envSummary,
+    serverRuntime,
+    desktopPublish,
+  };
+}
+
+export function buildOperationalGoLiveReport(readiness, options = {}) {
+  const generatedAt = options.generatedAt || new Date().toISOString();
+  const serverReport = buildServerRuntimeReadinessReport(readiness.serverRuntime, { generatedAt });
+  const desktopReport = buildDesktopPublishReadinessReport(readiness.desktopPublish, { generatedAt });
+  const checks = [
+    {
+      id: "human-go-live-approval",
+      label: "Human production go-live approval is explicit",
+      status: readiness.envSummary.JIUM_GO_LIVE_APPROVAL === "APPROVED" ? "PASS" : "BLOCKED",
+    },
+    {
+      id: "legal-review",
+      label: "Legal and institution operating review is approved",
+      status: readiness.envSummary.JIUM_LEGAL_REVIEW_APPROVAL === "APPROVED" ? "PASS" : "BLOCKED",
+    },
+    {
+      id: "release-evidence-review",
+      label: "Redacted release evidence bundle has been reviewed",
+      status: readiness.envSummary.JIUM_RELEASE_EVIDENCE_REVIEW === "APPROVED" ? "PASS" : "BLOCKED",
+    },
+    {
+      id: "data-retention-policy",
+      label: "Data retention and deletion policy has been acknowledged",
+      status: readiness.envSummary.JIUM_DATA_RETENTION_POLICY_ACK === "APPROVED" ? "PASS" : "BLOCKED",
+    },
+    {
+      id: "public-urls",
+      label: "Public app and privacy notice URLs are HTTPS",
+      status:
+        readiness.envSummary.JIUM_PUBLIC_APP_URL === "SET_HTTPS" &&
+        readiness.envSummary.JIUM_PRIVACY_NOTICE_URL === "SET_HTTPS"
+          ? "PASS"
+          : "BLOCKED",
+    },
+    {
+      id: "support-operations",
+      label: "Support contact route and incident response owner are assigned",
+      status:
+        readiness.envSummary.JIUM_SUPPORT_CONTACT_ROUTE === "SET" &&
+        readiness.envSummary.JIUM_INCIDENT_RESPONSE_OWNER === "SET"
+          ? "PASS"
+          : "BLOCKED",
+    },
+    {
+      id: "server-runtime",
+      label: "Institution server runtime readiness passes",
+      status: readiness.serverRuntime.valid ? "PASS" : "BLOCKED",
+    },
+    {
+      id: "desktop-publish",
+      label: "Signed desktop publish readiness passes",
+      status: readiness.desktopPublish.valid ? "PASS" : "BLOCKED",
+    },
+  ];
+
+  return {
+    generatedAt,
+    status: readiness.valid ? "READY" : "BLOCKED",
+    summary: {
+      errorCount: readiness.errors.length,
+      serverStatus: serverReport.status,
+      desktopPublishStatus: desktopReport.status,
+      activeTrustedKeyCount: serverReport.summary.activeKeyCount,
+      desktopReleaseTag: desktopReport.summary.releaseTag,
+      desktopPackageVersion: desktopReport.summary.packageVersion,
+      desktopPublishArtifactCount: desktopReport.summary.publishArtifactCount,
+    },
+    envSummary: readiness.envSummary,
+    checks,
+    errors: [...readiness.errors],
+    nextActions: readiness.errors.length
+      ? Array.from(new Set(readiness.errors.map(goLiveNextActionFor)))
+      : ["Proceed with production launch using the approved release runbook."],
+    safetyNotes: [
+      "This report stores approval states, URL validity states, counts, release tag, and package version only.",
+      "It does not store public URL values, support contact details, incident owner names, secrets, tokens, certificate material, victim indicators, raw URLs, invite links, onion addresses, emails, or phone numbers.",
+      "A READY result is a technical and operating gate summary; it must still be archived with the human approval records for the release.",
+    ],
+  };
+}
+
+export function formatOperationalGoLiveMarkdown(report) {
+  const lines = [
+    "# JiumAI Operational Go-Live Report",
+    "",
+    `- Generated at: ${report.generatedAt}`,
+    `- Status: ${report.status}`,
+    `- Server status: ${report.summary.serverStatus}`,
+    `- Desktop publish status: ${report.summary.desktopPublishStatus}`,
+    `- Active trusted keys: ${report.summary.activeTrustedKeyCount}`,
+    `- Desktop package version: ${report.summary.desktopPackageVersion || "MISSING"}`,
+    `- Desktop release tag: ${report.summary.desktopReleaseTag || "MISSING"}`,
+    `- Desktop publish assets: ${report.summary.desktopPublishArtifactCount}`,
+    "",
+    "## Checks",
+    ...report.checks.map((check) => `- ${check.status} ${check.id}: ${check.label}`),
+    "",
+    "## Environment Summary",
+    ...Object.entries(report.envSummary).map(([key, value]) => `- ${key}: ${value}`),
+    "",
+    "## Errors",
+    ...(report.errors.length ? report.errors.map((error) => `- ${error}`) : ["- None"]),
+    "",
+    "## Next Actions",
+    ...report.nextActions.map((action) => `- ${action}`),
+    "",
+    "## Safety Notes",
+    ...report.safetyNotes.map((note) => `- ${note}`),
+  ];
+  return `${lines.join("\n")}\n`;
+}
+
+function parseCliArgs(argv) {
+  const args = { format: "text", outputPath: "", platform: process.platform };
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "--json") {
+      args.format = "json";
+    } else if (arg === "--markdown" || arg === "--md") {
+      args.format = "markdown";
+    } else if (arg === "--platform") {
+      args.platform = argv[index + 1] || args.platform;
+      index += 1;
+    } else if (arg === "--output") {
+      args.outputPath = argv[index + 1] || "";
+      index += 1;
+    } else if (arg.startsWith("--output=")) {
+      args.outputPath = arg.slice("--output=".length);
+    }
+  }
+  return args;
+}
+
+function writeOutput(content, outputPath) {
+  if (!outputPath) {
+    console.log(content);
+    return;
+  }
+  mkdirSync(path.dirname(path.resolve(outputPath)), { recursive: true });
+  writeFileSync(outputPath, content, "utf8");
+  console.log(`Operational go-live report written: ${outputPath}`);
+}
+
+if (path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1] || "")) {
+  const args = parseCliArgs(process.argv.slice(2));
+  try {
+    const readiness = await validateOperationalGoLive({ platform: args.platform });
+    const report = buildOperationalGoLiveReport(readiness);
+    const content = args.format === "json" ? JSON.stringify(report, null, 2) : formatOperationalGoLiveMarkdown(report);
+    writeOutput(content, args.outputPath);
+    if (!readiness.valid) {
+      process.exit(1);
+    }
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+}
