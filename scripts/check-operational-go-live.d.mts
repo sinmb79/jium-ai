@@ -1,5 +1,6 @@
 import type { DesktopPublishReadiness } from "./check-desktop-publish-readiness.mjs";
 import type { OperationalApprovalRecordsReadiness } from "./check-operational-approval-records.mjs";
+import type { ProductionOnboardingReadiness } from "./check-production-onboarding.mjs";
 import type { ServerRuntimeReadiness } from "./check-server-readiness.mjs";
 
 export type OperationalGoLiveEnvSummary = {
@@ -21,6 +22,7 @@ export type OperationalGoLiveReadiness = {
   serverRuntime: ServerRuntimeReadiness;
   desktopPublish: DesktopPublishReadiness;
   approvalRecords: OperationalApprovalRecordsReadiness;
+  productionOnboarding: ProductionOnboardingReadiness;
 };
 
 export type OperationalGoLiveReport = {
@@ -31,8 +33,12 @@ export type OperationalGoLiveReport = {
     serverStatus: "READY" | "BLOCKED";
     desktopPublishStatus: "READY" | "BLOCKED";
     approvalRecordsStatus: "READY" | "BLOCKED";
+    productionOnboardingStatus: "READY" | "BLOCKED";
     approvedApprovalRecordCount: number;
     requiredApprovalRecordCount: number;
+    onboardingErrorCount: number;
+    onboardingChecklistApprovedRecordCount: number;
+    onboardingChecklistRequiredRecordCount: number;
     activeTrustedKeyCount: number;
     desktopReleaseTag: string;
     desktopPackageVersion: string;
@@ -59,6 +65,7 @@ export function validateOperationalGoLive(options?: {
     serverRuntime?: ServerRuntimeReadiness;
     desktopPublish?: DesktopPublishReadiness;
     approvalRecords?: OperationalApprovalRecordsReadiness;
+    productionOnboarding?: ProductionOnboardingReadiness;
   };
 }): Promise<OperationalGoLiveReadiness>;
 

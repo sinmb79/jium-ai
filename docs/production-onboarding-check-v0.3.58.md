@@ -48,3 +48,7 @@ npm run ops:handoff:bundle
 ```
 
 Only proceed to release publication after the private evidence and external approvals are complete.
+
+## v0.3.59 Integration
+
+From v0.3.59 onward, this readiness check is also enforced by `npm run ops:go-live:check` and included in `npm run ops:handoff:bundle`.

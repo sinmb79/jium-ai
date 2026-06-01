@@ -422,3 +422,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The check validates private onboarding file presence, server env readiness, repo-external storage readiness, operational approval records, approved operator checklist records, approved storage decisions, and trusted-key example safety.
 - JSON and Markdown reports redact generated secrets, trusted origins, storage paths, support contacts, incident owner names, victim indicators, raw URLs, invite links, onion addresses, emails, phone numbers, passwords, tokens, and certificate material.
 - Incomplete scaffolds remain BLOCKED by design, giving operators a single pre-production checklist before server deployment, desktop publication, go-live approval, and handoff bundling.
+
+## Implemented in v3.59
+
+- `ops:go-live:check` now includes the production onboarding readiness gate.
+- `ops:handoff:bundle` now writes `production-onboarding-readiness-report.json` and `.md` into the operational handoff bundle.
+- Go-live cannot become READY if the private operator checklist, storage decision, approval records, or server env onboarding scaffold is incomplete.
+- Handoff summaries include the onboarding gate beside server runtime, server storage, desktop publish, operational approval records, and go-live status.

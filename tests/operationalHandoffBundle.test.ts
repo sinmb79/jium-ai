@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { buildOperationalHandoffBundle } from "../scripts/build-operational-handoff-bundle.mjs";
 import type { OperationalApprovalRecordsReadiness } from "../scripts/check-operational-approval-records.mjs";
+import type { ProductionOnboardingReadiness } from "../scripts/check-production-onboarding.mjs";
 
 const tempDirs: string[] = [];
 
@@ -129,6 +130,49 @@ function approvalRecords(valid = true): OperationalApprovalRecordsReadiness {
   };
 }
 
+function productionOnboarding(valid = true): ProductionOnboardingReadiness {
+  return {
+    valid,
+    errors: valid ? [] : ["operator checklist status must be APPROVED"],
+    packageVersion: "0.3.50",
+    onboardingDir: "ops/private/production-onboarding",
+    requiredFiles: [
+      { fileName: "README.md", status: "FOUND" },
+      { fileName: "operator-checklist.json", status: "FOUND" },
+      { fileName: "storage-decision.template.json", status: "FOUND" },
+      { fileName: "trusted-key-candidate.example.json", status: "FOUND" },
+    ],
+    serverEnv: {
+      fileStatus: "FOUND",
+      JIUM_SERVER_ROUTES: "TRUE",
+      INSTITUTION_SESSION_SECRET: "SET",
+      INSTITUTION_ALLOWED_ORIGINS: "SET",
+      storageStatus: valid ? "READY" : "BLOCKED",
+    },
+    approvalRecords: approvalRecords(valid),
+    checklist: {
+      valid,
+      approvedRecordCount: valid ? 5 : 0,
+      requiredRecordCount: 5,
+      presentRecordIds: [
+        "desktop-signing-evidence",
+        "legal-go-live-approval",
+        "server-origin-approval",
+        "server-storage-decision",
+        "trusted-public-key-approval",
+      ],
+    },
+    storageDecision: {
+      valid,
+      approvedSectionCount: valid ? 2 : 0,
+      requiredSectionCount: 2,
+    },
+    trustedKeyExample: {
+      valid: true,
+    },
+  };
+}
+
 function goLive(valid = true) {
   return {
     valid,
@@ -147,6 +191,7 @@ function goLive(valid = true) {
     serverRuntime: serverRuntime(valid),
     desktopPublish: desktopPublish(valid),
     approvalRecords: approvalRecords(valid),
+    productionOnboarding: productionOnboarding(valid),
   };
 }
 
@@ -166,17 +211,23 @@ describe("operational handoff bundle", () => {
         serverRuntime: serverRuntime(true),
         desktopPublish: desktopPublish(true),
         approvalRecords: approvalRecords(true),
+        productionOnboarding: productionOnboarding(true),
         goLive: goLive(true),
       },
     });
     const summaryMarkdown = await readFile(path.join(root, "dist", "operational-handoff-bundle", "operational-handoff-summary.md"), "utf8");
     const goLiveMarkdown = await readFile(path.join(root, "dist", "operational-handoff-bundle", "operational-go-live-report.md"), "utf8");
+    const onboardingMarkdown = await readFile(
+      path.join(root, "dist", "operational-handoff-bundle", "production-onboarding-readiness-report.md"),
+      "utf8",
+    );
 
     expect(result.valid).toBe(true);
     expect(result.summary.status).toBe("READY");
-    expect(result.summary.gates.map((gate) => gate.status)).toEqual(["READY", "READY", "READY", "READY", "READY"]);
+    expect(result.summary.gates.map((gate) => gate.status)).toEqual(["READY", "READY", "READY", "READY", "READY", "READY"]);
     expect(summaryMarkdown).toContain("JiumAI Operational Handoff Runbook");
     expect(goLiveMarkdown).toContain("JiumAI Operational Go-Live Report");
+    expect(onboardingMarkdown).toContain("JiumAI Production Onboarding Readiness Report");
     expect(summaryMarkdown).not.toContain(root);
     expect(JSON.stringify(result.summary)).not.toContain("support@example.com");
   });
@@ -197,6 +248,7 @@ describe("operational handoff bundle", () => {
         serverRuntime: serverRuntime(false),
         desktopPublish: desktopPublish(false),
         approvalRecords: approvalRecords(false),
+        productionOnboarding: productionOnboarding(false),
         goLive: goLive(false),
       },
     });
@@ -209,6 +261,7 @@ describe("operational handoff bundle", () => {
       { id: "server-storage-readiness", status: "BLOCKED", errorCount: 1 },
       { id: "desktop-publish-readiness", status: "BLOCKED", errorCount: 1 },
       { id: "operational-approval-records", status: "BLOCKED", errorCount: 1 },
+      { id: "production-onboarding-readiness", status: "BLOCKED", errorCount: 1 },
       { id: "operational-go-live", status: "BLOCKED", errorCount: 1 },
     ]);
     expect(bundleText).toContain("External Records Needed");

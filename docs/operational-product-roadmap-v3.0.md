@@ -2,7 +2,7 @@
 
 작성일: 2026-05-31
 
-최신 구현 메모: v3.58에서 production onboarding readiness check를 추가했다. 세부 runbook은 `docs/production-onboarding-check-v0.3.58.md`를 기준으로 한다.
+최신 구현 메모: v3.59에서 production onboarding readiness를 go-live와 handoff bundle에 연결했다. 세부 runbook은 `docs/production-onboarding-gate-v0.3.59.md`를 기준으로 한다.
 
 ## 운영제품 기준
 
@@ -900,6 +900,14 @@
 - The report is redacted: it keeps states, counts, package version, and relative private paths only.
 - The gate remains BLOCKED until real institution, legal, storage, signing, support, and incident-response approvals replace scaffold placeholders.
 - Verification covered ready and blocked fixtures, CLI JSON output, report redaction, approval-record alignment, and server storage integration.
+
+## v3.59 production onboarding gate integration
+
+- `ops:go-live:check` now fails when production onboarding readiness is BLOCKED.
+- `ops:handoff:bundle` now includes production onboarding JSON and Markdown reports.
+- Operational handoff status now considers six gates: server runtime, server storage, desktop publish, operational approval records, production onboarding, and operational go-live.
+- This closes the gap where a separate onboarding command could be skipped during final launch review.
+- Verification covered ready and blocked handoff bundles, go-live report integration, redaction, and report file generation.
 
 ## v3.57 production onboarding scaffold
 

@@ -258,3 +258,14 @@ npm run ops:onboarding:check:markdown -- --output ./production-onboarding-readin
 ```
 
 The check stays BLOCKED until server env values, repo-external server storage, private approval records, operator checklist records, and storage decisions are all approved. Reports store only readiness states, counts, version, and relative private paths; they exclude generated secrets, trusted origins, storage paths, support contacts, victim indicators, raw URLs, invite links, onion addresses, emails, phone numbers, passwords, tokens, and certificate material.
+
+## v0.3.59 Onboarding Gate in Go-Live and Handoff
+
+Production onboarding readiness is now part of the final operating gates:
+
+```bash
+npm run ops:go-live:check
+npm run ops:handoff:bundle
+```
+
+`ops:go-live:check` now blocks if `ops:onboarding:check` would fail. `ops:handoff:bundle` now includes `production-onboarding-readiness-report.json` and `.md` beside server, desktop, approval, and go-live reports.

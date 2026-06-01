@@ -12,6 +12,7 @@ import {
   DEFAULT_OPERATIONAL_APPROVAL_RECORDS_PATH,
   REQUIRED_OPERATIONAL_APPROVAL_RECORD_TYPES,
 } from "../scripts/check-operational-approval-records.mjs";
+import type { ProductionOnboardingReadiness } from "../scripts/check-production-onboarding.mjs";
 
 const tempDirs: string[] = [];
 
@@ -140,6 +141,62 @@ function readyDesktopPublish() {
   };
 }
 
+function readyProductionOnboarding(valid = true): ProductionOnboardingReadiness {
+  return {
+    valid,
+    errors: valid ? [] : ["operator checklist status must be APPROVED"],
+    packageVersion: "0.3.49",
+    onboardingDir: "ops/private/production-onboarding",
+    requiredFiles: [
+      { fileName: "README.md", status: "FOUND" },
+      { fileName: "operator-checklist.json", status: "FOUND" },
+      { fileName: "storage-decision.template.json", status: "FOUND" },
+      { fileName: "trusted-key-candidate.example.json", status: "FOUND" },
+    ],
+    serverEnv: {
+      fileStatus: "FOUND",
+      JIUM_SERVER_ROUTES: "TRUE",
+      INSTITUTION_SESSION_SECRET: "SET",
+      INSTITUTION_ALLOWED_ORIGINS: "SET",
+      storageStatus: valid ? "READY" : "BLOCKED",
+    },
+    approvalRecords: {
+      valid,
+      errors: valid ? [] : ["operational approval records file missing"],
+      packageVersion: "0.3.49",
+      expectedReleaseTag: "v0.3.49",
+      sourceSummary: {
+        JIUM_OPERATIONAL_APPROVAL_RECORDS: "SET",
+        fileStatus: valid ? "FOUND" : "MISSING",
+      },
+      recordTypesPresent: valid ? [...REQUIRED_OPERATIONAL_APPROVAL_RECORD_TYPES] : [],
+      requiredRecordStatus: Object.fromEntries(
+        REQUIRED_OPERATIONAL_APPROVAL_RECORD_TYPES.map((type) => [type, valid ? "APPROVED" : "MISSING"]),
+      ) as ProductionOnboardingReadiness["approvalRecords"]["requiredRecordStatus"],
+    },
+    checklist: {
+      valid,
+      approvedRecordCount: valid ? 5 : 0,
+      requiredRecordCount: 5,
+      presentRecordIds: [
+        "desktop-signing-evidence",
+        "legal-go-live-approval",
+        "server-origin-approval",
+        "server-storage-decision",
+        "trusted-public-key-approval",
+      ],
+    },
+    storageDecision: {
+      valid,
+      approvedSectionCount: valid ? 2 : 0,
+      requiredSectionCount: 2,
+    },
+    trustedKeyExample: {
+      valid: true,
+    },
+  };
+}
+
 afterEach(async () => {
   await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
 });
@@ -179,6 +236,7 @@ describe("operational go-live readiness", () => {
       validations: {
         serverRuntime: readyServerRuntime(),
         desktopPublish: readyDesktopPublish(),
+        productionOnboarding: readyProductionOnboarding(),
       },
     });
     const report = buildOperationalGoLiveReport(readiness, { generatedAt: "2026-06-01T00:00:00.000Z" });
@@ -200,6 +258,7 @@ describe("operational go-live readiness", () => {
       validations: {
         serverRuntime: { ...readyServerRuntime(), valid: false, errors: ["trusted key registry: missing active key"] },
         desktopPublish: { ...readyDesktopPublish(), valid: false, errors: ["desktop publish update feed: missing latest.yml"] },
+        productionOnboarding: readyProductionOnboarding(false),
       },
     });
     const report = buildOperationalGoLiveReport(readiness, { generatedAt: "2026-06-01T00:00:00.000Z" });
@@ -207,11 +266,13 @@ describe("operational go-live readiness", () => {
     expect(readiness.valid).toBe(false);
     expect(readiness.errors.join("\n")).toContain("JIUM_GO_LIVE_APPROVAL");
     expect(readiness.errors.join("\n")).toContain("operational approval records");
+    expect(readiness.errors.join("\n")).toContain("operational production onboarding");
     expect(readiness.errors.join("\n")).toContain("operational server runtime");
     expect(readiness.errors.join("\n")).toContain("operational desktop publish");
     expect(report.checks.filter((check) => check.status === "BLOCKED").map((check) => check.id)).toEqual(
       expect.arrayContaining(["human-go-live-approval", "server-runtime", "desktop-publish"]),
     );
     expect(report.checks.filter((check) => check.status === "BLOCKED").map((check) => check.id)).toContain("approval-records");
+    expect(report.checks.filter((check) => check.status === "BLOCKED").map((check) => check.id)).toContain("production-onboarding");
   });
 });

@@ -19,6 +19,11 @@ import {
   validateOperationalApprovalRecords,
 } from "./check-operational-approval-records.mjs";
 import {
+  buildProductionOnboardingReport,
+  formatProductionOnboardingMarkdown,
+  validateProductionOnboarding,
+} from "./check-production-onboarding.mjs";
+import {
   buildServerRuntimeReadinessReport,
   formatServerRuntimeReadinessMarkdown,
   validateServerRuntimeReadiness,
@@ -120,27 +125,35 @@ export async function buildOperationalHandoffBundle({
     (await validateDesktopPublishReadiness({ root, env, platform, feedDir: path.join(root, "dist", "desktop") }));
   const approvalRecords =
     validations?.approvalRecords || validations?.goLive?.approvalRecords || validateOperationalApprovalRecords({ root, env });
+  const productionOnboarding =
+    validations?.productionOnboarding || validations?.goLive?.productionOnboarding || validateProductionOnboarding({ root, env });
   const goLive =
     validations?.goLive ||
     (await validateOperationalGoLive({
       root,
       env,
       platform,
-      validations: { serverRuntime, desktopPublish, approvalRecords },
+      validations: { serverRuntime, desktopPublish, approvalRecords, productionOnboarding },
     }));
 
   const serverReport = buildServerRuntimeReadinessReport(serverRuntime, { generatedAt });
   const serverStorageReport = buildServerStorageReadinessReport(serverRuntime.storage, { generatedAt });
   const desktopReport = buildDesktopPublishReadinessReport(desktopPublish, { generatedAt });
   const approvalRecordsReport = buildOperationalApprovalRecordsReport(approvalRecords, { generatedAt });
+  const productionOnboardingReport = buildProductionOnboardingReport(productionOnboarding, { generatedAt });
   const goLiveReport = buildOperationalGoLiveReport(goLive, { generatedAt });
 
   const summary = {
     schema: "jium-operational-handoff-bundle-v1",
     generatedAt,
-    status: [serverReport.status, serverStorageReport.status, desktopReport.status, approvalRecordsReport.status, goLiveReport.status].every(
-      (status) => status === "READY",
-    )
+    status: [
+      serverReport.status,
+      serverStorageReport.status,
+      desktopReport.status,
+      approvalRecordsReport.status,
+      productionOnboardingReport.status,
+      goLiveReport.status,
+    ].every((status) => status === "READY")
       ? "READY"
       : "BLOCKED",
     version: readPackageVersion(root),
@@ -151,6 +164,7 @@ export async function buildOperationalHandoffBundle({
       { id: "server-storage-readiness", status: serverStorageReport.status, errorCount: serverStorageReport.errors.length },
       { id: "desktop-publish-readiness", status: desktopReport.status, errorCount: desktopReport.errors.length },
       { id: "operational-approval-records", status: approvalRecordsReport.status, errorCount: approvalRecordsReport.errors.length },
+      { id: "production-onboarding-readiness", status: productionOnboardingReport.status, errorCount: productionOnboardingReport.errors.length },
       { id: "operational-go-live", status: goLiveReport.status, errorCount: goLiveReport.errors.length },
     ],
     reports: {
@@ -162,6 +176,8 @@ export async function buildOperationalHandoffBundle({
       desktopPublishMarkdown: "desktop-publish-readiness-report.md",
       approvalRecordsJson: "operational-approval-records-report.json",
       approvalRecordsMarkdown: "operational-approval-records-report.md",
+      productionOnboardingJson: "production-onboarding-readiness-report.json",
+      productionOnboardingMarkdown: "production-onboarding-readiness-report.md",
       goLiveJson: "operational-go-live-report.json",
       goLiveMarkdown: "operational-go-live-report.md",
       runbookMarkdown: "operational-handoff-runbook.md",
@@ -172,6 +188,7 @@ export async function buildOperationalHandoffBundle({
       "Access-controlled, repo-external, writable audit ledger and account registry storage decision",
       "Signed desktop installer, blockmap, and update metadata from the same build",
       "GitHub Release publish approval and asset review record",
+      "Completed private production onboarding checklist, storage decision, and trusted-key candidate review evidence",
       "Private operational approval records packet for legal, data retention, support route, incident-response, release evidence, and go-live approval",
     ],
     nextActions: uniqueActions(
@@ -179,6 +196,7 @@ export async function buildOperationalHandoffBundle({
       serverStorageReport.nextActions,
       desktopReport.nextActions,
       approvalRecordsReport.nextActions,
+      productionOnboardingReport.nextActions,
       goLiveReport.nextActions,
     ),
     safetyNotes: [
@@ -196,6 +214,8 @@ export async function buildOperationalHandoffBundle({
   writeText(path.join(bundleDir, "desktop-publish-readiness-report.md"), formatDesktopPublishReadinessMarkdown(desktopReport));
   writeJson(path.join(bundleDir, "operational-approval-records-report.json"), approvalRecordsReport);
   writeText(path.join(bundleDir, "operational-approval-records-report.md"), formatOperationalApprovalRecordsMarkdown(approvalRecordsReport));
+  writeJson(path.join(bundleDir, "production-onboarding-readiness-report.json"), productionOnboardingReport);
+  writeText(path.join(bundleDir, "production-onboarding-readiness-report.md"), formatProductionOnboardingMarkdown(productionOnboardingReport));
   writeJson(path.join(bundleDir, "operational-go-live-report.json"), goLiveReport);
   writeText(path.join(bundleDir, "operational-go-live-report.md"), formatOperationalGoLiveMarkdown(goLiveReport));
   writeJson(path.join(bundleDir, "operational-handoff-summary.json"), summary);

@@ -11,6 +11,10 @@ import {
   validateOperationalApprovalRecords,
 } from "./check-operational-approval-records.mjs";
 import {
+  buildProductionOnboardingReport,
+  validateProductionOnboarding,
+} from "./check-production-onboarding.mjs";
+import {
   buildServerRuntimeReadinessReport,
   validateServerRuntimeReadiness,
 } from "./check-server-readiness.mjs";
@@ -82,6 +86,9 @@ function goLiveNextActionFor(error) {
   if (error.includes("desktop publish")) {
     return "Resolve desktop publish blockers, including signed artifacts, update feed, and release upload approval.";
   }
+  if (error.includes("production onboarding")) {
+    return "Complete the private production onboarding checklist and run npm run ops:onboarding:check.";
+  }
   if (error.includes("approval records")) {
     return "Create and validate the private operational approval records packet before go-live.";
   }
@@ -130,6 +137,7 @@ export async function validateOperationalGoLive({
     validations?.desktopPublish ||
     (await validateDesktopPublishReadiness({ root, env, platform, feedDir: path.join(root, "dist", "desktop") }));
   const approvalRecords = validations?.approvalRecords || validateOperationalApprovalRecords({ root, env });
+  const productionOnboarding = validations?.productionOnboarding || validateProductionOnboarding({ root, env });
 
   if (!serverRuntime.valid) {
     serverRuntime.errors.forEach((error) => errors.push(`operational server runtime: ${error}`));
@@ -140,6 +148,9 @@ export async function validateOperationalGoLive({
   if (!approvalRecords.valid) {
     approvalRecords.errors.forEach((error) => errors.push(`operational approval records: ${error}`));
   }
+  if (!productionOnboarding.valid) {
+    errors.push(`operational production onboarding readiness failed: ${productionOnboarding.errors.length} error(s)`);
+  }
 
   return {
     valid: errors.length === 0,
@@ -148,6 +159,7 @@ export async function validateOperationalGoLive({
     serverRuntime,
     desktopPublish,
     approvalRecords,
+    productionOnboarding,
   };
 }
 
@@ -156,6 +168,7 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
   const serverReport = buildServerRuntimeReadinessReport(readiness.serverRuntime, { generatedAt });
   const desktopReport = buildDesktopPublishReadinessReport(readiness.desktopPublish, { generatedAt });
   const approvalRecordsReport = buildOperationalApprovalRecordsReport(readiness.approvalRecords, { generatedAt });
+  const productionOnboardingReport = buildProductionOnboardingReport(readiness.productionOnboarding, { generatedAt });
   const checks = [
     {
       id: "human-go-live-approval",
@@ -201,6 +214,11 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
       status: readiness.approvalRecords.valid ? "PASS" : "BLOCKED",
     },
     {
+      id: "production-onboarding",
+      label: "Private production onboarding checklist is complete and redacted",
+      status: readiness.productionOnboarding.valid ? "PASS" : "BLOCKED",
+    },
+    {
       id: "server-runtime",
       label: "Institution server runtime readiness passes",
       status: readiness.serverRuntime.valid ? "PASS" : "BLOCKED",
@@ -220,8 +238,12 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
       serverStatus: serverReport.status,
       desktopPublishStatus: desktopReport.status,
       approvalRecordsStatus: approvalRecordsReport.status,
+      productionOnboardingStatus: productionOnboardingReport.status,
       approvedApprovalRecordCount: approvalRecordsReport.summary.approvedRecordCount,
       requiredApprovalRecordCount: approvalRecordsReport.summary.requiredRecordCount,
+      onboardingErrorCount: productionOnboardingReport.summary.errorCount,
+      onboardingChecklistApprovedRecordCount: productionOnboardingReport.summary.checklistApprovedRecordCount,
+      onboardingChecklistRequiredRecordCount: productionOnboardingReport.summary.checklistRequiredRecordCount,
       activeTrustedKeyCount: serverReport.summary.activeKeyCount,
       desktopReleaseTag: desktopReport.summary.releaseTag,
       desktopPackageVersion: desktopReport.summary.packageVersion,
@@ -250,7 +272,9 @@ export function formatOperationalGoLiveMarkdown(report) {
     `- Server status: ${report.summary.serverStatus}`,
     `- Desktop publish status: ${report.summary.desktopPublishStatus}`,
     `- Approval records status: ${report.summary.approvalRecordsStatus}`,
+    `- Production onboarding status: ${report.summary.productionOnboardingStatus}`,
     `- Approval records: ${report.summary.approvedApprovalRecordCount}/${report.summary.requiredApprovalRecordCount}`,
+    `- Onboarding checklist: ${report.summary.onboardingChecklistApprovedRecordCount}/${report.summary.onboardingChecklistRequiredRecordCount}`,
     `- Active trusted keys: ${report.summary.activeTrustedKeyCount}`,
     `- Desktop package version: ${report.summary.desktopPackageVersion || "MISSING"}`,
     `- Desktop release tag: ${report.summary.desktopReleaseTag || "MISSING"}`,
