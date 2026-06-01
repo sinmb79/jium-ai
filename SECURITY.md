@@ -140,11 +140,17 @@ npm run security:server-readiness:markdown -- --output ./server-readiness.md
 ```bash
 npm run desktop:export
 npm run desktop:release:check
+npm run desktop:distribution:check
+npm run desktop:update-feed:check -- --feed-dir ./dist/desktop
 npm run desktop:release:json -- --output ./desktop-readiness.json
 npm run desktop:release:markdown -- --output ./desktop-readiness.md
 ```
 
 `desktop:release:check`는 승인된 release channel, HTTPS updater endpoint, 최소 1개 플랫폼 signing profile이 설정되기 전까지 차단되어야 정상입니다. JSON/Markdown 리포트는 설정 존재 여부만 표시하며 updater URL 원문, signing certificate path, certificate hash, Apple team ID, Linux signing key ID, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호를 저장하지 않습니다.
+
+`desktop:distribution:check`는 이미 생성된 로컬 데스크톱 산출물의 실행 파일, `app.asar`, 필수 정적 export, OS 보안 저장소 브리지, `electron-updater` 포함 여부를 확인하고 SHA-256 지문을 기록합니다. 이 리포트는 artifact 이름·크기·digest만 남기며 로컬 절대경로나 피해자 지표를 저장하지 않습니다.
+
+`desktop:update-feed:check`는 generic updater metadata(`latest.yml`, macOS는 `latest-mac.yml`, Linux는 `latest-linux.yml`)와 같은 폴더의 artifact가 같은 빌드에서 나온 것인지 확인합니다. version, releaseDate, path, files 목록, SHA-512, 파일 크기가 일치해야 하며, metadata가 없으면 BLOCKED가 정상입니다. signed installer와 update metadata를 다른 빌드에서 섞어 올리면 안 됩니다.
 
 ### 기기 안전점검
 

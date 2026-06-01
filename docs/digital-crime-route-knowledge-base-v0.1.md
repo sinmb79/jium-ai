@@ -316,3 +316,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Added a package-size guard to reject unexpectedly large desktop `app.asar` output, preventing accidental root dependency inclusion from being treated as release-ready.
 - Moved the OS secure-vault bridge behind Electron main-process IPC, so packaged desktop builds do not rely on spawning the app executable as if it were Node.js.
 - Desktop update checks remain opt-in and require an explicit HTTPS update URL plus release channel; readiness reports continue to redact endpoint and signing details.
+
+## Implemented in v3.45
+
+- Added `scripts/check-desktop-distribution.mjs` to validate local desktop artifacts, required `app.asar` entries, forbidden root web dependencies, artifact sizes, and SHA-256 fingerprints.
+- Added `scripts/check-desktop-update-feed.mjs` to validate generic updater metadata such as `latest.yml`, artifact paths, package version, SHA-512 checksums, file sizes, and release dates.
+- Added `desktop:distribution:check` and `desktop:update-feed:check` scripts so release operators can separate local package integrity from signed installer/update-feed readiness.
+- The new distribution and update-feed reports use relative artifact names and checksum status only; they do not store update URLs, certificate paths, signing key IDs, victim indicators, raw URLs, invite links, onion addresses, emails, or phone numbers.
+- The current unsigned local package can pass distribution integrity checks, while update-feed readiness must remain BLOCKED until signed installer metadata is generated and uploaded together.

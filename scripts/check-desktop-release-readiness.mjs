@@ -11,6 +11,8 @@ export const REQUIRED_DESKTOP_FILES = [
   "scripts/native-secure-vault-bridge.mjs",
   "scripts/prepare-desktop-app-dir.mjs",
   "scripts/package-desktop-dir.mjs",
+  "scripts/check-desktop-distribution.mjs",
+  "scripts/check-desktop-update-feed.mjs",
 ];
 
 export const REQUIRED_DESKTOP_PACKAGE_SCRIPTS = [
@@ -19,6 +21,8 @@ export const REQUIRED_DESKTOP_PACKAGE_SCRIPTS = [
   "desktop:export",
   "desktop:package:dir",
   "desktop:package:signed",
+  "desktop:distribution:check",
+  "desktop:update-feed:check",
   "desktop:release:check",
   "desktop:release:json",
   "desktop:release:markdown",
@@ -91,6 +95,9 @@ function nextActionFor(error) {
   }
   if (error.includes("desktop staging")) {
     return "Restore the lean Electron app staging step before packaging.";
+  }
+  if (error.includes("distribution") || error.includes("update feed")) {
+    return "Restore the desktop distribution and update-feed validation scripts.";
   }
   if (error.includes("static export")) {
     return "Run npm run desktop:export and review the generated out/jium-desktop-manifest.json.";

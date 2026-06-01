@@ -702,3 +702,19 @@
   - 패키지 환경에서도 Windows DPAPI, macOS Keychain, Linux Secret Service 연결 경로를 유지할 수 있게 했다.
 - 검증 범위
   - 스테이징 package manifest, 경량 패키징 helper, archive 크기 guard, main-process vault IPC, release readiness 검사를 테스트했다.
+
+## v3.45 데스크톱 배포 산출물과 업데이트 피드 검증
+
+- 배포 산출물 검증
+  - `desktop:distribution:check`는 `dist/desktop` 산출물의 실행 파일, `app.asar`, 필수 정적 export, OS 보안 저장소 브리지, `electron-updater` 포함 여부를 확인한다.
+  - `app.asar` 안에 Next.js, React, Prisma 같은 루트 웹 의존성이 다시 들어가면 BLOCKED로 판단한다.
+  - 실행 파일과 `app.asar`의 byte size와 SHA-256 지문을 기록해 release handoff와 재현성 검토에 사용할 수 있게 했다.
+- 업데이트 피드 검증
+  - `desktop:update-feed:check`는 generic updater metadata(`latest.yml`, macOS `latest-mac.yml`, Linux `latest-linux.yml`)를 검사한다.
+  - package version, releaseDate, path, files 목록, artifact 존재, SHA-512, file size가 같은 빌드 기준으로 일치해야 한다.
+  - metadata가 없거나 artifact와 checksum/size가 맞지 않으면 signed release 전 단계에서 BLOCKED로 남긴다.
+- 개인정보 최소화
+  - 두 리포트 모두 상대 artifact 이름, 크기, checksum 또는 checksum match 상태만 저장한다.
+  - update endpoint 원문, signing certificate path/hash, team ID, signing key ID, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호는 저장하지 않는다.
+- 검증 범위
+  - asar 내부 필수 항목, 금지 의존성, redacted distribution report, updater YAML parser, checksum/size mismatch 차단을 테스트했다.
