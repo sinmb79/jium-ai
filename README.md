@@ -369,3 +369,15 @@ npm run security:headers:check -- https://your-approved-domain.example --markdow
 ```
 
 The report schema is `jium-security-header-url-audit-v1`. Reports intentionally omit the raw target URL, host, path, query, and response header values, while still recording whether the public endpoint is HTTPS-ready, which required headers passed, and which checks block launch. Local HTTP is accepted only for localhost-based automated tests. Details are in [Hosted Security Header Audit v0.3.67](docs/hosted-security-header-audit-v0.3.67.md).
+
+## v0.3.68 Hosted Security Header Go-Live Gate
+
+Final go-live now requires a READY hosted security header audit report:
+
+```bash
+npm run security:headers:check -- https://your-approved-domain.example --json --output dist/security-header-audit.json
+$env:JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT="dist/security-header-audit.json"
+npm run ops:go-live:check
+```
+
+The go-live report stores only whether the audit report is present and READY, plus redacted counts. It does not store the audit report path, public URL, host, path, query, response header values, support contact, incident owner, tokens, or victim indicators. Details are in [Hosted Security Header Go-Live Gate v0.3.68](docs/hosted-security-header-go-live-gate-v0.3.68.md).

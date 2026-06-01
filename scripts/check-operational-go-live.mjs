@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -21,6 +21,7 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
+const HOSTED_SECURITY_HEADER_AUDIT_SCHEMA = "jium-security-header-url-audit-v1";
 
 function present(value) {
   return Boolean(String(value || "").trim());
@@ -41,6 +42,10 @@ function httpsUrlStatus(value) {
   }
 }
 
+function filePresenceStatus(value) {
+  return present(value) ? "SET" : "MISSING";
+}
+
 export function summarizeOperationalGoLiveEnv(env = process.env) {
   return {
     JIUM_GO_LIVE_APPROVAL: approvalStatus(env.JIUM_GO_LIVE_APPROVAL),
@@ -52,6 +57,7 @@ export function summarizeOperationalGoLiveEnv(env = process.env) {
     JIUM_SUPPORT_CONTACT_ROUTE: httpsUrlStatus(env.JIUM_SUPPORT_CONTACT_ROUTE),
     JIUM_INCIDENT_RESPONSE_OWNER: present(env.JIUM_INCIDENT_RESPONSE_OWNER) ? "SET" : "MISSING",
     JIUM_OPERATIONAL_APPROVAL_RECORDS: present(env.JIUM_OPERATIONAL_APPROVAL_RECORDS) ? "SET" : "DEFAULT_PRIVATE_PATH",
+    JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: filePresenceStatus(env.JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT),
   };
 }
 
@@ -79,6 +85,9 @@ function goLiveNextActionFor(error) {
   }
   if (error.includes("JIUM_INCIDENT_RESPONSE_OWNER")) {
     return "Assign an incident response owner before go-live.";
+  }
+  if (error.includes("hosted security header audit")) {
+    return "Run npm run security:headers:check against the approved HTTPS public app URL and attach the READY redacted report before go-live.";
   }
   if (error.includes("server runtime")) {
     return "Resolve server runtime readiness blockers, including trusted keys and server-only env.";
@@ -124,6 +133,118 @@ function envErrors(envSummary) {
   return errors;
 }
 
+function resolvePrivateEvidencePath(root, candidate) {
+  const value = String(candidate || "").trim();
+  if (!value) {
+    return "";
+  }
+  return path.isAbsolute(value) ? value : path.resolve(root, value);
+}
+
+function summarizeHostedSecurityHeaderAudit(report) {
+  return {
+    schema: typeof report?.schema === "string" ? report.schema : "",
+    status: typeof report?.status === "string" ? report.status : "",
+    targetUrlState: typeof report?.summary?.targetUrlState === "string" ? report.summary.targetUrlState : "",
+    fetchState: typeof report?.summary?.fetchState === "string" ? report.summary.fetchState : "",
+    httpStatus: typeof report?.summary?.httpStatus === "number" ? report.summary.httpStatus : null,
+    checkedHeaderCount:
+      typeof report?.summary?.checkedHeaderCount === "number" ? report.summary.checkedHeaderCount : 0,
+    passCount: typeof report?.summary?.passCount === "number" ? report.summary.passCount : 0,
+    failureCount: typeof report?.summary?.failureCount === "number" ? report.summary.failureCount : 0,
+  };
+}
+
+export function validateHostedSecurityHeaderAuditEvidence({ root = repoRoot, env = process.env } = {}) {
+  const reportPath = resolvePrivateEvidencePath(root, env.JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT);
+  const errors = [];
+  let fileStatus = "MISSING";
+  let summary = {
+    schema: "",
+    status: "MISSING",
+    targetUrlState: "",
+    fetchState: "",
+    httpStatus: null,
+    checkedHeaderCount: 0,
+    passCount: 0,
+    failureCount: 0,
+  };
+
+  if (!reportPath) {
+    errors.push("operational hosted security header audit evidence missing: JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT");
+    return {
+      valid: false,
+      errors,
+      sourceSummary: {
+        JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "MISSING",
+        fileStatus,
+        ...summary,
+      },
+    };
+  }
+
+  if (!existsSync(reportPath)) {
+    errors.push("operational hosted security header audit report file missing");
+    return {
+      valid: false,
+      errors,
+      sourceSummary: {
+        JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "SET",
+        fileStatus,
+        ...summary,
+      },
+    };
+  }
+
+  fileStatus = "FOUND";
+  let report;
+  try {
+    report = JSON.parse(readFileSync(reportPath, "utf8"));
+  } catch {
+    errors.push("operational hosted security header audit report is not valid JSON");
+    return {
+      valid: false,
+      errors,
+      sourceSummary: {
+        JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "SET",
+        fileStatus: "INVALID_JSON",
+        ...summary,
+      },
+    };
+  }
+
+  summary = summarizeHostedSecurityHeaderAudit(report);
+
+  if (summary.schema !== HOSTED_SECURITY_HEADER_AUDIT_SCHEMA) {
+    errors.push("operational hosted security header audit report schema is invalid");
+  }
+  if (summary.status !== "READY") {
+    errors.push("operational hosted security header audit report is not READY");
+  }
+  if (summary.targetUrlState !== "HTTPS") {
+    errors.push("operational hosted security header audit report must target HTTPS production hosting");
+  }
+  if (summary.fetchState !== "COMPLETED") {
+    errors.push("operational hosted security header audit report fetch state must be COMPLETED");
+  }
+  if (typeof summary.httpStatus !== "number" || summary.httpStatus >= 400) {
+    errors.push("operational hosted security header audit report HTTP status must be below 400");
+  }
+  if (summary.failureCount !== 0) {
+    errors.push("operational hosted security header audit report has blocking header failures");
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    sourceSummary: {
+      JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "SET",
+      fileStatus,
+      ...summary,
+    },
+  };
+}
+
 export async function validateOperationalGoLive({
   root = repoRoot,
   env = process.env,
@@ -138,6 +259,8 @@ export async function validateOperationalGoLive({
     (await validateDesktopPublishReadiness({ root, env, platform, feedDir: path.join(root, "dist", "desktop") }));
   const approvalRecords = validations?.approvalRecords || validateOperationalApprovalRecords({ root, env });
   const productionOnboarding = validations?.productionOnboarding || validateProductionOnboarding({ root, env });
+  const hostedSecurityHeaderAudit =
+    validations?.hostedSecurityHeaderAudit || validateHostedSecurityHeaderAuditEvidence({ root, env });
 
   if (!serverRuntime.valid) {
     serverRuntime.errors.forEach((error) => errors.push(`operational server runtime: ${error}`));
@@ -151,6 +274,9 @@ export async function validateOperationalGoLive({
   if (!productionOnboarding.valid) {
     errors.push(`operational production onboarding readiness failed: ${productionOnboarding.errors.length} error(s)`);
   }
+  if (!hostedSecurityHeaderAudit.valid) {
+    hostedSecurityHeaderAudit.errors.forEach((error) => errors.push(`operational hosted security header audit: ${error}`));
+  }
 
   return {
     valid: errors.length === 0,
@@ -160,6 +286,7 @@ export async function validateOperationalGoLive({
     desktopPublish,
     approvalRecords,
     productionOnboarding,
+    hostedSecurityHeaderAudit,
   };
 }
 
@@ -169,6 +296,7 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
   const desktopReport = buildDesktopPublishReadinessReport(readiness.desktopPublish, { generatedAt });
   const approvalRecordsReport = buildOperationalApprovalRecordsReport(readiness.approvalRecords, { generatedAt });
   const productionOnboardingReport = buildProductionOnboardingReport(readiness.productionOnboarding, { generatedAt });
+  const hostedSecurityHeaderAuditStatus = readiness.hostedSecurityHeaderAudit.valid ? "READY" : "BLOCKED";
   const checks = [
     {
       id: "human-go-live-approval",
@@ -209,6 +337,11 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
           : "BLOCKED",
     },
     {
+      id: "hosted-security-headers",
+      label: "Hosted public app response security headers are verified by redacted evidence",
+      status: readiness.hostedSecurityHeaderAudit.valid ? "PASS" : "BLOCKED",
+    },
+    {
       id: "approval-records",
       label: "Private operational approval records packet is complete and redacted",
       status: readiness.approvalRecords.valid ? "PASS" : "BLOCKED",
@@ -239,6 +372,7 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
       desktopPublishStatus: desktopReport.status,
       approvalRecordsStatus: approvalRecordsReport.status,
       productionOnboardingStatus: productionOnboardingReport.status,
+      hostedSecurityHeaderAuditStatus,
       approvedApprovalRecordCount: approvalRecordsReport.summary.approvedRecordCount,
       requiredApprovalRecordCount: approvalRecordsReport.summary.requiredRecordCount,
       onboardingErrorCount: productionOnboardingReport.summary.errorCount,
@@ -248,6 +382,7 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
       desktopReleaseTag: desktopReport.summary.releaseTag,
       desktopPackageVersion: desktopReport.summary.packageVersion,
       desktopPublishArtifactCount: desktopReport.summary.publishArtifactCount,
+      hostedSecurityHeaderFailureCount: readiness.hostedSecurityHeaderAudit.sourceSummary.failureCount,
     },
     envSummary: readiness.envSummary,
     checks,
@@ -257,7 +392,7 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
       : ["Proceed with production launch using the approved release runbook."],
     safetyNotes: [
       "This report stores approval states, URL validity states, counts, release tag, and package version only.",
-      "It does not store public URL values, support contact details, incident owner names, secrets, tokens, certificate material, victim indicators, raw URLs, invite links, onion addresses, emails, or phone numbers.",
+      "It does not store public URL values, hosted audit report paths, support contact details, incident owner names, secrets, tokens, certificate material, victim indicators, raw URLs, invite links, onion addresses, emails, or phone numbers.",
       "A READY result is a technical and operating gate summary; it must still be archived with the private human approval records for the release.",
     ],
   };
@@ -273,12 +408,14 @@ export function formatOperationalGoLiveMarkdown(report) {
     `- Desktop publish status: ${report.summary.desktopPublishStatus}`,
     `- Approval records status: ${report.summary.approvalRecordsStatus}`,
     `- Production onboarding status: ${report.summary.productionOnboardingStatus}`,
+    `- Hosted security header audit status: ${report.summary.hostedSecurityHeaderAuditStatus}`,
     `- Approval records: ${report.summary.approvedApprovalRecordCount}/${report.summary.requiredApprovalRecordCount}`,
     `- Onboarding checklist: ${report.summary.onboardingChecklistApprovedRecordCount}/${report.summary.onboardingChecklistRequiredRecordCount}`,
     `- Active trusted keys: ${report.summary.activeTrustedKeyCount}`,
     `- Desktop package version: ${report.summary.desktopPackageVersion || "MISSING"}`,
     `- Desktop release tag: ${report.summary.desktopReleaseTag || "MISSING"}`,
     `- Desktop publish assets: ${report.summary.desktopPublishArtifactCount}`,
+    `- Hosted security header failures: ${report.summary.hostedSecurityHeaderFailureCount}`,
     "",
     "## Checks",
     ...report.checks.map((check) => `- ${check.status} ${check.id}: ${check.label}`),

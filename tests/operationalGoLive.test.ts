@@ -54,6 +54,38 @@ async function writeApprovalPacket(root: string, version = "0.3.49") {
   );
 }
 
+async function writeHostedSecurityHeaderAudit(root: string, status: "READY" | "BLOCKED" = "READY") {
+  const filePath = path.join(root, "dist", "security-header-audit.json");
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(
+    filePath,
+    JSON.stringify(
+      {
+        schema: "jium-security-header-url-audit-v1",
+        generatedAt: "2026-06-01T00:00:00.000Z",
+        status,
+        summary: {
+          targetUrlState: "HTTPS",
+          fetchState: "COMPLETED",
+          httpStatus: 200,
+          checkedHeaderCount: 6,
+          passCount: status === "READY" ? 6 : 0,
+          failureCount: status === "READY" ? 0 : 6,
+          missingCount: status === "READY" ? 0 : 6,
+          mismatchCount: 0,
+        },
+        checks: [],
+        errors: status === "READY" ? [] : [{ code: "SECURITY_HEADER_MISSING", header: "Content-Security-Policy" }],
+        safetyNotes: ["The raw target URL, host, path, query, and response header values are intentionally omitted."],
+      },
+      null,
+      2,
+    ),
+    "utf8",
+  );
+  return filePath;
+}
+
 function readyServerRuntime() {
   return {
     valid: true,
@@ -223,19 +255,23 @@ describe("operational go-live readiness", () => {
       JIUM_PRIVACY_NOTICE_URL: "http://privacy.example.com",
       JIUM_SUPPORT_CONTACT_ROUTE: "support@example.com",
       JIUM_INCIDENT_RESPONSE_OWNER: "owner@example.com",
+      JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "C:/private/prod/security-header-audit.json",
     } as unknown as NodeJS.ProcessEnv);
 
     expect(summary.JIUM_GO_LIVE_APPROVAL).toBe("APPROVED");
     expect(summary.JIUM_PUBLIC_APP_URL).toBe("SET_HTTPS");
     expect(summary.JIUM_PRIVACY_NOTICE_URL).toBe("SET_NOT_HTTPS");
     expect(summary.JIUM_SUPPORT_CONTACT_ROUTE).toBe("SET_INVALID");
+    expect(summary.JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT).toBe("SET");
     expect(JSON.stringify(summary)).not.toContain("prod.example.com");
     expect(JSON.stringify(summary)).not.toContain("support@example.com");
+    expect(JSON.stringify(summary)).not.toContain("security-header-audit.json");
   });
 
   it("accepts a fully approved server and desktop launch profile", async () => {
     const root = await tempRepo();
     await writeApprovalPacket(root);
+    const hostedSecurityHeaderAudit = await writeHostedSecurityHeaderAudit(root);
     const readiness = await validateOperationalGoLive({
       root,
       env: {
@@ -247,6 +283,7 @@ describe("operational go-live readiness", () => {
         JIUM_PRIVACY_NOTICE_URL: "https://prod.example.com/privacy",
         JIUM_SUPPORT_CONTACT_ROUTE: "https://prod.example.com/support",
         JIUM_INCIDENT_RESPONSE_OWNER: "owner-redacted",
+        JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: hostedSecurityHeaderAudit,
       } as unknown as NodeJS.ProcessEnv,
       validations: {
         serverRuntime: readyServerRuntime(),
@@ -259,10 +296,49 @@ describe("operational go-live readiness", () => {
 
     expect(readiness.valid).toBe(true);
     expect(report.status).toBe("READY");
+    expect(report.summary.hostedSecurityHeaderAuditStatus).toBe("READY");
     expect(report.summary.approvalRecordsStatus).toBe("READY");
+    expect(report.checks.find((check) => check.id === "hosted-security-headers")?.status).toBe("PASS");
     expect(markdown).toContain("JiumAI Operational Go-Live Report");
     expect(markdown).not.toContain("prod.example.com");
     expect(markdown).not.toContain("owner-redacted");
+    expect(markdown).not.toContain("security-header-audit.json");
+  });
+
+  it("blocks go-live when hosted security header audit evidence is missing or blocked", async () => {
+    const root = await tempRepo();
+    await writeApprovalPacket(root);
+    const blockedHeaderAudit = await writeHostedSecurityHeaderAudit(root, "BLOCKED");
+    const baseEnv = {
+      JIUM_GO_LIVE_APPROVAL: "APPROVED",
+      JIUM_LEGAL_REVIEW_APPROVAL: "APPROVED",
+      JIUM_RELEASE_EVIDENCE_REVIEW: "APPROVED",
+      JIUM_DATA_RETENTION_POLICY_ACK: "APPROVED",
+      JIUM_PUBLIC_APP_URL: "https://prod.example.com/jium",
+      JIUM_PRIVACY_NOTICE_URL: "https://prod.example.com/privacy",
+      JIUM_SUPPORT_CONTACT_ROUTE: "https://prod.example.com/support",
+      JIUM_INCIDENT_RESPONSE_OWNER: "owner-redacted",
+    } as unknown as NodeJS.ProcessEnv;
+    const validations = {
+      serverRuntime: readyServerRuntime(),
+      desktopPublish: readyDesktopPublish(),
+      productionOnboarding: readyProductionOnboarding(),
+    };
+
+    const missing = await validateOperationalGoLive({ root, env: baseEnv, validations });
+    const blocked = await validateOperationalGoLive({
+      root,
+      env: { ...baseEnv, JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: blockedHeaderAudit },
+      validations,
+    });
+    const blockedReport = buildOperationalGoLiveReport(blocked, { generatedAt: "2026-06-01T00:00:00.000Z" });
+
+    expect(missing.valid).toBe(false);
+    expect(missing.errors.join("\n")).toContain("operational hosted security header audit evidence missing");
+    expect(blocked.valid).toBe(false);
+    expect(blocked.errors.join("\n")).toContain("operational hosted security header audit report is not READY");
+    expect(blockedReport.summary.hostedSecurityHeaderAuditStatus).toBe("BLOCKED");
+    expect(blockedReport.checks.find((check) => check.id === "hosted-security-headers")?.status).toBe("BLOCKED");
   });
 
   it("blocks missing approvals and downstream readiness failures", async () => {

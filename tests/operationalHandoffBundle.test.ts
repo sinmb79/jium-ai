@@ -201,11 +201,28 @@ function goLive(valid = true) {
       JIUM_SUPPORT_CONTACT_ROUTE: "SET_HTTPS" as const,
       JIUM_INCIDENT_RESPONSE_OWNER: "SET" as const,
       JIUM_OPERATIONAL_APPROVAL_RECORDS: "SET" as const,
+      JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "SET" as const,
     },
     serverRuntime: serverRuntime(valid),
     desktopPublish: desktopPublish(valid),
     approvalRecords: approvalRecords(valid),
     productionOnboarding: productionOnboarding(valid),
+    hostedSecurityHeaderAudit: {
+      valid: true,
+      errors: [],
+      sourceSummary: {
+        JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "SET" as const,
+        fileStatus: "FOUND" as const,
+        schema: "jium-security-header-url-audit-v1",
+        status: "READY",
+        targetUrlState: "HTTPS",
+        fetchState: "COMPLETED",
+        httpStatus: 200,
+        checkedHeaderCount: 6,
+        passCount: 6,
+        failureCount: 0,
+      },
+    },
   };
 }
 
