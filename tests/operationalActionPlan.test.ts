@@ -142,6 +142,9 @@ describe("operational action plan", () => {
     expect(plan.runOrder.find((entry) => entry.phaseId === "desktop-release")?.verificationCommands).toContain(
       "npm run desktop:release-env:apply -- --channel <approved-release-channel> --update-url <approved-https-update-url> --publish-approval-ref <pseudonymous-desktop-publish-approval-reference>",
     );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "desktop-release")?.verificationCommands).toContain(
+      "npm run desktop:release:digest-evidence -- --feed-dir <signed-release-folder>",
+    );
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
       "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
     );
@@ -167,6 +170,7 @@ describe("operational action plan", () => {
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:release-dossier"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:approvals:digest-evidence"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "production-onboarding")?.actions.some((action) => action.action.includes("ops:onboarding:digest-evidence"))).toBe(true);
+    expect(plan.phases.find((phase) => phase.id === "desktop-release")?.actions.some((action) => action.action.includes("desktop:release:digest-evidence"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:go-live:env:apply"))).toBe(
       false,
     );

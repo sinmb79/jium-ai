@@ -96,7 +96,7 @@ function goLiveNextActionFor(error) {
     return "Resolve server runtime readiness blockers, including trusted keys and server-only env.";
   }
   if (error.includes("desktop publish")) {
-    return "Resolve desktop publish blockers, including signed artifacts, update feed, and release upload approval.";
+    return "Resolve desktop publish blockers, build npm run desktop:release:digest-evidence, and verify signed artifacts, update feed, and release upload approval.";
   }
   if (error.includes("production onboarding")) {
     return "Complete the private production onboarding checklist, build npm run ops:onboarding:digest-evidence, and run npm run ops:onboarding:check.";

@@ -379,6 +379,9 @@ describe("operational go-live readiness", () => {
     expect(report.nextActions).toContain(
       "Complete the private production onboarding checklist, build npm run ops:onboarding:digest-evidence, and run npm run ops:onboarding:check.",
     );
+    expect(report.nextActions).toContain(
+      "Resolve desktop publish blockers, build npm run desktop:release:digest-evidence, and verify signed artifacts, update feed, and release upload approval.",
+    );
     expect(readiness.errors.join("\n")).toContain("operational approval records");
     expect(readiness.errors.join("\n")).toContain("operational production onboarding");
     expect(readiness.errors.join("\n")).toContain("operational server runtime");

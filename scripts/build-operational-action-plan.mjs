@@ -124,12 +124,14 @@ const PHASE_BLUEPRINTS = [
       "npm run desktop:package:signed",
       "npm run desktop:distribution:check",
       "npm run desktop:update-feed:check -- --feed-dir <signed-release-folder>",
+      "npm run desktop:release:digest-evidence -- --feed-dir <signed-release-folder>",
       "npm run desktop:publish:check -- --feed-dir <signed-release-folder>",
     ],
     baseActions: [
       "Apply approved non-secret desktop release env with npm run desktop:release-env:apply before signing checks.",
       "Run the Desktop Signed Release workflow with the release tag that matches package.json.",
       "Keep signing material in GitHub Secrets or an approved signing service, never in the repository.",
+      "Build the signed desktop release evidence digest with npm run desktop:release:digest-evidence before publish approval archive.",
       "Validate installer, blockmap, update metadata, and publish approval before uploading assets.",
     ],
     completionCriteria: [

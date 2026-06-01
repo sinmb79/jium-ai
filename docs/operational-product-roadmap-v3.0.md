@@ -995,3 +995,18 @@
   - report는 file name, role, byte count, SHA-256 digest, unsafe pattern ID만 저장하고 private path, evidence reference, URL, 연락처, secret, victim indicator는 저장하지 않는다.
 - 검증 범위
   - ready private onboarding digest 생성, unsafe value 차단, CLI output path guard, canonical JSON/Markdown write, action-plan run order 연결을 테스트했다.
+
+## v3.87 desktop release evidence digests
+
+- 데스크톱 서명 산출물 digest 묶음
+  - 앱 version을 `0.3.87`로 올리고 `desktop:release:digest-evidence`, JSON, Markdown variants를 추가했다.
+  - signed installer, blockmap, update metadata, desktop release candidate summary를 하나의 aggregate `sha256-*` digest로 묶는다.
+- 운영 연결
+  - desktop-release phase의 verification commands에 digest 생성 단계를 추가했다.
+  - publish approval archive 전에 `desktop:release:digest-evidence -- --feed-dir <signed-release-folder>`를 실행하도록 action plan을 보강했다.
+- 안전 경계
+  - text evidence에 raw URL, 연락처, token, certificate secret, private key, filesystem path가 있으면 aggregate digest를 비운 채 BLOCKED 처리한다.
+  - binary installer는 text scan하지 않고 SHA-256 hash만 기록한다.
+  - report는 file name, role, byte count, SHA-256 digest, unsafe pattern ID만 저장하고 feed directory, update endpoint, certificate material, victim indicator는 저장하지 않는다.
+- 검증 범위
+  - ready signed desktop evidence digest 생성, unsafe text evidence 차단, CLI output path guard, canonical JSON/Markdown write, action-plan run order 연결을 테스트했다.

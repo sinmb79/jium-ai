@@ -573,3 +573,14 @@ npm run ops:onboarding:digest-evidence:json -- --output dist/production-onboardi
 ```
 
 The command hashes reviewed private onboarding files, writes an aggregate `sha256-*` digest for launch evidence archiving, and blocks if those files contain placeholders, raw URLs, contacts, secrets, private key material, phone-like values, or filesystem paths. `.env.server.local` is intentionally excluded because it may contain approved deployment values. Details are in [Production Onboarding Evidence Digests v0.3.86](docs/production-onboarding-evidence-digests-v0.3.86.md).
+
+## v0.3.87 Desktop Release Evidence Digests
+
+Release managers can now create a redacted digest manifest for signed desktop release evidence:
+
+```bash
+npm run desktop:release:digest-evidence -- --feed-dir <signed-release-folder>
+npm run desktop:release:digest-evidence:json -- --feed-dir <signed-release-folder> --output dist/desktop-release-evidence-digests/report.json
+```
+
+The command hashes the signed installer, blockmap, update metadata, and desktop release-candidate summary, then writes an aggregate `sha256-*` digest for the private publish approval archive. It blocks if text evidence contains raw URLs, contacts, tokens, certificate secrets, private key material, phone-like values, or filesystem paths. Details are in [Desktop Release Evidence Digests v0.3.87](docs/desktop-release-evidence-digests-v0.3.87.md).
