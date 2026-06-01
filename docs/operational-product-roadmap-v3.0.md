@@ -2,7 +2,7 @@
 
 작성일: 2026-05-31
 
-최신 구현 메모: v3.56에서 server deployment bundle을 추가했다. 세부 runbook은 `docs/server-deployment-bundle-v0.3.56.md`를 기준으로 한다.
+최신 구현 메모: v3.57에서 production onboarding scaffold를 추가했다. 세부 runbook은 `docs/production-onboarding-v0.3.57.md`를 기준으로 한다.
 
 ## 운영제품 기준
 
@@ -892,3 +892,17 @@
   - 운영 승인, 기관 공개키 승인, 호스팅 승인, 보관정책 승인은 여전히 외부 증빙으로 남는다.
 - 검증 범위
   - ready bundle 생성, redacted summary/runbook, blocked route materialization, dry-run non-write 동작을 테스트했다.
+
+## v3.57 production onboarding scaffold
+
+- 운영 준비 초안 생성
+  - 앱 version을 `0.3.57`로 올리고 `ops:onboarding:init`, `ops:onboarding:json`, `ops:onboarding:markdown`을 추가했다.
+  - `.env.server.local`, `ops/private/operational-approval-records.json`, `ops/private/production-onboarding/*` 템플릿을 한 번에 만든다.
+- 안전한 overwrite 정책
+  - 기존 private 파일은 기본적으로 보존하고 `--force`가 있을 때만 다시 생성한다.
+  - CLI summary에는 relative path와 CREATED/EXISTS 상태만 남기며 generated server session secret은 출력하지 않는다.
+- 외부 승인 연결
+  - operator checklist는 origin approval, trusted public key fingerprint, storage decision, desktop signing evidence, legal go-live approval을 가명 evidence reference로 추적하게 한다.
+  - storage decision과 trusted-key candidate 예시는 실제 승인 후 복사·검증하도록 의도적으로 placeholder 상태로 둔다.
+- 검증 범위
+  - private scaffold 생성, no-overwrite/force overwrite, JSON CLI, secret redaction, relative path 출력, placeholder 유지 동작을 테스트했다.

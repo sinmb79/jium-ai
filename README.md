@@ -153,6 +153,7 @@ npm run build
 - `desktop:release:json`과 `desktop:release:markdown`은 updater URL 원문, 인증서 경로·hash, team ID, signing key ID, 피해자 지표를 저장하지 않는 redacted 인수인계 리포트를 생성
 - 서버 운영 전에는 `npm run security:server-storage`로 감사 원장과 기관 계정 registry 저장소가 repo 외부의 쓰기 가능한 분리 경로인지 확인
 - 서버 배포 증적은 `npm run server:deployment:bundle`로 `dist/server-deployment-bundle`에 모으며, runtime·storage·route materialization 리포트를 함께 검토
+- 운영 준비 초안은 `npm run ops:onboarding:init`로 생성하며, server env·approval records·storage/key checklist를 git 제외 private 경로에 둠
 - 운영 오픈 직전에는 `npm run ops:go-live:check`로 서버 readiness, desktop publish readiness, public HTTPS URL, legal/go-live/data-retention 승인, support/incident-response 지정 여부를 한 번에 확인
 - 운영 인수인계 증적은 `npm run ops:handoff:bundle`로 `dist/operational-handoff-bundle`에 모으며, 서버·데스크톱·go-live 리포트와 redacted runbook을 함께 보관
 - 첫 진단 화면과 사건 보드에는 악성 확장프로그램, 원격제어, 공용 PC, 가해자 접근 가능성을 확인하는 기기 안전점검을 표시
@@ -235,3 +236,13 @@ npm run server:deployment:bundle
 ```
 
 The bundle writes runtime readiness, storage readiness, route materialization, summary, and runbook reports under `dist/server-deployment-bundle`. Reports are redacted and include route file names, counts, version, commit, and readiness states only.
+
+## v0.3.57 Production Onboarding Init
+
+Operators can now create a private go-live preparation scaffold with:
+
+```bash
+npm run ops:onboarding:init
+```
+
+It creates `.env.server.local`, `ops/private/operational-approval-records.json`, and private onboarding checklist/storage/key templates under `ops/private/production-onboarding`. Existing files are not overwritten unless `-- --force` is passed, and command output does not print generated server secrets.

@@ -166,6 +166,7 @@ npm run desktop:release:bundle
 npm run desktop:release:json -- --output ./desktop-readiness.json
 npm run desktop:release:markdown -- --output ./desktop-readiness.md
 npm run ops:approvals:init
+npm run ops:onboarding:init
 npm run ops:approvals:check
 npm run ops:go-live:check
 npm run ops:handoff:bundle
@@ -188,6 +189,8 @@ npm run ops:handoff:bundle
 `ops:approvals:check`는 운영 승인 증빙 packet을 go-live 전에 별도로 검증합니다. packet 경로는 `JIUM_OPERATIONAL_APPROVAL_RECORDS` 또는 git에서 제외된 기본값 `ops/private/operational-approval-records.json`입니다. packet에는 go-live approval, legal review, release evidence review, data retention acknowledgement, support route assignment, incident-response owner assignment에 대한 가명 승인 기록만 남겨야 합니다. report에는 상태와 카운트만 남기며 URL 원문, 연락처, 담당자명, secret, token, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호를 저장하지 않습니다.
 
 `ops:approvals:init`은 위 private packet의 안전한 초안을 생성합니다. 초안에는 `REPLACE-ME` placeholder와 `PENDING_APPROVAL` 상태가 들어가며, validator가 이를 BLOCKED로 처리합니다. 실제 승인 없이 placeholder를 그대로 둔 packet이 go-live를 통과하면 안 됩니다. 기존 packet은 기본적으로 덮어쓰지 않고, 운영자가 의도적으로 `-- --force`를 준 경우에만 다시 생성합니다.
+
+`ops:onboarding:init`은 `.env.server.local`, private approval records packet, storage decision template, trusted-key candidate example, operator checklist를 한 번에 생성합니다. 출력은 상대경로와 CREATED/EXISTS 상태만 표시하며 생성된 server session secret을 출력하지 않습니다. 이 scaffold도 victim indicator, raw URL, invite link, onion 주소, 이메일, 전화번호, password, token, certificate material을 저장하는 용도가 아닙니다.
 
 `ops:go-live:check`는 운영 출시 직전의 종합 게이트입니다. 서버 runtime readiness와 desktop publish readiness가 모두 통과해야 하며, `JIUM_GO_LIVE_APPROVAL=APPROVED`, `JIUM_LEGAL_REVIEW_APPROVAL=APPROVED`, `JIUM_RELEASE_EVIDENCE_REVIEW=APPROVED`, `JIUM_DATA_RETENTION_POLICY_ACK=APPROVED`, HTTPS `JIUM_PUBLIC_APP_URL`, HTTPS `JIUM_PRIVACY_NOTICE_URL`, `JIUM_SUPPORT_CONTACT_ROUTE`, `JIUM_INCIDENT_RESPONSE_OWNER`, private approval records packet이 필요합니다. 리포트에는 URL 원문, support 연락처, 담당자명, secret, token, 인증서 material, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호를 저장하지 않습니다.
 

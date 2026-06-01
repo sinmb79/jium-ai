@@ -407,3 +407,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Route materialization is checked as a dry-run plan and records only relative route template/generated route paths.
 - The bundle remains BLOCKED until server runtime readiness, private storage readiness, and route materialization readiness all pass.
 - Reports exclude server secrets, trusted origin values, storage directory paths, victim indicators, raw URLs, invite links, onion addresses, emails, and phone numbers.
+
+## Implemented in v3.57
+
+- Added `scripts/init-production-onboarding.mjs` and `ops:onboarding:init`.
+- The onboarding command creates `.env.server.local`, private operational approval records, operator checklist, storage decision template, and trusted public-key candidate example.
+- Existing private onboarding files are kept unless `--force` is explicitly passed.
+- The command output records relative paths and CREATED/EXISTS states only and does not print generated server session secrets.
+- Onboarding templates warn operators not to store victim indicators, raw URLs, invite links, onion addresses, emails, phone numbers, passwords, tokens, or certificate material.
