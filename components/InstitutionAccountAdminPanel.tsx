@@ -82,6 +82,11 @@ type ProvisionForm = {
   expiresAt: string;
   capabilityText: string;
   notesText: string;
+  approvalRef: string;
+  approvedBySubjectId: string;
+  approvedAt: string;
+  approvalExpiresAt: string;
+  approvalNotesText: string;
 };
 
 function statusLabel(status: string) {
@@ -145,6 +150,9 @@ export function InstitutionAccountAdminPanel() {
   const [serverBusy, setServerBusy] = useState(false);
   const [revokeAccountId, setRevokeAccountId] = useState("");
   const [revokeReasonCode, setRevokeReasonCode] = useState("offboarding");
+  const [revokeApprovalRef, setRevokeApprovalRef] = useState("");
+  const [revokeApprovedBySubjectId, setRevokeApprovedBySubjectId] = useState("");
+  const [revokeApprovedAt, setRevokeApprovedAt] = useState("");
   const [form, setForm] = useState<ProvisionForm>({
     organizationId: "",
     organizationName: "",
@@ -154,6 +162,11 @@ export function InstitutionAccountAdminPanel() {
     expiresAt: "",
     capabilityText: "",
     notesText: "",
+    approvalRef: "",
+    approvedBySubjectId: "",
+    approvedAt: "",
+    approvalExpiresAt: "",
+    approvalNotesText: "",
   });
 
   const markdown = useMemo(() => (report ? formatInstitutionAccountAdminReport(report) : ""), [report]);
@@ -222,6 +235,13 @@ export function InstitutionAccountAdminPanel() {
         expiresAt: form.expiresAt.trim() || undefined,
         capabilityIds: parseCapabilityText(form.capabilityText),
         notes: splitLines(form.notesText),
+        approval: {
+          approvalRef: form.approvalRef.trim(),
+          approvedBySubjectId: form.approvedBySubjectId.trim(),
+          approvedAt: form.approvedAt.trim(),
+          expiresAt: form.approvalExpiresAt.trim() || undefined,
+          notes: splitLines(form.approvalNotesText),
+        },
       };
       const data = await sendAccountAdminRequest({ action: "PROVISION", account });
       if (data.account) {
@@ -244,6 +264,11 @@ export function InstitutionAccountAdminPanel() {
         revocation: {
           accountId: revokeAccountId.trim(),
           reasonCode: revokeReasonCode.trim() || "manual-revocation",
+          approval: {
+            approvalRef: revokeApprovalRef.trim(),
+            approvedBySubjectId: revokeApprovedBySubjectId.trim(),
+            approvedAt: revokeApprovedAt.trim(),
+          },
         },
       });
       if (data.account) {
@@ -257,8 +282,15 @@ export function InstitutionAccountAdminPanel() {
     }
   }
 
-  const canProvision = Boolean(form.organizationId.trim() && form.organizationName.trim() && form.subjectId.trim());
-  const canRevoke = Boolean(revokeAccountId.trim());
+  const canProvision = Boolean(
+    form.organizationId.trim() &&
+      form.organizationName.trim() &&
+      form.subjectId.trim() &&
+      form.approvalRef.trim() &&
+      form.approvedBySubjectId.trim() &&
+      form.approvedAt.trim(),
+  );
+  const canRevoke = Boolean(revokeAccountId.trim() && revokeApprovalRef.trim() && revokeApprovedBySubjectId.trim() && revokeApprovedAt.trim());
 
   return (
     <div className="panel panel-tight institution-account-panel">
@@ -335,6 +367,28 @@ export function InstitutionAccountAdminPanel() {
           <span className="label-row">운영 메모</span>
           <textarea className="textarea textarea-compact" value={form.notesText} onChange={(event) => updateForm("notesText", event.target.value)} placeholder="승인번호나 개인정보 대신 내부 승인 코드만 기록" />
         </label>
+        <div className="two-col">
+          <label className="field">
+            <span className="label-row">발급 승인번호</span>
+            <input className="input" value={form.approvalRef} onChange={(event) => updateForm("approvalRef", event.target.value)} placeholder="APPROVAL-2026-001" />
+          </label>
+          <label className="field">
+            <span className="label-row">발급 승인자 가명 ID</span>
+            <input className="input" value={form.approvedBySubjectId} onChange={(event) => updateForm("approvedBySubjectId", event.target.value)} placeholder="operator:supervisor-001" />
+          </label>
+          <label className="field">
+            <span className="label-row">발급 승인시각 ISO</span>
+            <input className="input" value={form.approvedAt} onChange={(event) => updateForm("approvedAt", event.target.value)} placeholder="2026-06-01T00:30:00.000Z" />
+          </label>
+          <label className="field">
+            <span className="label-row">승인 만료시각 ISO</span>
+            <input className="input" value={form.approvalExpiresAt} onChange={(event) => updateForm("approvalExpiresAt", event.target.value)} placeholder="2026-06-02T00:30:00.000Z" />
+          </label>
+        </div>
+        <label className="field">
+          <span className="label-row">승인 메모</span>
+          <textarea className="textarea textarea-compact" value={form.approvalNotesText} onChange={(event) => updateForm("approvalNotesText", event.target.value)} placeholder="내부 승인 문서번호와 범위만 기록" />
+        </label>
         <div className="button-row">
           <button className="btn btn-primary" type="button" disabled={serverBusy || !canProvision} onClick={() => void provisionAccount()}>
             <UserPlus size={16} aria-hidden="true" />
@@ -350,6 +404,18 @@ export function InstitutionAccountAdminPanel() {
           <label className="field">
             <span className="label-row">해지 사유 코드</span>
             <input className="input" value={revokeReasonCode} onChange={(event) => setRevokeReasonCode(event.target.value)} placeholder="offboarding" />
+          </label>
+          <label className="field">
+            <span className="label-row">해지 승인번호</span>
+            <input className="input" value={revokeApprovalRef} onChange={(event) => setRevokeApprovalRef(event.target.value)} placeholder="REVOKE-2026-001" />
+          </label>
+          <label className="field">
+            <span className="label-row">해지 승인자 가명 ID</span>
+            <input className="input" value={revokeApprovedBySubjectId} onChange={(event) => setRevokeApprovedBySubjectId(event.target.value)} placeholder="operator:supervisor-002" />
+          </label>
+          <label className="field">
+            <span className="label-row">해지 승인시각 ISO</span>
+            <input className="input" value={revokeApprovedAt} onChange={(event) => setRevokeApprovedAt(event.target.value)} placeholder="2026-06-01T01:00:00.000Z" />
           </label>
         </div>
         <div className="button-row">
@@ -367,7 +433,9 @@ export function InstitutionAccountAdminPanel() {
                   <strong>{account.organizationName}</strong> · {account.subjectId} · {roleLabels[account.role]} · {scopeLabels[account.evidenceAccessScope]}
                   <small>
                     {account.accountId} · {account.capabilityIds.join(", ")} · 갱신 {account.updatedAt}
+                    {account.approval?.approvalRef ? ` · 발급승인 ${account.approval.approvalRef}` : ""}
                     {account.revokedReasonCode ? ` · 해지사유 ${account.revokedReasonCode}` : ""}
+                    {account.revocationApproval?.approvalRef ? ` · 해지승인 ${account.revocationApproval.approvalRef}` : ""}
                   </small>
                 </span>
                 <button className="badge badge-low account-id-button" type="button" onClick={() => setRevokeAccountId(account.accountId)}>

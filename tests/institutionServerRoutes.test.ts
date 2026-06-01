@@ -198,6 +198,12 @@ describe("institution server route adapter", () => {
             organizationName: "Authorized Support Center",
             subjectId: "operator:caseworker-route-001",
             role: "VICTIM_SUPPORT_CASEWORKER",
+            approval: {
+              approvalRef: "ROUTE-APPROVAL-2026-001",
+              approvedBySubjectId: "operator:route-supervisor-001",
+              approvedAt: "2026-05-31T05:30:00.000Z",
+              expiresAt: "2026-05-31T06:30:00.000Z",
+            },
           },
         }),
       }),
@@ -206,6 +212,7 @@ describe("institution server route adapter", () => {
 
     expect(response.status).toBe(200);
     expect(body.account.subjectId).toBe("operator:caseworker-route-001");
+    expect(body.account.approval.approvalRef).toBe("ROUTE-APPROVAL-2026-001");
     expect((await config.accountStore!.read()).accounts).toHaveLength(1);
     expect(await config.auditStore!.verify()).toMatchObject({ valid: true, recordCount: 1 });
   });

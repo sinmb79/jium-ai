@@ -6,6 +6,13 @@ import {
   type InstitutionEvidenceAccessScope,
   type InstitutionRole,
 } from "@/lib/institutionAuth";
+import {
+  normalizeInstitutionAccountApproval,
+  validateInstitutionAccountApproval,
+  type InstitutionAccountApprovalInput,
+  type InstitutionAccountApprovalRecord,
+  type InstitutionAccountApprovalScope,
+} from "@/lib/institutionAccountApproval";
 
 export const INSTITUTION_ACCOUNT_REGISTRY_VERSION = "jium-institution-account-registry-v1";
 
@@ -24,9 +31,11 @@ export type InstitutionAccountRecord = {
   updatedAt: string;
   expiresAt?: string;
   issuedBySubjectId?: string;
+  approval?: InstitutionAccountApprovalRecord;
   revokedAt?: string;
   revokedBySubjectId?: string;
   revokedReasonCode?: string;
+  revocationApproval?: InstitutionAccountApprovalRecord;
   notes?: string[];
 };
 
@@ -45,6 +54,7 @@ export type InstitutionAccountProvisionInput = {
   evidenceAccessScope?: InstitutionEvidenceAccessScope;
   expiresAt?: string;
   issuedBySubjectId?: string;
+  approval: InstitutionAccountApprovalInput;
   notes?: string[];
 };
 
@@ -52,6 +62,7 @@ export type InstitutionAccountRevocationInput = {
   accountId: string;
   revokedBySubjectId?: string;
   reasonCode?: string;
+  approval: InstitutionAccountApprovalInput;
 };
 
 export type PublicInstitutionAccountView = Pick<
@@ -67,8 +78,10 @@ export type PublicInstitutionAccountView = Pick<
   | "createdAt"
   | "updatedAt"
   | "expiresAt"
+  | "approval"
   | "revokedAt"
   | "revokedReasonCode"
+  | "revocationApproval"
 >;
 
 const UNSAFE_ACCOUNT_MARKERS = ["http://", "https://", "discord.gg/", "t.me/", "telegram.me/", ".onion", "@", "010-"];
@@ -116,6 +129,10 @@ function defaultCapabilities(role: InstitutionRole) {
 
 function defaultEvidenceScope(role: InstitutionRole): InstitutionEvidenceAccessScope {
   return role === "LAW_ENFORCEMENT_LIAISON" ? "OFFICIAL_REQUEST_ONLY" : "ASSIGNED_CASE_REDACTED";
+}
+
+function provisionApprovalScope(role: InstitutionRole): InstitutionAccountApprovalScope {
+  return role === "PROGRAM_ADMIN" ? "PROGRAM_ADMIN_PROVISION" : "PROVISION";
 }
 
 export function emptyInstitutionAccountRegistry(now = Date.now()): InstitutionAccountRegistry {
@@ -196,6 +213,20 @@ export function validateInstitutionAccountRecord(record: InstitutionAccountRecor
   if (record.notes?.length && unsafeMarkers(record.notes).length) {
     errors.push("notes must not contain raw URLs, handles, invites, onion addresses, emails, or phone numbers");
   }
+  if (record.approval) {
+    validateInstitutionAccountApproval(record.approval, {
+      expectedScope: isInstitutionRole(record.role) ? provisionApprovalScope(record.role) : "PROVISION",
+      operatorSubjectId: record.issuedBySubjectId,
+      now,
+    }).forEach((error) => errors.push(`approval: ${error}`));
+  }
+  if (record.revocationApproval) {
+    validateInstitutionAccountApproval(record.revocationApproval, {
+      expectedScope: "REVOKE",
+      operatorSubjectId: record.revokedBySubjectId,
+      now,
+    }).forEach((error) => errors.push(`revocationApproval: ${error}`));
+  }
   return errors;
 }
 
@@ -243,6 +274,11 @@ export function provisionInstitutionAccount(
     throw new Error("institution account role is not supported");
   }
   const capabilityIds = compactList(input.capabilityIds?.length ? input.capabilityIds : defaultCapabilities(input.role));
+  const approval = normalizeInstitutionAccountApproval(input.approval, {
+    expectedScope: provisionApprovalScope(input.role),
+    operatorSubjectId: input.issuedBySubjectId,
+    now,
+  });
   const record: InstitutionAccountRecord = {
     accountId: institutionAccountId(input.organizationId, input.subjectId),
     organizationId: clean(input.organizationId),
@@ -256,6 +292,7 @@ export function provisionInstitutionAccount(
     updatedAt: issuedAt,
     expiresAt: clean(input.expiresAt) || undefined,
     issuedBySubjectId: clean(input.issuedBySubjectId) || undefined,
+    approval,
     notes: compactList(input.notes || []),
   };
   const errors = validateInstitutionAccountRecord(record, now);
@@ -300,6 +337,11 @@ export function revokeInstitutionAccount(
   if (!SAFE_REASON_CODE_PATTERN.test(reasonCode)) {
     throw new Error("revocation reasonCode must be a simple reason code");
   }
+  const revocationApproval = normalizeInstitutionAccountApproval(input.approval, {
+    expectedScope: "REVOKE",
+    operatorSubjectId: input.revokedBySubjectId,
+    now,
+  });
   const revoked: InstitutionAccountRecord = {
     ...registry.accounts[index]!,
     status: "REVOKED",
@@ -307,6 +349,7 @@ export function revokeInstitutionAccount(
     revokedAt,
     revokedBySubjectId: clean(input.revokedBySubjectId) || undefined,
     revokedReasonCode: reasonCode,
+    revocationApproval,
   };
   const errors = validateInstitutionAccountRecord(revoked, now);
   if (errors.length) {
@@ -338,7 +381,9 @@ export function publicInstitutionAccountView(account: InstitutionAccountRecord):
     createdAt: account.createdAt,
     updatedAt: account.updatedAt,
     expiresAt: account.expiresAt,
+    approval: account.approval,
     revokedAt: account.revokedAt,
     revokedReasonCode: account.revokedReasonCode,
+    revocationApproval: account.revocationApproval,
   };
 }

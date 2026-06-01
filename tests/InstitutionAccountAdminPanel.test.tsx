@@ -30,6 +30,12 @@ const account: PublicInstitutionAccountView = {
   status: "ACTIVE",
   createdAt: "2026-06-01T00:00:00.000Z",
   updatedAt: "2026-06-01T00:00:00.000Z",
+  approval: {
+    approvalRef: "APPROVAL-2026-001",
+    approvedBySubjectId: "operator:supervisor-ui",
+    approvedAt: "2026-06-01T00:30:00.000Z",
+    scope: "PROVISION",
+  },
 };
 
 function jsonResponse(body: unknown, status = 200) {
@@ -81,6 +87,7 @@ describe("InstitutionAccountAdminPanel", () => {
 
     await waitFor(() => expect(screen.getByText("서버 계정 1건을 불러왔습니다.")).toBeInTheDocument());
     expect(screen.getByText(/공인 피해자 지원기관/)).toBeInTheDocument();
+    expect(screen.getByText(/발급승인 APPROVAL-2026-001/)).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/institution/accounts",
       expect.objectContaining({
@@ -126,6 +133,9 @@ describe("InstitutionAccountAdminPanel", () => {
     fireEvent.change(screen.getByLabelText("기관 ID"), { target: { value: "org-support-center-ui" } });
     fireEvent.change(screen.getByLabelText("기관명"), { target: { value: "공인 피해자 지원기관" } });
     fireEvent.change(screen.getByLabelText("담당자 가명 ID"), { target: { value: "operator:caseworker-ui" } });
+    fireEvent.change(screen.getByLabelText("발급 승인번호"), { target: { value: "APPROVAL-2026-001" } });
+    fireEvent.change(screen.getByLabelText("발급 승인자 가명 ID"), { target: { value: "operator:supervisor-ui" } });
+    fireEvent.change(screen.getByLabelText("발급 승인시각 ISO"), { target: { value: "2026-06-01T00:30:00.000Z" } });
     fireEvent.click(screen.getByText("계정 발급"));
 
     await waitFor(() => expect(screen.getByText("operator:caseworker-ui 계정을 발급했습니다.")).toBeInTheDocument());
@@ -135,9 +145,17 @@ describe("InstitutionAccountAdminPanel", () => {
         organizationId: "org-support-center-ui",
         subjectId: "operator:caseworker-ui",
         role: "VICTIM_SUPPORT_CASEWORKER",
+        approval: {
+          approvalRef: "APPROVAL-2026-001",
+          approvedBySubjectId: "operator:supervisor-ui",
+          approvedAt: "2026-06-01T00:30:00.000Z",
+        },
       },
     });
 
+    fireEvent.change(screen.getByLabelText("해지 승인번호"), { target: { value: "REVOKE-2026-001" } });
+    fireEvent.change(screen.getByLabelText("해지 승인자 가명 ID"), { target: { value: "operator:supervisor-ui" } });
+    fireEvent.change(screen.getByLabelText("해지 승인시각 ISO"), { target: { value: "2026-06-01T01:00:00.000Z" } });
     fireEvent.click(screen.getByText("계정 해지"));
 
     await waitFor(() => expect(screen.getByText("operator:caseworker-ui 계정을 해지했습니다.")).toBeInTheDocument());
@@ -146,6 +164,11 @@ describe("InstitutionAccountAdminPanel", () => {
       revocation: {
         accountId: "iacct-0000ABCD",
         reasonCode: "offboarding",
+        approval: {
+          approvalRef: "REVOKE-2026-001",
+          approvedBySubjectId: "operator:supervisor-ui",
+          approvedAt: "2026-06-01T01:00:00.000Z",
+        },
       },
     });
     expect(screen.getByText("해지")).toBeInTheDocument();

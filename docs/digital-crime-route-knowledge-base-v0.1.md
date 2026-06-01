@@ -273,3 +273,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The panel can list, provision, and revoke institution accounts using credential-included POST requests and the account-admin CSRF header.
 - Account provisioning inputs are structured around pseudonymous organization and subject IDs, role, evidence-access scope, expiry, capabilities, and notes.
 - The offline session-review report remains available, and Korean UI/report text for the account admin panel was repaired.
+
+## Implemented in v3.38
+
+- Added mandatory approval records for server institution account provisioning and revocation.
+- Account approvals require a simple approval reference, a pseudonymous approving operator ID, an approval timestamp, and an independent reviewer when an acting operator is known.
+- PROGRAM_ADMIN provisioning is stored with a separate `PROGRAM_ADMIN_PROVISION` approval scope.
+- Approval records reject raw URLs, invite links, onion addresses, emails, and phone-like identifiers in refs, reviewer IDs, and notes.

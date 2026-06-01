@@ -90,7 +90,7 @@ npm run security:feed-keys
 npm run security:auth
 ```
 
-대시보드의 기관 계정 관리자 패널은 서버 배포 모드에서 `/api/institution/accounts`에 연결해 기관 계정 목록 조회, 발급, 해지를 요청할 수 있습니다. 이 요청은 `credentials: include`, JSON Content-Type, `X-Jium-Institution-Account-Admin: 1` 보호 header를 사용하며, 실제 권한 검증은 서버 Route에서 `INSTITUTION_ACCOUNT_ADMIN` capability가 있는 PROGRAM_ADMIN MFA 세션으로만 수행합니다. 같은 패널의 기관 세션 JSON 검토 기능은 role, capability, MFA, 만료, 고위험 권한, 원문 식별자 노출 위험을 확인하는 감사 보조 도구입니다. subjectId에는 이메일, 전화번호, URL, 초대링크, onion 주소 같은 원문 식별자를 넣지 않아야 합니다.
+대시보드의 기관 계정 관리자 패널은 서버 배포 모드에서 `/api/institution/accounts`에 연결해 기관 계정 목록 조회, 발급, 해지를 요청할 수 있습니다. 이 요청은 `credentials: include`, JSON Content-Type, `X-Jium-Institution-Account-Admin: 1` 보호 header를 사용하며, 실제 권한 검증은 서버 Route에서 `INSTITUTION_ACCOUNT_ADMIN` capability가 있는 PROGRAM_ADMIN MFA 세션으로만 수행합니다. 발급·해지 요청에는 승인번호, 승인자 가명 ID, 승인시각이 필요하며, 실제 작업자와 승인자가 같으면 거부합니다. PROGRAM_ADMIN 발급은 별도 `PROGRAM_ADMIN_PROVISION` 승인 범위로 기록해야 합니다. 승인번호, 승인자 ID, 승인 메모, subjectId에는 이메일, 전화번호, URL, 초대링크, onion 주소 같은 원문 식별자를 넣지 않아야 합니다. 같은 패널의 기관 세션 JSON 검토 기능은 role, capability, MFA, 만료, 고위험 권한, 원문 식별자 노출 위험을 확인하는 감사 보조 도구입니다.
 
 서버 배포에서 기관 계정 세션 토큰을 발급할 때는 `INSTITUTION_SESSION_SECRET` 같은 서버 전용 HMAC secret을 사용해야 합니다. 이 값은 32바이트 이상 고엔트로피 secret이어야 하며, `NEXT_PUBLIC_*`, 브라우저 번들, 저장소, 클라이언트 JSON에 넣지 않습니다. 토큰 검증 코어는 변조, 만료, 약한 secret, 비활성 key를 거부합니다.
 

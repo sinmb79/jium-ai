@@ -53,6 +53,16 @@ function memoryStore(registry: InstitutionAccountRegistry = emptyInstitutionAcco
   };
 }
 
+function approval(overrides: Record<string, unknown> = {}) {
+  return {
+    approvalRef: "APPROVAL-2026-001",
+    approvedBySubjectId: "operator:supervisor-001",
+    approvedAt: "2026-06-01T00:30:00.000Z",
+    expiresAt: "2026-06-02T00:30:00.000Z",
+    ...overrides,
+  };
+}
+
 function accountRequest(body: unknown, cookie?: string, headers: HeadersInit = {}) {
   return new Request("https://jium.example/api/institution/accounts", {
     method: "POST",
@@ -92,6 +102,7 @@ describe("institution account provisioning HTTP handler", () => {
             organizationName: "Authorized Support Center",
             subjectId: "operator:caseworker-001",
             role: "VICTIM_SUPPORT_CASEWORKER",
+            approval: approval(),
           },
         },
         cookie,
@@ -102,7 +113,20 @@ describe("institution account provisioning HTTP handler", () => {
     const list = await handleInstitutionAccountAdminRequest(accountRequest({ action: "LIST" }, cookie), config);
     const listBody = await list.json();
     const revoke = await handleInstitutionAccountAdminRequest(
-      accountRequest({ action: "REVOKE", revocation: { accountId: provisionBody.account.accountId, reasonCode: "offboarding" } }, cookie),
+      accountRequest(
+        {
+          action: "REVOKE",
+          revocation: {
+            accountId: provisionBody.account.accountId,
+            reasonCode: "offboarding",
+            approval: approval({
+              approvalRef: "REVOKE-2026-001",
+              approvedBySubjectId: "operator:supervisor-002",
+            }),
+          },
+        },
+        cookie,
+      ),
       config,
     );
     const revokeBody = await revoke.json();
@@ -113,6 +137,8 @@ describe("institution account provisioning HTTP handler", () => {
     expect(listBody.accounts).toHaveLength(1);
     expect(revoke.status).toBe(200);
     expect(revokeBody.account.status).toBe("REVOKED");
+    expect(provisionBody.account.approval.approvalRef).toBe("APPROVAL-2026-001");
+    expect(revokeBody.account.revocationApproval.approvalRef).toBe("REVOKE-2026-001");
     expect(store.current().accounts[0]?.revokedBySubjectId).toBe("operator:admin-001");
     expect(auditEvents.map((event) => event.eventType)).toEqual([
       "INSTITUTION_ACCOUNT_PROVISIONED",
@@ -192,6 +218,7 @@ describe("institution account provisioning HTTP handler", () => {
             organizationName: "Authorized Support Center",
             subjectId: "caseworker@example.invalid",
             role: "VICTIM_SUPPORT_CASEWORKER",
+            approval: approval(),
           },
         },
         await cookieFor(adminSession()),
@@ -207,6 +234,37 @@ describe("institution account provisioning HTTP handler", () => {
 
     expect(response.status).toBe(400);
     expect((await response.json()).errorCode).toBe("ACCOUNT_REGISTRY_OPERATION_FAILED");
+    expect(store.current().accounts).toHaveLength(0);
+  });
+
+  it("rejects provisioning without an independent approval record", async () => {
+    const store = memoryStore();
+    const response = await handleInstitutionAccountAdminRequest(
+      accountRequest(
+        {
+          action: "PROVISION",
+          account: {
+            organizationId: "org-support-center-001",
+            organizationName: "Authorized Support Center",
+            subjectId: "operator:caseworker-002",
+            role: "VICTIM_SUPPORT_CASEWORKER",
+            approval: approval({ approvedBySubjectId: "operator:admin-001" }),
+          },
+        },
+        await cookieFor(adminSession()),
+      ),
+      {
+        tokenKeys: [tokenKey],
+        secureCookies: true,
+        allowedOrigins: [origin],
+        accountStore: store,
+        now,
+      },
+    );
+
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.message).toContain("different operator");
     expect(store.current().accounts).toHaveLength(0);
   });
 });

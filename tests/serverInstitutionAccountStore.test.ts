@@ -15,6 +15,15 @@ import {
 const tempDirs: string[] = [];
 const now = Date.parse("2026-06-01T01:00:00.000Z");
 
+function approval() {
+  return {
+    approvalRef: "APPROVAL-2026-STORE",
+    approvedBySubjectId: "operator:supervisor-001",
+    approvedAt: "2026-06-01T00:30:00.000Z",
+    expiresAt: "2026-06-02T00:30:00.000Z",
+  };
+}
+
 async function tempDir() {
   const dir = await mkdtemp(path.join(os.tmpdir(), "jium-account-registry-"));
   tempDirs.push(dir);
@@ -37,6 +46,8 @@ describe("server institution account registry store", () => {
         organizationName: "Authorized Support Center",
         subjectId: "operator:caseworker-001",
         role: "VICTIM_SUPPORT_CASEWORKER",
+        issuedBySubjectId: "operator:admin-001",
+        approval: approval(),
       },
       now,
     );
