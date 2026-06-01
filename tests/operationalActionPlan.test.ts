@@ -52,7 +52,8 @@ function summary(overrides: Partial<OperationalHandoffBundleSummary> = {}): Oper
     },
     externalRecordsNeeded: [],
     nextActions: [
-      "Set JIUM_PUBLIC_APP_URL to https://prod.example.com/jium before production launch.",
+      "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init before final go-live review.",
+      "Confirm public privacy notice https://privacy.example.com is not copied into the public action plan.",
       "Assign support route support@example.com and incident owner without storing raw contacts.",
       "Resolve desktop publish blockers before uploading with token ghs_fake123456.",
       "Complete the private production onboarding checklist and keep t.me/example out of reports.",
@@ -88,11 +89,16 @@ describe("operational action plan", () => {
       "PROGRAM_OWNER",
     ]);
     expect(plan.phases.find((phase) => phase.id === "desktop-release")?.actions.some((action) => action.source === "handoff-next-action")).toBe(true);
+    expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:public-env:init"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "server-storage")?.actions[0].action).toContain("server:storage:init");
     expect(plan.runOrder.find((entry) => entry.phaseId === "server-storage")?.verificationCommands).toContain(
       "npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env",
     );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
+      "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
+    );
     expect(text).not.toContain("prod.example.com");
+    expect(text).not.toContain("privacy.example.com");
     expect(text).not.toContain("support@example.com");
     expect(text).not.toContain("ghs_fake123456");
     expect(text).not.toContain("t.me/example");

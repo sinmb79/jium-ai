@@ -2,7 +2,7 @@
 
 작성일: 2026-05-31
 
-최신 구현 메모: v3.63에서 `server:storage:init`을 server deployment bundle과 operational action plan의 표준 runbook에 연결했다. 세부 runbook은 `docs/server-storage-runbook-integration-v0.3.63.md`를 기준으로 한다.
+최신 구현 메모: v3.64에서 공개 앱 URL, 개인정보 안내 URL, 지원 경로를 준비하는 `ops:public-env:init`과 `/privacy/`, `/support/` 공개 페이지를 추가했다. 세부 runbook은 `docs/public-operations-env-v0.3.64.md`를 기준으로 한다.
 
 ## 운영제품 기준
 

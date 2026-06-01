@@ -151,6 +151,7 @@ const PHASE_BLUEPRINTS = [
     objective: "Run the final cross-gate check and archive the redacted handoff evidence before production launch.",
     evidenceTarget: "dist/operational-handoff-bundle",
     verificationCommands: [
+      "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
       "npm run ops:go-live:check",
       "npm run ops:handoff:bundle",
       "npm run ops:action-plan",
@@ -238,6 +239,14 @@ function phaseForAction(action) {
     text.includes("uploading release assets")
   ) {
     return "desktop-release";
+  }
+  if (
+    text.includes("ops:public-env:init") ||
+    text.includes("public app") ||
+    text.includes("privacy notice") ||
+    text.includes("public, privacy, and support routes")
+  ) {
+    return "go-live";
   }
   if (
     text.includes("approval records") ||

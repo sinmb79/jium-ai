@@ -318,3 +318,17 @@ npm run ops:action-plan
 ```
 
 Both outputs now show `npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env` before the storage readiness checks, so operators can move from selected storage location to validated server readiness without hunting for the helper command.
+
+## v0.3.64 Public Operations Env Init
+
+Production go-live can now prepare reviewed public app, privacy notice, and support route URLs with:
+
+```bash
+npm run ops:public-env:init -- --base-url https://example.org/jium-ai/ --write-env
+npm run ops:public-env:json -- --base-url https://example.org/jium-ai/ --write-env --output ./public-ops-env.json
+npm run ops:public-env:markdown -- --base-url https://example.org/jium-ai/ --write-env --output ./public-ops-env.md
+```
+
+The report redacts raw URLs and records only route paths, URL validity states, counts, and env key statuses. The private env file may contain real URLs and must stay out of git.
+
+The static app now also exposes `/privacy/` and `/support/`, so operators can point `JIUM_PRIVACY_NOTICE_URL` and `JIUM_SUPPORT_CONTACT_ROUTE` at reviewed HTTPS pages before the final go-live gate.

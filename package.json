@@ -1,6 +1,6 @@
 {
   "name": "jium-ai",
-  "version": "0.3.63",
+  "version": "0.3.64",
   "private": true,
   "description": "무료·로컬 우선 디지털 권리구제 도우미",
   "author": "22B Labs",
@@ -51,6 +51,9 @@
     "ops:go-live:check": "node scripts/check-operational-go-live.mjs",
     "ops:go-live:json": "node scripts/check-operational-go-live.mjs --json",
     "ops:go-live:markdown": "node scripts/check-operational-go-live.mjs --markdown",
+    "ops:public-env:init": "node scripts/init-public-operations-env.mjs",
+    "ops:public-env:json": "node scripts/init-public-operations-env.mjs --json",
+    "ops:public-env:markdown": "node scripts/init-public-operations-env.mjs --markdown",
     "ops:approvals:check": "node scripts/check-operational-approval-records.mjs",
     "ops:approvals:json": "node scripts/check-operational-approval-records.mjs --json",
     "ops:approvals:markdown": "node scripts/check-operational-approval-records.mjs --markdown",

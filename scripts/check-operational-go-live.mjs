@@ -69,13 +69,13 @@ function goLiveNextActionFor(error) {
     return "Approve the data retention and deletion policy for production operation.";
   }
   if (error.includes("JIUM_PUBLIC_APP_URL")) {
-    return "Set JIUM_PUBLIC_APP_URL to the approved HTTPS production URL.";
+    return "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init before final go-live review.";
   }
   if (error.includes("JIUM_PRIVACY_NOTICE_URL")) {
-    return "Set JIUM_PRIVACY_NOTICE_URL to the approved HTTPS privacy notice URL.";
+    return "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init before final go-live review.";
   }
   if (error.includes("JIUM_SUPPORT_CONTACT_ROUTE")) {
-    return "Set a production support contact route without storing contact details in reports.";
+    return "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init before final go-live review.";
   }
   if (error.includes("JIUM_INCIDENT_RESPONSE_OWNER")) {
     return "Assign an incident response owner before go-live.";
