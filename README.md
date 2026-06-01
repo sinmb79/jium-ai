@@ -486,3 +486,13 @@ npm run server:origin:apply -- --origin <approved-https-operator-origin> --appro
 ```
 
 The command writes only to the private server runtime env file, validates HTTPS origin-only values, blocks placeholders/raw contacts/invites/onion values/secrets, and emits redacted approval reports with only origin count plus SHA-256 digests. `security:server-readiness`, `server:deployment:bundle`, and `ops:action-plan` now point operators to this command before server deployment. Details are in [Server Origin Approval v0.3.78](docs/server-origin-approval-v0.3.78.md).
+
+## v0.3.79 Operational Go-Live Env Apply
+
+Approved operational records can now drive go-live approval flags without manual env editing:
+
+```bash
+npm run ops:go-live:env:apply -- --incident-owner-ref <pseudonymous-incident-owner-reference>
+```
+
+The command only writes approval flags after `ops:approvals:check` would be READY, applies a pseudonymous incident owner reference, rejects raw contacts/URLs/placeholders/secrets, and emits redacted reports with only key statuses plus SHA-256 digests. `ops:go-live:check` and `ops:action-plan` now point operators to this command when approval env flags are missing. Details are in [Operational Go-Live Env Apply v0.3.79](docs/operational-go-live-env-apply-v0.3.79.md).

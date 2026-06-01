@@ -168,6 +168,7 @@ const PHASE_BLUEPRINTS = [
       "npm run public:hosting:bundle",
       "npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json",
       "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
+      "npm run ops:go-live:env:apply -- --incident-owner-ref <pseudonymous-incident-owner-reference>",
       "npm run ops:go-live:check",
       "npm run ops:handoff:bundle",
       "npm run ops:action-plan",
@@ -176,6 +177,7 @@ const PHASE_BLUEPRINTS = [
       "Build the production static hosting bundle with npm run public:hosting:bundle.",
       "Deploy dist/static-hosting-bundle/site to Cloudflare Pages, Netlify, or another approved _headers-capable host.",
       "Run hosted security header audit against the approved HTTPS public app URL and set JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT to the redacted report.",
+      "Apply approved go-live flags and the pseudonymous incident owner reference with npm run ops:go-live:env:apply.",
       "Set only approval states and setting-presence values in production env; do not put raw contacts or victim indicators into reports.",
       "Confirm server runtime, storage, desktop publish, onboarding, and private approvals are all READY.",
       "Archive the handoff bundle and action plan with the private release evidence packet.",
@@ -267,6 +269,10 @@ function phaseForAction(action) {
     text.includes("security:headers:check") ||
     text.includes("hosted security header audit") ||
     text.includes("jium_hosted_security_header_audit_report") ||
+    text.includes("ops:go-live:env:apply") ||
+    text.includes("jium_go_live_approval") ||
+    text.includes("go-live approval flags") ||
+    text.includes("incident owner reference") ||
     text.includes("public app") ||
     text.includes("privacy notice") ||
     text.includes("public, privacy, and support routes")

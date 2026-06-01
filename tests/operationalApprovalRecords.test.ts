@@ -70,6 +70,17 @@ describe("operational approval records", () => {
     expect(JSON.stringify(report)).not.toContain(DEFAULT_OPERATIONAL_APPROVAL_RECORDS_PATH);
   });
 
+  it("accepts approval packets saved with a UTF-8 BOM", async () => {
+    const root = await tempRepo();
+    const filePath = path.join(root, DEFAULT_OPERATIONAL_APPROVAL_RECORDS_PATH);
+    await mkdir(path.dirname(filePath), { recursive: true });
+    await writeFile(filePath, `\uFEFF${JSON.stringify(approvalPacket(), null, 2)}`, "utf8");
+
+    const readiness = validateOperationalApprovalRecords({ root, now: fixedNow });
+
+    expect(readiness.valid).toBe(true);
+  });
+
   it("blocks missing records and raw operational values", async () => {
     const root = await tempRepo();
     const packet = approvalPacket();

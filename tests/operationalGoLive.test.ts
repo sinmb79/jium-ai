@@ -368,6 +368,9 @@ describe("operational go-live readiness", () => {
     expect(readiness.valid).toBe(false);
     expect(readiness.errors.join("\n")).toContain("JIUM_GO_LIVE_APPROVAL");
     expect(report.nextActions).toContain(
+      "Apply approved go-live approval flags with npm run ops:go-live:env:apply.",
+    );
+    expect(report.nextActions).toContain(
       "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init before final go-live review.",
     );
     expect(readiness.errors.join("\n")).toContain("operational approval records");

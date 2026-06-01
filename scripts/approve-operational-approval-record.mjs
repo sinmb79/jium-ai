@@ -80,7 +80,7 @@ function readPacket(filePath, errors) {
     return null;
   }
   try {
-    return JSON.parse(readFileSync(filePath, "utf8"));
+    return JSON.parse(readFileSync(filePath, "utf8").replace(/^\uFEFF/, ""));
   } catch {
     errors.push("operational approval records file is not valid JSON");
     return null;

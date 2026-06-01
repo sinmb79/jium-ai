@@ -479,3 +479,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The command updates `.env.server.local` with `JIUM_SERVER_ROUTES=true`, `INSTITUTION_ALLOWED_ORIGINS`, and `INSTITUTION_SECURE_COOKIES=true` only after validating origin-only HTTPS values and a pseudonymous approval reference.
 - Reports store only origin count, env update status, and SHA-256 digests; raw origins and raw approval references remain out of generated reports.
 - `security:server-readiness`, `server:deployment:bundle`, and `ops:action-plan` now route origin/profile blockers to the guarded command instead of undocumented manual env edits.
+
+## Implemented in v0.3.79
+
+- Added `scripts/apply-operational-go-live-env.mjs` and `ops:go-live:env:apply` for applying go-live approval env flags from READY private operational approval records.
+- The command updates `.env.server.local` with `JIUM_GO_LIVE_APPROVAL`, legal review, release evidence, data-retention approval flags, and a pseudonymous `JIUM_INCIDENT_RESPONSE_OWNER` only after approval-record readiness passes.
+- Reports store only approval-record status, env update status, key counts, and SHA-256 digests; raw incident owner refs, approver refs, public URLs, and approval references remain out of reports.
+- `ops:go-live:check` and `ops:action-plan` now route missing go-live approval env blockers to the guarded command instead of undocumented manual env edits.
+- Operational approval record parsing now tolerates UTF-8 BOM files so Windows-edited private approval packets do not fail solely because of file encoding metadata.

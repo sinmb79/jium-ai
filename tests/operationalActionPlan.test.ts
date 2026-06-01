@@ -58,6 +58,8 @@ function summary(overrides: Partial<OperationalHandoffBundleSummary> = {}): Oper
       "Resolve desktop publish blockers before uploading with token ghs_fake123456.",
       "Complete the private production onboarding checklist and keep t.me/example out of reports.",
       "Review the trusted key candidate and do not paste abcdefghijklmnop.onion into evidence.",
+      "Apply approved go-live approval flags with npm run ops:go-live:env:apply.",
+      "Apply the approved pseudonymous incident owner reference with npm run ops:go-live:env:apply.",
     ],
     safetyNotes: [],
     ...overrides,
@@ -132,6 +134,9 @@ describe("operational action plan", () => {
       "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
     );
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
+      "npm run ops:go-live:env:apply -- --incident-owner-ref <pseudonymous-incident-owner-reference>",
+    );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
       "npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json",
     );
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands.some((command) => command.startsWith("Upload "))).toBe(
@@ -139,6 +144,10 @@ describe("operational action plan", () => {
     );
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("dist/static-hosting-bundle/site"))).toBe(
       true,
+    );
+    expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:go-live:env:apply"))).toBe(true);
+    expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:go-live:env:apply"))).toBe(
+      false,
     );
     expect(text).not.toContain("prod.example.com");
     expect(text).not.toContain("privacy.example.com");

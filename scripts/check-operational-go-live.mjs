@@ -65,16 +65,16 @@ export function summarizeOperationalGoLiveEnv(env = process.env) {
 
 function goLiveNextActionFor(error) {
   if (error.includes("JIUM_GO_LIVE_APPROVAL")) {
-    return "Record explicit human go-live approval with JIUM_GO_LIVE_APPROVAL=APPROVED.";
+    return "Apply approved go-live approval flags with npm run ops:go-live:env:apply.";
   }
   if (error.includes("JIUM_LEGAL_REVIEW_APPROVAL")) {
-    return "Complete legal and institution operating review before production go-live.";
+    return "Apply approved go-live approval flags with npm run ops:go-live:env:apply.";
   }
   if (error.includes("JIUM_RELEASE_EVIDENCE_REVIEW")) {
-    return "Review the redacted release evidence bundle and mark it approved.";
+    return "Apply approved go-live approval flags with npm run ops:go-live:env:apply.";
   }
   if (error.includes("JIUM_DATA_RETENTION_POLICY_ACK")) {
-    return "Approve the data retention and deletion policy for production operation.";
+    return "Apply approved go-live approval flags with npm run ops:go-live:env:apply.";
   }
   if (error.includes("JIUM_PUBLIC_APP_URL")) {
     return "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init before final go-live review.";
@@ -86,7 +86,7 @@ function goLiveNextActionFor(error) {
     return "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init before final go-live review.";
   }
   if (error.includes("JIUM_INCIDENT_RESPONSE_OWNER")) {
-    return "Assign an incident response owner before go-live.";
+    return "Apply the approved pseudonymous incident owner reference with npm run ops:go-live:env:apply.";
   }
   if (error.includes("hosted security header audit")) {
     return "Run npm run security:headers:check against the approved HTTPS public app URL and attach the READY redacted report before go-live.";

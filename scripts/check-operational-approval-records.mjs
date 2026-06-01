@@ -166,7 +166,7 @@ export function validateOperationalApprovalRecords({
     errors.push("operational approval records file missing");
   } else {
     try {
-      packet = JSON.parse(readFileSync(source.filePath, "utf8"));
+      packet = JSON.parse(readFileSync(source.filePath, "utf8").replace(/^\uFEFF/, ""));
     } catch {
       errors.push("operational approval records file is not valid JSON");
     }
