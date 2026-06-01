@@ -96,6 +96,20 @@ function desktopPublish(valid = true) {
       errors: valid ? [] : ["desktop publish Windows installer artifact missing: *.exe"],
       files: valid ? ["JiumAI-0.3.50-win-x64.exe", "JiumAI-0.3.50-win-x64.exe.blockmap", "latest.yml"] : [],
     },
+    releaseEvidenceDigest: {
+      valid,
+      report: {
+        status: valid ? ("READY" as const) : ("BLOCKED" as const),
+        aggregateDigest: valid ? "sha256-desktop-release-evidence" : "",
+        summary: {
+          fileCount: valid ? 5 : 0,
+          readyFileCount: valid ? 5 : 0,
+          unsafeFindingCount: 0,
+          errorCount: valid ? 0 : 1,
+        },
+        errors: valid ? [] : ["desktop release evidence digest report missing"],
+      },
+    },
   };
 }
 
@@ -301,7 +315,7 @@ describe("operational handoff bundle", () => {
     expect(result.summary.gates).toEqual([
       { id: "server-runtime-readiness", status: "BLOCKED", errorCount: 1 },
       { id: "server-storage-readiness", status: "BLOCKED", errorCount: 1 },
-      { id: "desktop-publish-readiness", status: "BLOCKED", errorCount: 1 },
+      { id: "desktop-publish-readiness", status: "BLOCKED", errorCount: 2 },
       { id: "operational-approval-records", status: "BLOCKED", errorCount: 1 },
       { id: "production-onboarding-readiness", status: "BLOCKED", errorCount: 1 },
       { id: "operational-go-live", status: "BLOCKED", errorCount: 1 },

@@ -62,6 +62,20 @@ function readyValidations(version = "0.3.48") {
       errors: [],
       files: [`JiumAI-${version}-win-x64.exe`, `JiumAI-${version}-win-x64.exe.blockmap`, "latest.yml"],
     },
+    releaseEvidenceDigest: {
+      valid: true,
+      report: {
+        status: "READY" as const,
+        aggregateDigest: "sha256-desktop-release-evidence",
+        summary: {
+          fileCount: 5,
+          readyFileCount: 5,
+          unsafeFindingCount: 0,
+          errorCount: 0,
+        },
+        errors: [],
+      },
+    },
   };
 }
 
@@ -94,7 +108,10 @@ describe("desktop publish readiness", () => {
 
     expect(readiness.valid).toBe(true);
     expect(report.status).toBe("READY");
+    expect(report.summary.releaseEvidenceDigestStatus).toBe("READY");
+    expect(report.summary.releaseEvidenceAggregateDigest).toBe("sha256-desktop-release-evidence");
     expect(markdown).toContain("JiumAI Desktop Publish Readiness Report");
+    expect(markdown).toContain("Release evidence digest: READY");
     expect(JSON.stringify(report)).not.toContain("ghs_secret_token");
     expect(JSON.stringify(report)).not.toContain("sinmb79/jium-ai");
   });
@@ -157,5 +174,30 @@ describe("desktop publish readiness", () => {
     expect(report.checks.filter((check) => check.status === "BLOCKED").map((check) => check.id)).toEqual(
       expect.arrayContaining(["version-alignment", "manual-approval", "github-context"]),
     );
+  });
+
+  it("blocks publishing when the signed release evidence digest is missing", async () => {
+    const root = await tempRepo();
+    const { releaseEvidenceDigest: _releaseEvidenceDigest, ...validations } = readyValidations();
+
+    const readiness = await validateDesktopPublishReadiness({
+      root,
+      platform: "win32",
+      feedDir: path.join(root, "dist", "desktop"),
+      env: {
+        JIUM_DESKTOP_RELEASE_TAG: "v0.3.48",
+        JIUM_DESKTOP_PUBLISH_APPROVAL: "APPROVED",
+        GITHUB_REPOSITORY: "sinmb79/jium-ai",
+        GH_TOKEN: "ghs_secret_token",
+      } as unknown as NodeJS.ProcessEnv,
+      validations,
+    });
+    const report = buildDesktopPublishReadinessReport(readiness, { generatedAt: "2026-06-01T00:00:00.000Z" });
+
+    expect(readiness.valid).toBe(false);
+    expect(readiness.errors.join("\n")).toContain("desktop publish release evidence digest");
+    expect(report.checks.find((check) => check.id === "release-evidence-digest")?.status).toBe("BLOCKED");
+    expect(report.summary.releaseEvidenceDigestStatus).toBe("BLOCKED");
+    expect(report.nextActions.join("\n")).toContain("desktop:release:digest-evidence");
   });
 });

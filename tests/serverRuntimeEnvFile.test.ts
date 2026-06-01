@@ -181,6 +181,20 @@ function readyDesktopPublish() {
       errors: [],
       files: ["JiumAI-0.3.82-win-x64.exe", "JiumAI-0.3.82-win-x64.exe.blockmap", "latest.yml"],
     },
+    releaseEvidenceDigest: {
+      valid: true,
+      report: {
+        status: "READY" as const,
+        aggregateDigest: "sha256-desktop-release-evidence",
+        summary: {
+          fileCount: 5,
+          readyFileCount: 5,
+          unsafeFindingCount: 0,
+          errorCount: 0,
+        },
+        errors: [],
+      },
+    },
   };
 }
 

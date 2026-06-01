@@ -13,7 +13,7 @@ on:
       release_tag:
         description: Existing GitHub Release tag that matches package.json version
         required: true
-        default: v0.3.91
+        default: v0.3.92
       publish_to_github_release:
         description: Upload signed installer assets to the existing GitHub Release
         required: true
@@ -70,6 +70,9 @@ jobs:
       - name: Build release evidence bundle
         run: npm run desktop:release:bundle
 
+      - name: Build release evidence digests
+        run: npm run desktop:release:digest-evidence -- --feed-dir ./dist/desktop
+
       - name: Upload signed desktop artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -85,7 +88,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: jium-ai-windows-signed-release-evidence
-          path: dist/desktop-release-bundle
+          path: |
+            dist/desktop-release-bundle
+            dist/desktop-release-evidence-digests
           if-no-files-found: error
           retention-days: 30
 
@@ -134,7 +139,7 @@ jobs:
         run: |
           set -euo pipefail
           gh release view "$JIUM_DESKTOP_RELEASE_TAG" >/dev/null
-          tar -czf dist/jium-ai-windows-signed-release-evidence.tgz -C dist desktop-release-bundle
+          tar -czf dist/jium-ai-windows-signed-release-evidence.tgz -C dist desktop-release-bundle desktop-release-evidence-digests
           gh release upload "$JIUM_DESKTOP_RELEASE_TAG" \
             dist/desktop/*.exe \
             dist/desktop/*.blockmap \

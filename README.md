@@ -637,3 +637,16 @@ npm run server:trusted-key:approval-candidate:json -- --output dist/trusted-key-
 The command reads the trusted-key onboarding artifacts, verifies that the private key stayed repo-external, confirms the public candidate and registry patch are present, and emits only statuses, fingerprints, artifact names, byte counts, and SHA-256 digests. It does not expose raw public-key modulus values or private key material, and it does not approve or apply the key. Details are in [Trusted Key Approval Candidate v0.3.91](docs/trusted-key-approval-candidate-v0.3.91.md).
 
 The operational release dossier and approval evidence digest now include this trusted-key candidate report, so reviewers can see whether the active institution-key blocker is ready for approval or still unresolved.
+
+## v0.3.92 Desktop Publish Evidence Digest Gate
+
+Desktop publication now requires the signed release evidence digest before the GitHub Release upload gate can pass:
+
+```bash
+npm run desktop:package:signed
+npm run desktop:release:bundle
+npm run desktop:release:digest-evidence -- --feed-dir ./dist/desktop
+npm run desktop:publish:check -- --feed-dir ./dist/desktop
+```
+
+`desktop:publish:check` now validates the digest status and records only the aggregate `sha256-*` digest plus evidence file counts. The Desktop Signed Release workflow also builds and uploads `dist/desktop-release-evidence-digests` with the release evidence bundle. Details are in [Desktop Publish Evidence Digest Gate v0.3.92](docs/desktop-publish-evidence-digest-gate-v0.3.92.md).

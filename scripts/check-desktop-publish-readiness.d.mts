@@ -47,6 +47,20 @@ export type DesktopPublishReadiness = {
     errors: string[];
     files: string[];
   };
+  releaseEvidenceDigest: {
+    valid: boolean;
+    report: {
+      status: "READY" | "BLOCKED";
+      aggregateDigest: string;
+      summary: {
+        fileCount: number;
+        readyFileCount: number;
+        unsafeFindingCount: number;
+        errorCount: number;
+      };
+      errors: string[];
+    };
+  };
 };
 
 export function inspectDesktopPublishArtifacts(options?: {
@@ -64,6 +78,7 @@ export function validateDesktopPublishReadiness(options?: {
     releaseReadiness?: DesktopPublishReadiness["releaseReadiness"];
     updateFeed?: DesktopPublishReadiness["updateFeed"];
     publishArtifacts?: DesktopPublishReadiness["publishArtifacts"];
+    releaseEvidenceDigest?: DesktopPublishReadiness["releaseEvidenceDigest"];
   };
 }): Promise<DesktopPublishReadiness>;
 
@@ -79,6 +94,11 @@ export type DesktopPublishReadinessReport = {
     updateVersion: string;
     artifactCount: number;
     publishArtifactCount: number;
+    releaseEvidenceDigestStatus: string;
+    releaseEvidenceFileCount: number;
+    releaseEvidenceReadyFileCount: number;
+    releaseEvidenceUnsafeFindingCount: number;
+    releaseEvidenceAggregateDigest: string;
   };
   envSummary: DesktopPublishReadiness["envSummary"];
   checks: Array<{

@@ -1041,6 +1041,22 @@
 - 검증 범위
   - valid Netlify static-hosting config, unsafe config 차단, CLI output path guard, action-plan run order 연결을 테스트했다.
 
+## v3.92 Desktop publish evidence digest gate
+
+- Desktop publish gate hardening
+  - Version was raised to `0.3.92`.
+  - `desktop:publish:check` now requires a READY desktop release evidence digest before publication can pass.
+  - The publish readiness report records the digest status, file counts, unsafe finding count, and aggregate `sha256-*` digest only.
+- Workflow wiring
+  - The Desktop Signed Release workflow now runs `desktop:release:digest-evidence -- --feed-dir ./dist/desktop` after building the release bundle.
+  - Signed release evidence uploads now include both `dist/desktop-release-bundle` and `dist/desktop-release-evidence-digests`.
+  - The optional GitHub Release upload archive now packages both evidence directories.
+- Safety boundary
+  - Publish readiness still does not approve publication.
+  - Reports do not store GitHub tokens, update endpoints, certificate material, raw evidence contents, victim indicators, invite links, onion addresses, emails, phone numbers, or private paths.
+- Verification scope
+  - Tested successful publish readiness with digest, missing digest blocker, workflow command inclusion, and full release/publication regression path.
+
 ## v3.91 Trusted key approval candidate
 
 - Server trusted-key approval evidence

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { validateDesktopDistribution } from "./check-desktop-distribution.mjs";
 import { validateDesktopReleaseReadiness } from "./check-desktop-release-readiness.mjs";
 import { validateDesktopUpdateFeed } from "./check-desktop-update-feed.mjs";
+import { buildDesktopReleaseEvidenceDigests } from "./build-desktop-release-evidence-digests.mjs";
 import { loadDesktopReleaseEnv } from "./desktop-release-env.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -114,6 +115,9 @@ function publishNextActionFor(error) {
   if (error.includes("update feed")) {
     return "Rebuild signed artifacts and latest.yml from the same desktop build.";
   }
+  if (error.includes("release evidence digest")) {
+    return "Build the signed desktop evidence digest with npm run desktop:release:digest-evidence before publishing assets.";
+  }
   if (error.includes("artifact")) {
     return "Build signed installer artifacts before attempting GitHub Release upload.";
   }
@@ -159,6 +163,8 @@ export async function validateDesktopPublishReadiness({
   const releaseReadiness = validations?.releaseReadiness || validateDesktopReleaseReadiness({ root, env: effectiveEnv });
   const updateFeed = validations?.updateFeed || (await validateDesktopUpdateFeed({ root, feedDir, platform }));
   const publishArtifacts = validations?.publishArtifacts || inspectDesktopPublishArtifacts({ feedDir, platform });
+  const releaseEvidenceDigest = validations?.releaseEvidenceDigest ||
+    (await buildDesktopReleaseEvidenceDigests({ root, feedDir, platform }));
 
   if (!distribution.valid) {
     distribution.errors.forEach((error) => errors.push(`desktop publish distribution: ${error}`));
@@ -172,6 +178,12 @@ export async function validateDesktopPublishReadiness({
   if (!publishArtifacts.valid) {
     publishArtifacts.errors.forEach((error) => errors.push(error));
   }
+  if (!releaseEvidenceDigest.valid) {
+    const digestErrors = releaseEvidenceDigest.report?.errors?.length
+      ? releaseEvidenceDigest.report.errors
+      : ["desktop release evidence digest is not READY"];
+    digestErrors.forEach((error) => errors.push(`desktop publish release evidence digest: ${error}`));
+  }
 
   return {
     valid: errors.length === 0,
@@ -184,11 +196,26 @@ export async function validateDesktopPublishReadiness({
     releaseReadiness,
     updateFeed,
     publishArtifacts,
+    releaseEvidenceDigest,
   };
 }
 
 export function buildDesktopPublishReadinessReport(readiness, options = {}) {
   const generatedAt = options.generatedAt || new Date().toISOString();
+  const releaseEvidenceDigest = readiness.releaseEvidenceDigest || {
+    valid: false,
+    report: {
+      status: "BLOCKED",
+      aggregateDigest: "",
+      summary: {
+        fileCount: 0,
+        readyFileCount: 0,
+        unsafeFindingCount: 0,
+        errorCount: 1,
+      },
+      errors: ["desktop release evidence digest report missing"],
+    },
+  };
   const checks = [
     {
       id: "release-tag",
@@ -236,11 +263,22 @@ export function buildDesktopPublishReadinessReport(readiness, options = {}) {
       label: "Installer, update metadata, and blockmap assets are present for release upload",
       status: statusFromValid(readiness.publishArtifacts.valid),
     },
+    {
+      id: "release-evidence-digest",
+      label: "Signed desktop release evidence digest is ready",
+      status: statusFromValid(releaseEvidenceDigest.valid),
+    },
   ];
+
+  const releaseEvidenceReport = releaseEvidenceDigest.report || {};
+  const errors = [...readiness.errors];
+  if (!releaseEvidenceDigest.valid && !errors.some((error) => error.includes("release evidence digest"))) {
+    errors.push("desktop publish release evidence digest: desktop release evidence digest report missing");
+  }
 
   return {
     generatedAt,
-    status: readiness.valid ? "READY" : "BLOCKED",
+    status: readiness.valid && releaseEvidenceDigest.valid ? "READY" : "BLOCKED",
     summary: {
       errorCount: readiness.errors.length,
       packageVersion: readiness.packageVersion,
@@ -250,15 +288,21 @@ export function buildDesktopPublishReadinessReport(readiness, options = {}) {
       updateVersion: readiness.updateFeed.metadata.version,
       artifactCount: readiness.updateFeed.artifacts.length,
       publishArtifactCount: readiness.publishArtifacts.files.length,
+      releaseEvidenceDigestStatus: releaseEvidenceReport.status || "UNKNOWN",
+      releaseEvidenceFileCount: releaseEvidenceReport.summary?.fileCount ?? 0,
+      releaseEvidenceReadyFileCount: releaseEvidenceReport.summary?.readyFileCount ?? 0,
+      releaseEvidenceUnsafeFindingCount: releaseEvidenceReport.summary?.unsafeFindingCount ?? 0,
+      releaseEvidenceAggregateDigest: releaseEvidenceReport.aggregateDigest || "",
     },
     envSummary: readiness.envSummary,
     checks,
-    errors: [...readiness.errors],
-    nextActions: readiness.errors.length
-      ? Array.from(new Set(readiness.errors.map(publishNextActionFor)))
+    errors,
+    nextActions: errors.length
+      ? Array.from(new Set(errors.map(publishNextActionFor)))
       : ["Upload the signed installer, blockmap, update metadata, and redacted evidence bundle to the approved GitHub Release."],
     safetyNotes: [
       "This report stores release tag, package version, artifact counts, and setting presence only.",
+      "It stores only the release evidence aggregate SHA-256 digest, never the signed evidence file contents.",
       "It does not store GitHub token values, update endpoint values, certificate material, victim indicators, raw URLs, invite links, onion addresses, emails, or phone numbers.",
       "A READY result means release asset publication is technically gated; legal, institution, and incident-response operating approval still need human sign-off.",
     ],
@@ -277,6 +321,9 @@ export function formatDesktopPublishReadinessMarkdown(report) {
     `- Update version: ${report.summary.updateVersion || "MISSING"}`,
     `- Artifact count: ${report.summary.artifactCount}`,
     `- Publish asset count: ${report.summary.publishArtifactCount}`,
+    `- Release evidence digest: ${report.summary.releaseEvidenceDigestStatus}`,
+    `- Release evidence files: ${report.summary.releaseEvidenceReadyFileCount}/${report.summary.releaseEvidenceFileCount}`,
+    `- Release evidence aggregate: ${report.summary.releaseEvidenceAggregateDigest || "MISSING"}`,
     "",
     "## Checks",
     ...report.checks.map((check) => `- ${check.status} ${check.id}: ${check.label}`),

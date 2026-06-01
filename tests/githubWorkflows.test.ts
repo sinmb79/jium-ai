@@ -93,6 +93,7 @@ describe("GitHub Actions security gates", () => {
     expect(workflow).toContain("npm run desktop:package:signed");
     expect(workflow).toContain("npm run desktop:update-feed:check -- --feed-dir ./dist/desktop");
     expect(workflow).toContain("npm run desktop:release:bundle");
+    expect(workflow).toContain("npm run desktop:release:digest-evidence -- --feed-dir ./dist/desktop");
     expect(workflow).toContain("uses: actions/upload-artifact@v7");
     expect(workflow).toContain("uses: actions/download-artifact@v7");
     expect(workflow).toContain("contents: write");
@@ -101,6 +102,8 @@ describe("GitHub Actions security gates", () => {
     expect(workflow).toContain("gh release upload \"$JIUM_DESKTOP_RELEASE_TAG\"");
     expect(workflow).toContain("dist/desktop/latest.yml");
     expect(workflow).toContain("dist/desktop-release-bundle");
+    expect(workflow).toContain("dist/desktop-release-evidence-digests");
+    expect(workflow).toContain("desktop-release-bundle desktop-release-evidence-digests");
     expect(workflow).not.toContain("JIUM_WINDOWS_CSC_KEY_PASSWORD=");
     expect(workflow).not.toContain("WINDOWS_SIGNING_CERT_PASSWORD");
   });
