@@ -487,3 +487,12 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Reports store only approval-record status, env update status, key counts, and SHA-256 digests; raw incident owner refs, approver refs, public URLs, and approval references remain out of reports.
 - `ops:go-live:check` and `ops:action-plan` now route missing go-live approval env blockers to the guarded command instead of undocumented manual env edits.
 - Operational approval record parsing now tolerates UTF-8 BOM files so Windows-edited private approval packets do not fail solely because of file encoding metadata.
+
+## Implemented in v0.3.80
+
+- Added `scripts/apply-desktop-release-env.mjs` and `desktop:release-env:apply` for applying approved non-secret desktop release configuration to `.env.desktop.local`.
+- The command validates release channel, HTTPS updater URL, release tag, and pseudonymous publish approval reference before writing the ignored desktop env file.
+- Reports store only env update status, release setting states, and SHA-256 digests; raw updater URLs and raw approval references remain out of generated reports.
+- `desktop:release:check`, `desktop:signing-secrets:check`, and `desktop:publish:check` now load only allowlisted non-secret desktop release keys from `.env.desktop.local`.
+- Signing certificates, certificate passwords, Azure signing secrets, and GitHub tokens are intentionally excluded from `.env.desktop.local` and must come from the process environment or GitHub Secrets.
+- `ops:action-plan` now routes desktop release env blockers to `desktop:release-env:apply` instead of undocumented manual edits.

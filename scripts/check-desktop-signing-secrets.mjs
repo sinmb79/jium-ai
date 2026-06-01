@@ -2,6 +2,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadDesktopReleaseEnv } from "./desktop-release-env.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -51,10 +52,10 @@ export function summarizeDesktopSigningSecrets(env = process.env) {
 
 function nextActionFor(error) {
   if (error.includes("release channel")) {
-    return "Set JIUM_DESKTOP_RELEASE_CHANNEL for the approved desktop lane.";
+    return "Apply the approved non-secret desktop release lane with npm run desktop:release-env:apply.";
   }
   if (error.includes("update URL")) {
-    return "Set JIUM_DESKTOP_UPDATE_URL to the approved HTTPS generic updater endpoint.";
+    return "Apply the approved HTTPS generic updater endpoint with npm run desktop:release-env:apply.";
   }
   if (error.includes("Windows electron-builder signing profile")) {
     return "Configure CSC_LINK/CSC_KEY_PASSWORD, WIN_CSC_LINK/WIN_CSC_KEY_PASSWORD, WINDOWS_SIGNING_CERT_PATH/WINDOWS_SIGNING_CERT_PASSWORD, or Azure Trusted Signing secrets.";
@@ -62,8 +63,8 @@ function nextActionFor(error) {
   return "Resolve the desktop signing secret preflight error before signed packaging.";
 }
 
-export function validateDesktopSigningSecrets({ env = process.env } = {}) {
-  const summary = summarizeDesktopSigningSecrets(env);
+export function validateDesktopSigningSecrets({ root = repoRoot, env = process.env } = {}) {
+  const summary = summarizeDesktopSigningSecrets(loadDesktopReleaseEnv({ root, env }));
   const errors = [];
   if (summary.JIUM_DESKTOP_RELEASE_CHANNEL !== "SET") {
     errors.push("desktop signed release channel missing: JIUM_DESKTOP_RELEASE_CHANNEL");

@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { verifyDesktopExport } from "./build-desktop-export.mjs";
 import { summarizeDesktopSigningSecrets } from "./check-desktop-signing-secrets.mjs";
+import { loadDesktopReleaseEnv } from "./desktop-release-env.mjs";
 
 export const REQUIRED_DESKTOP_FILES = [
   "desktop/electron-main.cjs",
@@ -28,6 +29,9 @@ export const REQUIRED_DESKTOP_PACKAGE_SCRIPTS = [
   "desktop:update-feed:check",
   "desktop:release:bundle",
   "desktop:signing-secrets:check",
+  "desktop:release-env:apply",
+  "desktop:release-env:apply:json",
+  "desktop:release-env:apply:markdown",
   "desktop:release:check",
   "desktop:release:json",
   "desktop:release:markdown",
@@ -42,7 +46,7 @@ function present(value) {
 
 function readJsonSafe(filePath) {
   try {
-    return JSON.parse(readFileSync(filePath, "utf8"));
+    return JSON.parse(readFileSync(filePath, "utf8").replace(/^\uFEFF/, ""));
   } catch {
     return null;
   }
@@ -110,10 +114,10 @@ function nextActionFor(error) {
     return "Run npm run desktop:export and review the generated out/jium-desktop-manifest.json.";
   }
   if (error.includes("release channel")) {
-    return "Set JIUM_DESKTOP_RELEASE_CHANNEL for the approved release lane.";
+    return "Apply the approved non-secret desktop release lane with npm run desktop:release-env:apply.";
   }
   if (error.includes("update URL")) {
-    return "Set JIUM_DESKTOP_UPDATE_URL to the HTTPS endpoint used by the desktop updater.";
+    return "Apply the approved HTTPS desktop updater endpoint with npm run desktop:release-env:apply.";
   }
   if (error.includes("signing profile")) {
     return "Configure at least one platform signing profile before producing a trusted installer.";
@@ -123,13 +127,14 @@ function nextActionFor(error) {
 
 export function validateDesktopReleaseReadiness({ root = process.cwd(), env = process.env, outDir = path.join(root, "out") } = {}) {
   const errors = [];
+  const effectiveEnv = loadDesktopReleaseEnv({ root, env });
   const packageJson = readJsonSafe(path.join(root, "package.json")) || {};
   const scripts = packageJson.scripts || {};
   const dependencies = packageJson.dependencies || {};
   const devDependencies = packageJson.devDependencies || {};
   const nextConfigText = readTextSafe(path.join(root, "next.config.ts"));
   const builderConfigText = readTextSafe(path.join(root, "electron-builder.config.cjs"));
-  const envSummary = summarizeDesktopReleaseEnv(env);
+  const envSummary = summarizeDesktopReleaseEnv(effectiveEnv);
   const staticExport = verifyDesktopExport({ root, outDir });
 
   for (const relativePath of REQUIRED_DESKTOP_FILES) {

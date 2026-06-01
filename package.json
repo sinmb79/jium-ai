@@ -1,6 +1,6 @@
 {
   "name": "jium-ai",
-  "version": "0.3.79",
+  "version": "0.3.80",
   "private": true,
   "description": "무료·로컬 우선 디지털 권리구제 도우미",
   "author": "22B Labs",
@@ -54,6 +54,9 @@
     "desktop:release:bundle": "node scripts/build-desktop-release-bundle.mjs",
     "desktop:signing-secrets:check": "node scripts/check-desktop-signing-secrets.mjs",
     "desktop:publish:check": "node scripts/check-desktop-publish-readiness.mjs",
+    "desktop:release-env:apply": "node scripts/apply-desktop-release-env.mjs",
+    "desktop:release-env:apply:json": "node scripts/apply-desktop-release-env.mjs --json",
+    "desktop:release-env:apply:markdown": "node scripts/apply-desktop-release-env.mjs --markdown",
     "desktop:release:check": "node scripts/check-desktop-release-readiness.mjs",
     "desktop:release:json": "node scripts/check-desktop-release-readiness.mjs --json",
     "desktop:release:markdown": "node scripts/check-desktop-release-readiness.mjs --markdown",

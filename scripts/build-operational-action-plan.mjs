@@ -117,6 +117,7 @@ const PHASE_BLUEPRINTS = [
     objective: "Prepare a signed desktop installer, update metadata, publish approval, and GitHub Release assets.",
     evidenceTarget: "dist/desktop-release-bundle and signed release workflow artifacts",
     verificationCommands: [
+      "npm run desktop:release-env:apply -- --channel <approved-release-channel> --update-url <approved-https-update-url> --publish-approval-ref <pseudonymous-desktop-publish-approval-reference>",
       "npm run desktop:signing-secrets:check",
       "npm run desktop:package:signed",
       "npm run desktop:distribution:check",
@@ -124,6 +125,7 @@ const PHASE_BLUEPRINTS = [
       "npm run desktop:publish:check -- --feed-dir <signed-release-folder>",
     ],
     baseActions: [
+      "Apply approved non-secret desktop release env with npm run desktop:release-env:apply before signing checks.",
       "Run the Desktop Signed Release workflow with the release tag that matches package.json.",
       "Keep signing material in GitHub Secrets or an approved signing service, never in the repository.",
       "Validate installer, blockmap, update metadata, and publish approval before uploading assets.",

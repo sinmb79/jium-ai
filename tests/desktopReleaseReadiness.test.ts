@@ -54,6 +54,9 @@ async function writeDesktopRepo(root: string) {
           "desktop:update-feed:check": "node scripts/check-desktop-update-feed.mjs",
           "desktop:release:bundle": "node scripts/build-desktop-release-bundle.mjs",
           "desktop:signing-secrets:check": "node scripts/check-desktop-signing-secrets.mjs",
+          "desktop:release-env:apply": "node scripts/apply-desktop-release-env.mjs",
+          "desktop:release-env:apply:json": "node scripts/apply-desktop-release-env.mjs --json",
+          "desktop:release-env:apply:markdown": "node scripts/apply-desktop-release-env.mjs --markdown",
           "desktop:release:check": "node scripts/check-desktop-release-readiness.mjs",
           "desktop:release:json": "node scripts/check-desktop-release-readiness.mjs --json",
           "desktop:release:markdown": "node scripts/check-desktop-release-readiness.mjs --markdown",
@@ -129,6 +132,28 @@ describe("desktop release readiness", () => {
     expect(serialized).not.toContain("password-redacted");
     expect(serialized).not.toContain("ABCDE12345");
     expect(markdown).not.toContain("linux-secret-key-id");
+  });
+
+  it("loads non-secret release channel and update URL from .env.desktop.local", async () => {
+    const root = await tempRepo();
+    await writeDesktopRepo(root);
+    await writeFile(
+      path.join(root, ".env.desktop.local"),
+      ["JIUM_DESKTOP_RELEASE_CHANNEL=stable", "JIUM_DESKTOP_UPDATE_URL=https://updates.example.com/jium-ai/", ""].join("\n"),
+      "utf8",
+    );
+
+    const result = validateDesktopReleaseReadiness({
+      root,
+      env: releaseEnv({
+        JIUM_DESKTOP_RELEASE_CHANNEL: undefined,
+        JIUM_DESKTOP_UPDATE_URL: undefined,
+      }),
+    });
+
+    expect(result.valid).toBe(true);
+    expect(result.envSummary.JIUM_DESKTOP_RELEASE_CHANNEL).toBe("SET");
+    expect(result.envSummary.JIUM_DESKTOP_UPDATE_URL).toBe("SET_HTTPS");
   });
 
   it("summarizes signing and updater env presence only", () => {

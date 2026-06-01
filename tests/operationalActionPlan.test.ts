@@ -130,6 +130,9 @@ describe("operational action plan", () => {
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
       "npm run public:hosting:bundle",
     );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "desktop-release")?.verificationCommands).toContain(
+      "npm run desktop:release-env:apply -- --channel <approved-release-channel> --update-url <approved-https-update-url> --publish-approval-ref <pseudonymous-desktop-publish-approval-reference>",
+    );
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
       "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
     );

@@ -496,3 +496,13 @@ npm run ops:go-live:env:apply -- --incident-owner-ref <pseudonymous-incident-own
 ```
 
 The command only writes approval flags after `ops:approvals:check` would be READY, applies a pseudonymous incident owner reference, rejects raw contacts/URLs/placeholders/secrets, and emits redacted reports with only key statuses plus SHA-256 digests. `ops:go-live:check` and `ops:action-plan` now point operators to this command when approval env flags are missing. Details are in [Operational Go-Live Env Apply v0.3.79](docs/operational-go-live-env-apply-v0.3.79.md).
+
+## v0.3.80 Desktop Release Env Apply
+
+Approved non-secret desktop release configuration can now be applied to the ignored `.env.desktop.local` file through a guarded CLI:
+
+```bash
+npm run desktop:release-env:apply -- --channel <approved-release-channel> --update-url <approved-https-update-url> --publish-approval-ref <pseudonymous-desktop-publish-approval-reference>
+```
+
+The command writes only the release channel, HTTPS updater URL, release tag, and `JIUM_DESKTOP_PUBLISH_APPROVAL=APPROVED` after validation. Signing certificates, certificate passwords, Azure signing secrets, and GitHub tokens are never read from `.env.desktop.local`; they must stay in the real process environment or GitHub Secrets. `desktop:release:check`, `desktop:signing-secrets:check`, `desktop:publish:check`, and `ops:action-plan` now load or route these non-secret settings through the guarded command. Details are in [Desktop Release Env Apply v0.3.80](docs/desktop-release-env-apply-v0.3.80.md).

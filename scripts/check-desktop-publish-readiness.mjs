@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { validateDesktopDistribution } from "./check-desktop-distribution.mjs";
 import { validateDesktopReleaseReadiness } from "./check-desktop-release-readiness.mjs";
 import { validateDesktopUpdateFeed } from "./check-desktop-update-feed.mjs";
+import { loadDesktopReleaseEnv } from "./desktop-release-env.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -15,7 +16,7 @@ function present(value) {
 
 function readPackageVersion(root) {
   try {
-    return JSON.parse(readFileSync(path.join(root, "package.json"), "utf8")).version || "";
+    return JSON.parse(readFileSync(path.join(root, "package.json"), "utf8").replace(/^\uFEFF/, "")).version || "";
   } catch {
     return "";
   }
@@ -93,13 +94,13 @@ export function inspectDesktopPublishArtifacts({ feedDir = path.join(repoRoot, "
 
 function publishNextActionFor(error) {
   if (error.includes("release tag")) {
-    return "Set JIUM_DESKTOP_RELEASE_TAG to the approved installer release tag that matches package.json, for example vMAJOR.MINOR.PATCH.";
+    return "Apply the approved desktop release tag with npm run desktop:release-env:apply.";
   }
   if (error.includes("package version")) {
     return "Align package.json version, update metadata version, and the approved release tag before publishing.";
   }
   if (error.includes("publish approval")) {
-    return "Set JIUM_DESKTOP_PUBLISH_APPROVAL=APPROVED only after human release approval.";
+    return "Apply APPROVED desktop publish state with npm run desktop:release-env:apply only after human release approval.";
   }
   if (error.includes("GitHub")) {
     return "Run publishing inside GitHub Actions with repository context and a token that can upload release assets.";
@@ -127,9 +128,10 @@ export async function validateDesktopPublishReadiness({
   validations,
 } = {}) {
   const errors = [];
+  const effectiveEnv = loadDesktopReleaseEnv({ root, env });
   const packageVersion = readPackageVersion(root);
-  const tag = parseDesktopReleaseTag(env.JIUM_DESKTOP_RELEASE_TAG);
-  const envSummary = summarizePublishEnv(env);
+  const tag = parseDesktopReleaseTag(effectiveEnv.JIUM_DESKTOP_RELEASE_TAG);
+  const envSummary = summarizePublishEnv(effectiveEnv);
 
   if (!tag.tag) {
     errors.push("desktop publish release tag missing: JIUM_DESKTOP_RELEASE_TAG");
@@ -154,7 +156,7 @@ export async function validateDesktopPublishReadiness({
   }
 
   const distribution = validations?.distribution || (await validateDesktopDistribution({ root, platform }));
-  const releaseReadiness = validations?.releaseReadiness || validateDesktopReleaseReadiness({ root, env });
+  const releaseReadiness = validations?.releaseReadiness || validateDesktopReleaseReadiness({ root, env: effectiveEnv });
   const updateFeed = validations?.updateFeed || (await validateDesktopUpdateFeed({ root, feedDir, platform }));
   const publishArtifacts = validations?.publishArtifacts || inspectDesktopPublishArtifacts({ feedDir, platform });
 

@@ -99,6 +99,29 @@ describe("desktop publish readiness", () => {
     expect(JSON.stringify(report)).not.toContain("sinmb79/jium-ai");
   });
 
+  it("loads release tag and publish approval from .env.desktop.local", async () => {
+    const root = await tempRepo();
+    await writeFile(
+      path.join(root, ".env.desktop.local"),
+      ["JIUM_DESKTOP_RELEASE_TAG=v0.3.48", "JIUM_DESKTOP_PUBLISH_APPROVAL=APPROVED", ""].join("\n"),
+      "utf8",
+    );
+
+    const readiness = await validateDesktopPublishReadiness({
+      root,
+      platform: "win32",
+      env: {
+        GITHUB_REPOSITORY: "sinmb79/jium-ai",
+        GH_TOKEN: "ghs_secret_token",
+      } as unknown as NodeJS.ProcessEnv,
+      validations: readyValidations(),
+    });
+
+    expect(readiness.valid).toBe(true);
+    expect(readiness.envSummary.JIUM_DESKTOP_RELEASE_TAG).toBe("SET");
+    expect(readiness.envSummary.JIUM_DESKTOP_PUBLISH_APPROVAL).toBe("APPROVED");
+  });
+
   it("checks publishable Windows installer assets separately from distribution artifacts", async () => {
     const root = await tempRepo();
     const feedDir = path.join(root, "dist", "desktop");

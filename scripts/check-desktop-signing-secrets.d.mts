@@ -15,6 +15,7 @@ export type DesktopSigningSecretSummary = {
 export function summarizeDesktopSigningSecrets(env?: NodeJS.ProcessEnv): DesktopSigningSecretSummary;
 
 export function validateDesktopSigningSecrets(options?: {
+  root?: string;
   env?: NodeJS.ProcessEnv;
 }): {
   valid: boolean;
