@@ -35,6 +35,11 @@ import {
   OPERATIONAL_APPROVAL_COMMAND_PACKET_JSON,
   OPERATIONAL_APPROVAL_COMMAND_PACKET_MARKDOWN,
 } from "./build-operational-approval-command-packet.mjs";
+import {
+  OPERATIONAL_LAUNCH_CONSOLE_DIR,
+  OPERATIONAL_LAUNCH_CONSOLE_JSON,
+  OPERATIONAL_LAUNCH_CONSOLE_MARKDOWN,
+} from "./build-operational-launch-console.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -192,6 +197,18 @@ function buildRequiredReviewFiles() {
       label: "Operational approval command packet Markdown",
       path: `${OPERATIONAL_APPROVAL_COMMAND_PACKET_DIR}/${OPERATIONAL_APPROVAL_COMMAND_PACKET_MARKDOWN}`,
       purpose: "Human-readable approval and onboarding command packet for operators.",
+    },
+    {
+      id: "operational-launch-console-json",
+      label: "Operational launch console JSON",
+      path: `${OPERATIONAL_LAUNCH_CONSOLE_DIR}/${OPERATIONAL_LAUNCH_CONSOLE_JSON}`,
+      purpose: "Owner-lane launch board that separates external inputs from verification commands.",
+    },
+    {
+      id: "operational-launch-console-markdown",
+      label: "Operational launch console Markdown",
+      path: `${OPERATIONAL_LAUNCH_CONSOLE_DIR}/${OPERATIONAL_LAUNCH_CONSOLE_MARKDOWN}`,
+      purpose: "Human-readable launch board for program owner, legal reviewer, release manager, and deployment admin.",
     },
     {
       id: "release-dossier-json",
@@ -424,6 +441,7 @@ export async function buildOperationalReleaseDossier({
     nextCommands: [
       "npm run ops:handoff:bundle",
       "npm run ops:action-plan",
+      "npm run ops:launch-console",
       "npm run ops:go-live:rehearsal",
       "npm run ops:release-dossier",
       "npm run ops:go-live:check",

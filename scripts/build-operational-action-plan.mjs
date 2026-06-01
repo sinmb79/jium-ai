@@ -192,6 +192,7 @@ const PHASE_BLUEPRINTS = [
       "npm run ops:go-live:check",
       "npm run ops:handoff:bundle",
       "npm run ops:action-plan",
+      "npm run ops:launch-console",
       "npm run ops:release-dossier",
     ],
     baseActions: [
@@ -206,6 +207,7 @@ const PHASE_BLUEPRINTS = [
       "Set only approval states and setting-presence values in production env; do not put raw contacts or victim indicators into reports.",
       "Confirm server runtime, storage, desktop publish, onboarding, and private approvals are all READY.",
       "Archive the handoff bundle and action plan with the private release evidence packet.",
+      "Build npm run ops:launch-console so owner lanes and approval command queues are reviewed before final launch.",
       "Build npm run ops:release-dossier so external reviewers receive a redacted evidence manifest before launch approval.",
     ],
     completionCriteria: [

@@ -1041,6 +1041,21 @@
 - 검증 범위
   - valid Netlify static-hosting config, unsafe config 차단, CLI output path guard, action-plan run order 연결을 테스트했다.
 
+## v3.95 Operational launch console
+
+- Operator launch board
+  - Version was raised to `0.3.95`.
+  - Added `ops:launch-console`, JSON, and Markdown variants.
+  - The console condenses the full operational action plan into owner lanes, hard blocks, P0 action counts, external approval command queues, verification commands, and ready evidence lanes.
+- Operational wiring
+  - Go-live action plans now include `ops:launch-console` before the release dossier.
+  - Operational release dossiers and approval evidence digests include the launch console JSON/Markdown reports.
+- Safety boundary
+  - The console is not a launch approval and does not write private approval records.
+  - Reports do not store raw public URLs, contacts, owner names, victim indicators, invite links, onion addresses, emails, phone numbers, tokens, certificate material, or private paths.
+- Verification scope
+  - Tested blocked and ready launch decisions, owner-lane summaries, command queue counts, canonical JSON/Markdown output, CLI source-report mode, unsafe output path guard, action-plan routing, and release dossier inclusion.
+
 ## v3.94 Operational approval command packet
 
 - External approval command packet

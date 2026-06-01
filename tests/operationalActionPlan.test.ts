@@ -188,6 +188,9 @@ describe("operational action plan", () => {
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
       "npm run ops:release-dossier",
     );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
+      "npm run ops:launch-console",
+    );
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands.some((command) => command.startsWith("Upload "))).toBe(
       false,
     );
@@ -200,6 +203,7 @@ describe("operational action plan", () => {
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("public:hosting:preflight"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:go-live:env:apply"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:release-dossier"))).toBe(true);
+    expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:launch-console"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:approvals:digest-evidence"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:approvals:command-packet"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "production-onboarding")?.actions.some((action) => action.action.includes("ops:onboarding:digest-evidence"))).toBe(true);

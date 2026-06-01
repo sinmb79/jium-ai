@@ -48,6 +48,8 @@ When run without `--file`, the command refreshes the release dossier and digests
 - `dist/desktop-publish-candidate/desktop-publish-candidate-report.md`
 - `dist/operational-approval-command-packet/operational-approval-command-packet.json`
 - `dist/operational-approval-command-packet/operational-approval-command-packet.md`
+- `dist/operational-launch-console/operational-launch-console.json`
+- `dist/operational-launch-console/operational-launch-console.md`
 
 For an already frozen review packet:
 

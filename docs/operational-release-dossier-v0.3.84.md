@@ -45,7 +45,7 @@ By default, the command refreshes the handoff bundle, action plan, and go-live r
 - `dist/operational-release-dossier/operational-release-dossier.json`
 - `dist/operational-release-dossier/operational-release-dossier.md`
 
-The required review manifest also lists the server origin candidate, trusted-key approval candidate, desktop publish candidate, and operational approval command packet reports when those redacted packets are generated.
+The required review manifest also lists the server origin candidate, trusted-key approval candidate, desktop publish candidate, operational approval command packet, and operational launch console reports when those redacted packets are generated.
 
 For review automation that already generated source reports:
 

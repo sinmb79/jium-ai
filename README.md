@@ -672,3 +672,14 @@ npm run ops:approvals:command-packet:json -- --output dist/operational-approval-
 ```
 
 The packet covers operational approval records, production onboarding checklist records, storage decisions, public operations route approvals, and final verification commands. It is a command template packet only; it does not approve anything or write private records. Details are in [Operational Approval Command Packet v0.3.94](docs/operational-approval-command-packet-v0.3.94.md).
+
+## v0.3.95 Operational Launch Console
+
+Operators can now condense the long go-live action plan into one redacted owner-lane board:
+
+```bash
+npm run ops:launch-console
+npm run ops:launch-console:json -- --output dist/operational-launch-console/report.json
+```
+
+The console shows blocked phases, owner roles, P0 action counts, external approval command queues, verification commands, and ready evidence lanes without storing raw URLs, contacts, tokens, invite routes, onion addresses, phone numbers, or private paths. It is included in release dossiers and approval evidence digests. Details are in [Operational Launch Console v0.3.95](docs/operational-launch-console-v0.3.95.md).
