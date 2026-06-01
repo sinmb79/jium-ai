@@ -528,3 +528,14 @@ npm run ops:go-live:check
 ```
 
 This lets the guarded commands that write `.env.server.local` feed the final readiness gates without undocumented manual shell exports. Process environment values still override file values, and generated reports continue to redact secrets, trusted origins, storage paths, hosted audit paths, public URLs, and contacts. Details are in [Server Runtime Env File Loading v0.3.82](docs/server-runtime-env-file-loading-v0.3.82.md).
+
+## v0.3.83 Operational Go-Live Rehearsal
+
+Operators can now run a safe synthetic rehearsal of the final launch gates:
+
+```bash
+npm run ops:go-live:rehearsal
+npm run ops:go-live:rehearsal:json -- --output dist/operational-go-live-rehearsal/report.json
+```
+
+The command creates a temporary private workspace, fills it with synthetic pseudonymous approvals, HTTPS routes, hosted-audit evidence, server env, server storage, and a trusted-key record, then runs the real server/onboarding/approval/hosted-audit/go-live validators. Desktop publish readiness is explicitly marked as `SIMULATED_SIGNED_ARTIFACTS`, because real signed installers and update metadata still require the approved signing flow. The report is redacted and the temporary workspace is removed after validation. Details are in [Operational Go-Live Rehearsal v0.3.83](docs/operational-go-live-rehearsal-v0.3.83.md).

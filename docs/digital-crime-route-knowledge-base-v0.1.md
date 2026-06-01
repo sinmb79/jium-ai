@@ -512,3 +512,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Process environment values still override file values, preserving CI and emergency override behavior.
 - The loader tolerates UTF-8 BOM env files and ignores unknown keys.
 - Reports continue to redact server secrets, trusted origins, storage paths, hosted audit paths, public URLs, contacts, victim indicators, invite links, onion addresses, emails, and phone numbers.
+
+## Implemented in v0.3.83
+
+- Added `scripts/run-operational-go-live-rehearsal.mjs` and `ops:go-live:rehearsal`.
+- The rehearsal creates a temporary synthetic workspace, runs the real server runtime, production onboarding, approval-record, hosted-audit, and final go-live validators, then removes the temporary workspace.
+- Desktop publish readiness is explicitly marked `SIMULATED_SIGNED_ARTIFACTS`; the command does not replace signed installer, blockmap, update-feed, or release-upload approval.
+- Rehearsal reports store only statuses, counts, package version, and declared simulation modes.
+- Reports do not store synthetic secrets, origins, public URLs, hosted audit paths, storage paths, contacts, owner names, tokens, victim indicators, invite links, onion addresses, emails, or phone numbers.
