@@ -756,3 +756,13 @@ npm run desktop:release-upload:check -- --release-tag v0.3.102
 ```
 
 The report checks the release tag, draft state, signed installer, blockmap, `latest.yml`, and signed release evidence archive. It is wired into the Desktop Signed Release workflow, the desktop release readiness gate, the action plan, and the release dossier without storing raw GitHub URLs, tokens, update endpoints, certificate material, contacts, invite links, onion addresses, or private paths. Details are in [Desktop Release Upload Verification v0.3.102](docs/desktop-release-upload-verification-v0.3.102.md).
+
+## v0.3.103 Operational Approval Evidence Upload Digests
+
+The final approval evidence digest now requires the desktop release upload verification reports:
+
+```bash
+npm run ops:approvals:digest-evidence
+```
+
+This prevents release-evidence approval from omitting proof that signed desktop assets were uploaded and verified. If `dist/desktop-release-upload/desktop-release-upload-report.json` and `.md` are missing, the digest blocks until the release manager runs `desktop:release-upload:check`. Details are in [Operational Approval Evidence Upload Digests v0.3.103](docs/operational-approval-evidence-upload-digests-v0.3.103.md).

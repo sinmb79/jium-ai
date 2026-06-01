@@ -1089,6 +1089,21 @@
 - Verification scope
   - Tested filled private input apply readiness, hosted-audit readiness, server-storage ready-to-create status, desktop blocker surfacing, redaction of raw values, report writing, CLI output, and output path guard.
 
+## v3.103 Operational approval evidence upload digests
+
+- Approval evidence closure
+  - Version was raised to `0.3.103`.
+  - The default `ops:approvals:digest-evidence` file set now includes `dist/desktop-release-upload/desktop-release-upload-report.json` and `.md`.
+  - Missing upload verification reports now block the aggregate approval evidence digest instead of silently leaving GitHub Release upload proof outside the reviewed evidence set.
+- Operational wiring
+  - Release-evidence approval now depends on the release manager running `desktop:release-upload:check` after the signed release upload.
+  - The release dossier and approval digest flows now point to the same upload-verification evidence artifacts.
+- Safety boundary
+  - The digest manifest still stores file names, byte counts, SHA-256 digests, unsafe pattern IDs, and approval command templates only.
+  - It does not store file contents, raw public URLs, GitHub token values, asset download URLs, support contacts, incident owner names, certificate material, victim indicators, invite links, onion addresses, emails, phone numbers, or private storage paths.
+- Verification scope
+  - Tested that the default evidence set blocks when the desktop release upload verification JSON/Markdown reports are missing, so final approval evidence cannot omit post-upload proof.
+
 ## v3.102 Desktop release upload verification
 
 - Release upload proof

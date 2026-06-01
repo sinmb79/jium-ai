@@ -30,6 +30,11 @@ import {
   buildDesktopPublishCandidate,
 } from "./build-desktop-publish-candidate.mjs";
 import {
+  DESKTOP_RELEASE_UPLOAD_DIR,
+  DESKTOP_RELEASE_UPLOAD_JSON,
+  DESKTOP_RELEASE_UPLOAD_MARKDOWN,
+} from "./check-desktop-release-upload.mjs";
+import {
   OPERATIONAL_APPROVAL_COMMAND_PACKET_DIR,
   OPERATIONAL_APPROVAL_COMMAND_PACKET_JSON,
   OPERATIONAL_APPROVAL_COMMAND_PACKET_MARKDOWN,
@@ -76,6 +81,8 @@ const DEFAULT_EVIDENCE_FILES = [
   `${TRUSTED_KEY_APPROVAL_CANDIDATE_DIR}/${TRUSTED_KEY_APPROVAL_CANDIDATE_MARKDOWN}`,
   `${DESKTOP_PUBLISH_CANDIDATE_DIR}/${DESKTOP_PUBLISH_CANDIDATE_JSON}`,
   `${DESKTOP_PUBLISH_CANDIDATE_DIR}/${DESKTOP_PUBLISH_CANDIDATE_MARKDOWN}`,
+  `${DESKTOP_RELEASE_UPLOAD_DIR}/${DESKTOP_RELEASE_UPLOAD_JSON}`,
+  `${DESKTOP_RELEASE_UPLOAD_DIR}/${DESKTOP_RELEASE_UPLOAD_MARKDOWN}`,
   `${OPERATIONAL_APPROVAL_COMMAND_PACKET_DIR}/${OPERATIONAL_APPROVAL_COMMAND_PACKET_JSON}`,
   `${OPERATIONAL_APPROVAL_COMMAND_PACKET_DIR}/${OPERATIONAL_APPROVAL_COMMAND_PACKET_MARKDOWN}`,
   `${OPERATIONAL_LAUNCH_CONSOLE_DIR}/${OPERATIONAL_LAUNCH_CONSOLE_JSON}`,
@@ -278,6 +285,7 @@ export async function buildOperationalApprovalEvidenceDigests({
   const aggregateDigest = errors.length || unsafeFindings.length || safeFileDigests.length !== fileReports.length
     ? ""
     : sha256Text(safeFileDigests.join("\n"));
+  const missingDesktopReleaseUploadEvidence = errors.some((error) => error.includes(`${DESKTOP_RELEASE_UPLOAD_DIR}/`));
 
   const report = {
     schema: OPERATIONAL_APPROVAL_EVIDENCE_DIGESTS_SCHEMA,
@@ -301,12 +309,15 @@ export async function buildOperationalApprovalEvidenceDigests({
           "Run npm run ops:approvals:check after all required approval records are approved.",
         ]
       : [
+          ...(missingDesktopReleaseUploadEvidence
+            ? ["Run npm run desktop:release-upload:check -- --release-tag <approved-release-tag> after signed release upload, then rebuild this digest manifest."]
+            : []),
           "Remove unsafe raw values or missing files before using evidence digests for approval records.",
           "Regenerate the redacted release dossier with npm run ops:release-dossier, then rebuild this digest manifest.",
         ],
     safetyNotes: [
       "This manifest stores file names, byte counts, SHA-256 digests, unsafe pattern IDs, and approval command templates only.",
-      "It does not store file contents, raw public URLs, support contacts, incident owner names, secrets, tokens, certificate material, victim indicators, invite links, onion addresses, emails, phone numbers, or private storage paths.",
+      "It does not store file contents, raw public URLs, GitHub token values, asset download URLs, support contacts, incident owner names, secrets, tokens, certificate material, victim indicators, invite links, onion addresses, emails, phone numbers, or private storage paths.",
       "The aggregate digest proves the exact reviewed redacted evidence files; it is not legal, institution, or go-live approval.",
     ],
   };

@@ -136,6 +136,25 @@ describe("operational approval evidence digests", () => {
     expect(written.markdownPathRelative).toBe("dist/operational-approval-evidence-digests/operational-approval-evidence-digests.md");
   });
 
+  it("requires desktop release upload verification reports in the default evidence set", async () => {
+    const root = await tempRepo();
+    const result = await buildOperationalApprovalEvidenceDigests({
+      root,
+      generatedAt: "2026-06-01T00:00:00.000Z",
+      noBuild: true,
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.report.files.map((file: { path: string }) => file.path)).toContain(
+      "dist/desktop-release-upload/desktop-release-upload-report.json",
+    );
+    expect(result.report.files.map((file: { path: string }) => file.path)).toContain(
+      "dist/desktop-release-upload/desktop-release-upload-report.md",
+    );
+    expect(result.report.errors.join("\n")).toContain("desktop-release-upload-report.json: evidence file missing");
+    expect(result.report.nextActions.join("\n")).toContain("desktop:release-upload:check");
+  });
+
   it("runs the CLI with repeated evidence files", async () => {
     const root = await tempRepo();
     await writeEvidence(root, "dist/operational-release-dossier/operational-release-dossier.json", {
