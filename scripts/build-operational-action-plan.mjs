@@ -40,12 +40,14 @@ const PHASE_BLUEPRINTS = [
     evidenceTarget: "ops/private/production-onboarding and ops/private/operational-approval-records.json",
     verificationCommands: [
       "npm run ops:onboarding:approve-checklist -- --record <checklist-record-id> --evidence-ref <pseudonymous-evidence-reference>",
+      "npm run ops:onboarding:approve-storage-decision -- --section <audit-ledger|account-registry> --evidence-ref <pseudonymous-storage-evidence-reference>",
       "npm run ops:onboarding:check",
       "npm run ops:onboarding:check:markdown -- --output <redacted-onboarding-report.md>",
     ],
     baseActions: [
       "Run npm run ops:onboarding:init if private onboarding files do not exist.",
       "Record each externally approved onboarding checklist item with npm run ops:onboarding:approve-checklist.",
+      "Record each externally approved storage decision section with npm run ops:onboarding:approve-storage-decision.",
       "Replace onboarding placeholders with approved operator checklist, storage decision, trusted-key review, and release evidence references.",
       "Run npm run ops:onboarding:upgrade after each app version bump, then re-check readiness.",
     ],

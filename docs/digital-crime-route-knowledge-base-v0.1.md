@@ -458,3 +458,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The command updates only the ignored private `operational-approval-records.json`, rejects placeholders, raw URLs, contacts, invite links, onion addresses, phone numbers, secrets, and private key material, and writes redacted JSON/Markdown reports.
 - Reports store only approval type, counts, readiness status, and SHA-256 digests of pseudonymous approval references; the raw pseudonymous approval values remain in the private approval packet.
 - `ops:approvals:check` and `ops:action-plan` now point operators to the guarded approval command so go-live approvals can advance without undocumented JSON editing.
+
+## Implemented in v0.3.76
+
+- Added `scripts/approve-production-onboarding-storage-decision.mjs` and `ops:onboarding:approve-storage-decision` for recording externally approved storage decision sections.
+- The command updates only the ignored private `storage-decision.template.json`, rejects placeholders, raw URLs, contacts, invite links, onion addresses, phone numbers, secrets, and private key material, and writes redacted JSON/Markdown reports.
+- Reports store only section id, counts, decision status, and SHA-256 evidence-reference digests; the raw pseudonymous storage evidence reference remains in the private onboarding packet.
+- `ops:onboarding:init`, `ops:onboarding:check`, and `ops:action-plan` now point operators to the guarded storage decision command so storage approvals can advance without undocumented JSON editing.

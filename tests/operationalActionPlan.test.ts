@@ -97,6 +97,9 @@ describe("operational action plan", () => {
     expect(plan.runOrder.find((entry) => entry.phaseId === "production-onboarding")?.verificationCommands).toContain(
       "npm run ops:onboarding:approve-checklist -- --record <checklist-record-id> --evidence-ref <pseudonymous-evidence-reference>",
     );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "production-onboarding")?.verificationCommands).toContain(
+      "npm run ops:onboarding:approve-storage-decision -- --section <audit-ledger|account-registry> --evidence-ref <pseudonymous-storage-evidence-reference>",
+    );
     expect(plan.runOrder.find((entry) => entry.phaseId === "approval-records")?.verificationCommands).toContain(
       "npm run ops:approvals:approve-record -- --type <approval-record-type> --approved-by-ref <pseudonymous-approver-ref> --reference-id <pseudonymous-approval-reference> --scope <approval-scope> --evidence-digest <sha256-evidence-digest>",
     );

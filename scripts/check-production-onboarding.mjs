@@ -384,7 +384,7 @@ function nextActionFor(error) {
     return "Complete every operator checklist record with APPROVED status using npm run ops:onboarding:approve-checklist.";
   }
   if (error.includes("storage decision") || error.includes("INSTITUTION_AUDIT_LEDGER_DIR") || error.includes("INSTITUTION_ACCOUNT_REGISTRY_DIR")) {
-    return "Complete the storage decision record and configure repo-external approved storage directories.";
+    return "Complete the storage decision record with npm run ops:onboarding:approve-storage-decision and configure repo-external approved storage directories.";
   }
   if (error.includes("public operations")) {
     return "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init, then approve public-operations.template.json.";

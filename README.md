@@ -456,3 +456,13 @@ npm run ops:approvals:approve-record -- --type <approval-record-type> --approved
 ```
 
 The command updates only `ops/private/operational-approval-records.json`, accepts the configured desktop release tag, rejects placeholders/raw URLs/contacts/secrets, and writes a redacted evidence report with only SHA-256 digests of pseudonymous approval references. Details are in [Operational Approval Record Approval v0.3.75](docs/operational-approval-record-approval-v0.3.75.md).
+
+## v0.3.76 Production Onboarding Storage Decision Approval
+
+Private onboarding storage-decision sections can now be marked approved through a guarded CLI:
+
+```bash
+npm run ops:onboarding:approve-storage-decision -- --section <audit-ledger|account-registry> --evidence-ref <pseudonymous-storage-evidence-reference>
+```
+
+The command updates only `ops/private/production-onboarding/storage-decision.template.json`, rejects placeholders/raw URLs/contacts/secrets/storage paths in evidence refs, and writes a redacted report with only a SHA-256 digest of the evidence reference. Details are in [Production Onboarding Storage Decision Approval v0.3.76](docs/production-onboarding-storage-decision-approval-v0.3.76.md).

@@ -174,6 +174,7 @@ describe("production onboarding readiness", () => {
     expect(report.checks.filter((check) => check.status === "BLOCKED").map((check) => check.id)).toContain("public-operations");
     expect(report.checks.filter((check) => check.status === "BLOCKED").map((check) => check.id)).toContain("hosted-security-header-audit");
     expect(report.nextActions.join("\n")).toContain("ops:onboarding:approve-checklist");
+    expect(report.nextActions.join("\n")).toContain("ops:onboarding:approve-storage-decision");
     expect(markdown).toContain("JiumAI Production Onboarding Readiness Report");
     expect(serialized).not.toContain("INSTITUTION_SESSION_SECRET=");
     expect(serialized).not.toContain(root);

@@ -47,9 +47,13 @@ describe("production onboarding scaffold", () => {
     expect(readme).toContain("Verification Order");
     expect(readme).toContain("ops:public-env:init");
     expect(readme).toContain("ops:onboarding:approve-checklist");
+    expect(readme).toContain("ops:onboarding:approve-storage-decision");
     expect(readme).toContain("security:headers:check");
     expect(summary.nextCommands).toContain(
       "npm run ops:onboarding:approve-checklist -- --record <checklist-record-id> --evidence-ref <pseudonymous-evidence-reference>",
+    );
+    expect(summary.nextCommands).toContain(
+      "npm run ops:onboarding:approve-storage-decision -- --section <audit-ledger|account-registry> --evidence-ref <pseudonymous-storage-evidence-reference>",
     );
     expect(summary.nextCommands).toContain(
       "npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json",
