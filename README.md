@@ -148,6 +148,8 @@ npm run build
 - 자동 업데이트 feed는 signed installer와 `latest.yml`이 같은 빌드에서 생성된 뒤 `npm run desktop:update-feed:check -- --feed-dir <배포폴더>`로 버전, SHA-512, 파일 크기 일치 여부를 확인
 - 릴리즈 후보 증적은 `npm run desktop:release:bundle`로 `dist/desktop-release-bundle`에 모으며, GitHub Actions의 `Desktop Release Candidate` 수동 워크플로도 같은 bundle과 Windows unpacked package를 artifact로 보관
 - signed Windows release는 `desktop:signing-secrets:check`가 `CSC_LINK`/`CSC_KEY_PASSWORD` 또는 Windows 전용 동등 secret 조합을 확인한 뒤 `Desktop Signed Release` 수동 워크플로에서만 진행
+- GitHub Release 업로드 직전에는 `npm run desktop:publish:check -- --feed-dir <배포폴더>`로 `JIUM_DESKTOP_RELEASE_TAG`, `package.json` version, update metadata version, human approval, GitHub upload token, 산출물 검증을 한 번 더 확인
+- `Desktop Signed Release`의 GitHub Release 업로드 job은 `publish_to_github_release=true`와 `publish_approval=APPROVED`가 모두 있어야 실행되며, 업로드 job만 `contents: write` 권한을 사용
 - `desktop:release:json`과 `desktop:release:markdown`은 updater URL 원문, 인증서 경로·hash, team ID, signing key ID, 피해자 지표를 저장하지 않는 redacted 인수인계 리포트를 생성
 - 첫 진단 화면과 사건 보드에는 악성 확장프로그램, 원격제어, 공용 PC, 가해자 접근 가능성을 확인하는 기기 안전점검을 표시
 

@@ -750,3 +750,20 @@
   - workflow에는 secret 값이 아니라 GitHub Secrets 참조만 남긴다.
 - 검증 범위
   - signing secret 조합, redacted CLI report, release readiness 강화, signed workflow 구조를 테스트했다.
+
+## v3.48 데스크톱 GitHub Release publish gate
+
+- 릴리즈 버전 정합성
+  - 앱 version을 `0.3.48`로 올리고 signed desktop publish 전용 `desktop:publish:check`를 추가했다.
+  - publish gate는 `JIUM_DESKTOP_RELEASE_TAG`가 `v<package.json version>` 형식으로 일치하는지, update metadata version도 같은 값인지 확인한다.
+  - feature 릴리즈 태그와 실제 설치파일 업데이트 버전이 어긋나면 GitHub Release 업로드 전에 BLOCKED로 남긴다.
+- GitHub Release 업로드 통제
+  - `Desktop Signed Release` workflow에 선택적 publish job을 추가했다.
+  - signed build job은 기존처럼 Actions artifact만 만들고, GitHub Release 업로드 job만 `contents: write` 권한을 가진다.
+  - 업로드는 `publish_to_github_release=true`, `publish_approval=APPROVED`, 기존 release tag 존재, publish readiness 통과 후 `gh release upload`로 실행된다.
+  - 데스크톱 release candidate와 signed release artifact 업로드는 Node 24 계열 `actions/upload-artifact@v7`로 맞추고, publish job은 `actions/download-artifact@v7`로 같은 run의 artifact를 내려받는다.
+- 개인정보와 secret 최소화
+  - publish readiness report는 release tag, package version, update metadata 이름, artifact 개수, 설정 존재 여부만 저장한다.
+  - GitHub token, update endpoint 원문, 인증서 material, 피해자 지표, URL, 초대 링크, onion 주소, 이메일, 전화번호는 저장하지 않는다.
+- 검증 범위
+  - release tag parsing, version alignment, approval/token gate, workflow publish job 구조를 테스트했다.

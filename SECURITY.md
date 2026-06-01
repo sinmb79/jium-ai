@@ -143,6 +143,7 @@ npm run desktop:release:check
 npm run desktop:signing-secrets:check
 npm run desktop:distribution:check
 npm run desktop:update-feed:check -- --feed-dir ./dist/desktop
+npm run desktop:publish:check -- --feed-dir ./dist/desktop
 npm run desktop:release:bundle
 npm run desktop:release:json -- --output ./desktop-readiness.json
 npm run desktop:release:markdown -- --output ./desktop-readiness.md
@@ -156,9 +157,11 @@ npm run desktop:release:markdown -- --output ./desktop-readiness.md
 
 `desktop:update-feed:check`는 generic updater metadata(`latest.yml`, macOS는 `latest-mac.yml`, Linux는 `latest-linux.yml`)와 같은 폴더의 artifact가 같은 빌드에서 나온 것인지 확인합니다. version, releaseDate, path, files 목록, SHA-512, 파일 크기가 일치해야 하며, metadata가 없으면 BLOCKED가 정상입니다. signed installer와 update metadata를 다른 빌드에서 섞어 올리면 안 됩니다.
 
+`desktop:publish:check`는 GitHub Release에 signed installer를 업로드하기 직전의 마지막 기술 게이트입니다. `JIUM_DESKTOP_RELEASE_TAG`는 `package.json` version과 일치해야 하고, update metadata version도 같은 값을 가져야 합니다. 또한 `JIUM_DESKTOP_PUBLISH_APPROVAL=APPROVED`, `GITHUB_REPOSITORY`, `GITHUB_TOKEN` 또는 `GH_TOKEN`, distribution gate, release readiness gate, update feed gate가 모두 통과해야 READY가 됩니다. 리포트에는 token 값, update endpoint 원문, 인증서 material, 피해자 지표, URL, 초대 링크, onion 주소, 이메일, 전화번호를 저장하지 않습니다.
+
 `desktop:release:bundle`은 distribution, release readiness, update feed 리포트와 요약을 `dist/desktop-release-bundle`에 모읍니다. 이 bundle은 운영자 검토용 증적이며, legal/institutional sign-off, 코드서명, update hosting 완료를 대신하지 않습니다. GitHub Actions의 `Desktop Release Candidate` 수동 workflow는 Windows runner에서 unsigned release candidate를 만들고 이 bundle과 unpacked package를 artifact로 보관합니다. workflow에는 signing certificate path/password 같은 secret을 직접 넣지 않습니다.
 
-실제 signed installer 생성은 `Desktop Signed Release` 수동 workflow로 분리합니다. 이 workflow는 GitHub Secrets의 `JIUM_WINDOWS_CSC_LINK`, `JIUM_WINDOWS_CSC_KEY_PASSWORD`, 선택적 `JIUM_WINDOWS_SIGNING_CERT_SHA256`를 `CSC_*` 환경변수로 주입한 뒤 signing preflight, release readiness, signed packaging, update-feed 검증, evidence bundle 생성을 순서대로 실행합니다. secret 값은 로그나 bundle에 기록하지 않습니다.
+실제 signed installer 생성은 `Desktop Signed Release` 수동 workflow로 분리합니다. 이 workflow는 GitHub Secrets의 `JIUM_WINDOWS_CSC_LINK`, `JIUM_WINDOWS_CSC_KEY_PASSWORD`, 선택적 `JIUM_WINDOWS_SIGNING_CERT_SHA256`를 `CSC_*` 환경변수로 주입한 뒤 signing preflight, release readiness, signed packaging, update-feed 검증, evidence bundle 생성을 순서대로 실행합니다. secret 값은 로그나 bundle에 기록하지 않습니다. 기존 GitHub Release에 installer asset을 업로드하려면 `release_tag`가 앱 버전과 일치해야 하며, `publish_to_github_release=true`와 `publish_approval=APPROVED`를 명시해야 합니다. 업로드 job만 `contents: write` 권한을 가지며, 기본 signed build job은 release artifact를 Actions artifact로만 보관합니다.
 
 ### 기기 안전점검
 

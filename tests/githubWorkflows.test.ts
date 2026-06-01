@@ -67,7 +67,7 @@ describe("GitHub Actions security gates", () => {
     expect(workflow).toContain("tests/desktopReleaseBundle.test.ts");
     expect(workflow).toContain("npm run desktop:package:dir");
     expect(workflow).toContain("npm run desktop:release:bundle");
-    expect(workflow).toContain("uses: actions/upload-artifact@v6");
+    expect(workflow).toContain("uses: actions/upload-artifact@v7");
     expect(workflow).toContain("dist/desktop-release-bundle");
     expect(workflow).toContain("dist/desktop/win-unpacked");
     expect(workflow).not.toContain("WINDOWS_SIGNING_CERT_PATH");
@@ -78,9 +78,14 @@ describe("GitHub Actions security gates", () => {
     const workflow = readFileSync(".github/workflows/desktop-signed-release.yml", "utf8");
 
     expect(workflow).toContain("workflow_dispatch:");
+    expect(workflow).toContain("release_tag:");
+    expect(workflow).toContain("publish_to_github_release:");
+    expect(workflow).toContain("publish_approval:");
     expect(workflow).toContain("runs-on: windows-latest");
     expect(workflow).toContain("JIUM_DESKTOP_RELEASE_CHANNEL: ${{ inputs.release_channel }}");
     expect(workflow).toContain("JIUM_DESKTOP_UPDATE_URL: ${{ inputs.update_url }}");
+    expect(workflow).toContain("JIUM_DESKTOP_RELEASE_TAG: ${{ inputs.release_tag }}");
+    expect(workflow).toContain("JIUM_DESKTOP_PUBLISH_APPROVAL: ${{ inputs.publish_approval }}");
     expect(workflow).toContain("CSC_LINK: ${{ secrets.JIUM_WINDOWS_CSC_LINK }}");
     expect(workflow).toContain("CSC_KEY_PASSWORD: ${{ secrets.JIUM_WINDOWS_CSC_KEY_PASSWORD }}");
     expect(workflow).toContain("npm run desktop:signing-secrets:check");
@@ -88,7 +93,12 @@ describe("GitHub Actions security gates", () => {
     expect(workflow).toContain("npm run desktop:package:signed");
     expect(workflow).toContain("npm run desktop:update-feed:check -- --feed-dir ./dist/desktop");
     expect(workflow).toContain("npm run desktop:release:bundle");
-    expect(workflow).toContain("uses: actions/upload-artifact@v6");
+    expect(workflow).toContain("uses: actions/upload-artifact@v7");
+    expect(workflow).toContain("uses: actions/download-artifact@v7");
+    expect(workflow).toContain("contents: write");
+    expect(workflow).toContain("npm run desktop:publish:check -- --feed-dir ./dist/desktop");
+    expect(workflow).toContain("gh release view \"$JIUM_DESKTOP_RELEASE_TAG\"");
+    expect(workflow).toContain("gh release upload \"$JIUM_DESKTOP_RELEASE_TAG\"");
     expect(workflow).toContain("dist/desktop/latest.yml");
     expect(workflow).toContain("dist/desktop-release-bundle");
     expect(workflow).not.toContain("JIUM_WINDOWS_CSC_KEY_PASSWORD=");

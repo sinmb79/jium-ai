@@ -10,6 +10,19 @@ on:
       update_url:
         description: HTTPS generic updater endpoint
         required: true
+      release_tag:
+        description: Existing GitHub Release tag that matches package.json version
+        required: true
+        default: v0.3.48
+      publish_to_github_release:
+        description: Upload signed installer assets to the existing GitHub Release
+        required: true
+        type: boolean
+        default: false
+      publish_approval:
+        description: Type APPROVED to allow release asset upload
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -58,7 +71,7 @@ jobs:
         run: npm run desktop:release:bundle
 
       - name: Upload signed desktop artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: jium-ai-windows-signed-desktop-artifacts
           path: |
@@ -69,9 +82,62 @@ jobs:
           retention-days: 30
 
       - name: Upload release evidence bundle
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: jium-ai-windows-signed-release-evidence
           path: dist/desktop-release-bundle
           if-no-files-found: error
           retention-days: 30
+
+  publish-github-release:
+    needs: windows-signed-release
+    if: ${{ inputs.publish_to_github_release == true }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      JIUM_DESKTOP_RELEASE_TAG: ${{ inputs.release_tag }}
+      JIUM_DESKTOP_PUBLISH_APPROVAL: ${{ inputs.publish_approval }}
+      JIUM_DESKTOP_RELEASE_CHANNEL: ${{ inputs.release_channel }}
+      JIUM_DESKTOP_UPDATE_URL: ${{ inputs.update_url }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download signed desktop artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: jium-ai-windows-signed-desktop-artifacts
+          path: dist/desktop
+
+      - name: Download release evidence bundle
+        uses: actions/download-artifact@v7
+        with:
+          name: jium-ai-windows-signed-release-evidence
+          path: dist/desktop-release-bundle
+
+      - name: Publish readiness gate
+        run: npm run desktop:publish:check -- --feed-dir ./dist/desktop
+
+      - name: Upload assets to existing GitHub Release
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release view "$JIUM_DESKTOP_RELEASE_TAG" >/dev/null
+          tar -czf dist/jium-ai-windows-signed-release-evidence.tgz -C dist desktop-release-bundle
+          gh release upload "$JIUM_DESKTOP_RELEASE_TAG" \
+            dist/desktop/*.exe \
+            dist/desktop/*.blockmap \
+            dist/desktop/latest.yml \
+            dist/jium-ai-windows-signed-release-evidence.tgz \
+            --clobber
