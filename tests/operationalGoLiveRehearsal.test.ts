@@ -41,8 +41,18 @@ describe("operational go-live rehearsal", () => {
     expect(result.report.summary.goLiveStatus).toBe("READY");
     expect(result.report.summary.cleanedTemporaryWorkspace).toBe("YES");
     expect(result.report.simulation.desktopPublishMode).toBe("SIMULATED_SIGNED_ARTIFACTS");
+    expect(result.report.simulation.approvalsMode).toBe("SYNTHETIC_BATCH_INPUTS");
+    expect(result.report.summary.approvalInputsStatus).toBe("APPLIED");
+    expect(result.report.summary.approvalInputsReadyInputCount).toBe(18);
+    expect(result.report.summary.approvalInputsTotalInputCount).toBe(18);
+    expect(result.report.summary.approvalInputsAppliedCount).toBe(18);
+    expect(result.report.summary.approvalInputsApprovalRecordsStatus).toBe("READY");
+    expect(result.report.summary.approvalInputsProductionOnboardingStatus).toBe("READY");
+    expect(result.report.summary.approvalInputsLeakScanStatus).toBe("PASS");
+    expect(result.report.checks.find((check) => check.id === "approval-inputs-apply")?.status).toBe("PASS");
     expect(result.report.checks.every((check) => check.status === "PASS")).toBe(true);
     expect(markdown).toContain("JiumAI Operational Go-Live Rehearsal");
+    expect(markdown).toContain("Approval inputs: 18/18 (APPLIED)");
     expect(existsSync(path.join(root, ".env.server.local"))).toBe(false);
     expect(existsSync(path.join(root, "ops"))).toBe(false);
     expect(existsSync(path.join(root, "dist", "operational-go-live-rehearsal", "operational-go-live-rehearsal-report.json"))).toBe(true);
@@ -69,6 +79,9 @@ describe("operational go-live rehearsal", () => {
     expect(report.schema).toBe(OPERATIONAL_GO_LIVE_REHEARSAL_SCHEMA);
     expect(report.status).toBe("READY");
     expect(report.summary.goLiveStatus).toBe("READY");
+    expect(report.simulation.approvalsMode).toBe("SYNTHETIC_BATCH_INPUTS");
+    expect(report.summary.approvalInputsStatus).toBe("APPLIED");
+    expect(report.summary.approvalInputsAppliedCount).toBe(18);
     expect(serialized).not.toContain("ops.example.test");
     expect(serialized).not.toContain("prod.example.test");
     expect(serialized).not.toContain("synthetic-token");

@@ -1057,6 +1057,22 @@
 - Verification scope
   - Tested template counts, redaction/leak scan, batch apply success, unsafe batch rejection with no partial write, dry-run CLI mode, output path guard, action-plan routing, and release dossier inclusion.
 
+## v3.97 Operational go-live rehearsal approval inputs
+
+- Rehearsal wiring
+  - Version was raised to `0.3.97`.
+  - `ops:go-live:rehearsal` now writes a synthetic private approval input file in the temporary workspace.
+  - The rehearsal applies that file through the guarded `applyOperationalApprovalInputs` path with onboarding initialization.
+  - The rehearsal blocks unless all 18 inputs are ready and applied, approval records are `READY`, production onboarding is `READY`, and the approval-input leak scan is `PASS`.
+- Report surface
+  - The redacted rehearsal summary now includes approval-input status, ready/applied counts, approval-record readiness, onboarding readiness, and leak-scan status.
+  - `simulation.approvalsMode` is now `SYNTHETIC_BATCH_INPUTS` so reviewers can see that the batch apply path was exercised.
+- Safety boundary
+  - The temporary input file is removed with the rehearsal workspace.
+  - Reports store counts and statuses only, not raw URLs, contacts, secrets, private paths, victim indicators, invite links, onion addresses, emails, phone numbers, or certificate material.
+- Verification scope
+  - Tested direct API and CLI rehearsal output, batch-apply status fields, all-input count checks, cleanup, and redaction.
+
 ## v3.95 Operational launch console
 
 - Operator launch board

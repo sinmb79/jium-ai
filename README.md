@@ -539,7 +539,7 @@ npm run ops:go-live:rehearsal
 npm run ops:go-live:rehearsal:json -- --output dist/operational-go-live-rehearsal/report.json
 ```
 
-The command creates a temporary private workspace, fills it with synthetic pseudonymous approvals, HTTPS routes, hosted-audit evidence, server env, server storage, and a trusted-key record, then runs the real server/onboarding/approval/hosted-audit/go-live validators. Desktop publish readiness is explicitly marked as `SIMULATED_SIGNED_ARTIFACTS`, because real signed installers and update metadata still require the approved signing flow. The report is redacted and the temporary workspace is removed after validation. Details are in [Operational Go-Live Rehearsal v0.3.83](docs/operational-go-live-rehearsal-v0.3.83.md).
+The command creates a temporary private workspace, applies synthetic pseudonymous approvals through the guarded batch approval-input path, adds HTTPS routes, hosted-audit evidence, server env, server storage, and a trusted-key record, then runs the real server/onboarding/approval/hosted-audit/go-live validators. Desktop publish readiness is explicitly marked as `SIMULATED_SIGNED_ARTIFACTS`, because real signed installers and update metadata still require the approved signing flow. The report is redacted and the temporary workspace is removed after validation. Details are in [Operational Go-Live Rehearsal v0.3.83](docs/operational-go-live-rehearsal-v0.3.83.md) and [Operational Go-Live Rehearsal Approval Inputs v0.3.97](docs/operational-go-live-rehearsal-approval-inputs-v0.3.97.md).
 
 ## v0.3.84 Operational Release Dossier
 
@@ -694,3 +694,14 @@ npm run ops:approvals:apply-inputs -- --input ops/private/production-onboarding/
 ```
 
 The apply command validates every approval/onboarding/storage/public-route input before writing anything. If one value contains a placeholder, raw URL, contact, token, phone number, invite route, onion address, or private path, the whole batch is blocked and no private record is changed. Details are in [Operational Approval Inputs v0.3.96](docs/operational-approval-inputs-v0.3.96.md).
+
+## v0.3.97 Operational Go-Live Rehearsal Approval Inputs
+
+The final go-live rehearsal now exercises the guarded approval-input apply path:
+
+```bash
+npm run ops:go-live:rehearsal
+npm run ops:go-live:rehearsal:json -- --output dist/operational-go-live-rehearsal/report.json
+```
+
+The rehearsal creates a synthetic private input file inside the temporary workspace, applies it with the same `applyOperationalApprovalInputs(... --init)` path used by operators, verifies all 18 inputs were applied, confirms approval records and production onboarding reach `READY`, and only then runs the go-live validator. The public report stores counts and statuses only. Details are in [Operational Go-Live Rehearsal Approval Inputs v0.3.97](docs/operational-go-live-rehearsal-approval-inputs-v0.3.97.md).

@@ -10,9 +10,17 @@ import {
 } from "./check-operational-go-live.mjs";
 import {
   DEFAULT_OPERATIONAL_APPROVAL_RECORDS_PATH,
-  OPERATIONAL_APPROVAL_RECORDS_SCHEMA,
   REQUIRED_OPERATIONAL_APPROVAL_RECORD_TYPES,
 } from "./check-operational-approval-records.mjs";
+import {
+  REQUIRED_OPERATOR_CHECKLIST_RECORDS,
+} from "./check-production-onboarding.mjs";
+import {
+  REQUIRED_STORAGE_DECISION_SECTIONS,
+} from "./approve-production-onboarding-storage-decision.mjs";
+import {
+  REQUIRED_PUBLIC_OPERATIONS_SECTIONS,
+} from "./approve-production-onboarding-public-operations.mjs";
 import {
   REQUIRED_SERVER_ROUTE_TEMPLATES,
 } from "./check-server-readiness.mjs";
@@ -23,12 +31,15 @@ import {
 } from "./check-authorized-feed-keys.mjs";
 import {
   DEFAULT_PRODUCTION_ONBOARDING_DIR,
-  PRODUCTION_ONBOARDING_SCHEMA,
 } from "./init-production-onboarding.mjs";
 import {
   HOSTED_SECURITY_HEADER_AUDIT_SCHEMA,
   HOSTED_SECURITY_HEADER_AUDIT_ENV_KEY,
 } from "./hosted-security-header-audit-evidence.mjs";
+import {
+  OPERATIONAL_APPROVAL_INPUTS_SCHEMA,
+  applyOperationalApprovalInputs,
+} from "./operational-approval-inputs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -40,6 +51,18 @@ const SYNTHETIC_SECRET = "0123456789abcdef0123456789abcdef";
 const SYNTHETIC_ORIGIN = "https://ops.example.test";
 const SYNTHETIC_PUBLIC_BASE_URL = "https://prod.example.test/jium";
 const SYNTHETIC_INCIDENT_OWNER = "incident-owner-ref";
+const SYNTHETIC_APPROVAL_INPUT_PATH = "ops/private/production-onboarding/approved-operational-inputs.rehearsal.json";
+
+const STORAGE_SECTION_CLI = {
+  auditLedgerStorage: "audit-ledger",
+  accountRegistryStorage: "account-registry",
+};
+
+const PUBLIC_OPERATIONS_SECTION_CLI = {
+  publicApp: "public-app",
+  privacyNotice: "privacy-notice",
+  supportRoute: "support-route",
+};
 
 function readPackageVersion(root) {
   try {
@@ -79,118 +102,6 @@ function safeRemoveTempDir(target) {
     throw new Error("refusing to remove rehearsal path outside the system temporary directory");
   }
   rmSync(resolvedTarget, { recursive: true, force: true });
-}
-
-function approvalRecord(type, index, version, generatedAt) {
-  return {
-    id: `approval-${index + 1}`,
-    type,
-    status: "APPROVED",
-    approvedAt: generatedAt,
-    approvedByRef: `approver-ref-${index + 1}`,
-    referenceId: `OPS-REHEARSAL-${String(index + 1).padStart(2, "0")}`,
-    scope: `release-v${version}`,
-    evidenceDigest: sha256Text(`${type}:${version}:rehearsal`),
-  };
-}
-
-function onboardingChecklist(version, generatedAt) {
-  const records = [
-    "server-origin-approval",
-    "trusted-public-key-approval",
-    "server-storage-decision",
-    "desktop-signing-evidence",
-    "public-operations-routes",
-    "hosted-security-header-audit",
-    "legal-go-live-approval",
-  ].map((id, index) => ({
-    id,
-    status: "APPROVED",
-    evidenceRef: `evidence-ref-${index + 1}`,
-    requiredCheck: `rehearsal-check-${index + 1}`,
-  }));
-  return {
-    schema: PRODUCTION_ONBOARDING_SCHEMA,
-    generatedAt,
-    packageVersion: version,
-    status: "APPROVED",
-    records,
-    forbiddenContent: [
-      "victim indicators",
-      "raw URLs",
-      "invite links",
-      "onion addresses",
-      "emails",
-      "phone numbers",
-      "passwords",
-      "tokens",
-      "certificate material",
-    ],
-  };
-}
-
-function storageDecision(version, generatedAt) {
-  return {
-    schema: PRODUCTION_ONBOARDING_SCHEMA,
-    generatedAt,
-    packageVersion: version,
-    status: "APPROVED",
-    auditLedgerStorage: {
-      status: "APPROVED",
-      evidenceRef: "storage-ref-audit-ledger",
-      requiredProperties: ["absolute-path", "repo-external", "not-public-or-build-artifact", "append-only-policy", "server-process-writable"],
-    },
-    accountRegistryStorage: {
-      status: "APPROVED",
-      evidenceRef: "storage-ref-account-registry",
-      requiredProperties: ["absolute-path", "repo-external", "not-public-or-build-artifact", "separate-from-audit-ledger", "server-process-writable"],
-    },
-    verificationCommand: "npm run security:server-storage",
-  };
-}
-
-function publicOperations(version, generatedAt) {
-  return {
-    schema: PRODUCTION_ONBOARDING_SCHEMA,
-    generatedAt,
-    packageVersion: version,
-    status: "APPROVED",
-    publicApp: {
-      status: "APPROVED",
-      evidenceRef: "public-route-ref-app",
-      requiredCheck: "JIUM_PUBLIC_APP_URL is HTTPS and externally approved.",
-    },
-    privacyNotice: {
-      status: "APPROVED",
-      evidenceRef: "public-route-ref-privacy",
-      requiredCheck: "JIUM_PRIVACY_NOTICE_URL is HTTPS and externally approved.",
-    },
-    supportRoute: {
-      status: "APPROVED",
-      evidenceRef: "public-route-ref-support",
-      requiredCheck: "JIUM_SUPPORT_CONTACT_ROUTE is HTTPS and externally approved.",
-    },
-    verificationCommand: "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
-  };
-}
-
-function trustedKeyCandidateExample(generatedAt) {
-  return {
-    schema: "jium-trusted-authorized-feed-key-candidate-v1",
-    generatedAt,
-    keyId: "REPLACE-ME-key-id",
-    issuerName: "REPLACE-ME-pseudonymous-issuer",
-    algorithm: AUTHORIZED_FEED_SIGNATURE_ALGORITHM,
-    publicKeyJwk: {
-      kty: "RSA",
-      n: "REPLACE-ME-public-modulus-only",
-      e: "AQAB",
-      use: "sig",
-    },
-    validFrom: "REPLACE-ME-ISO-DATE",
-    validUntil: "REPLACE-ME-ISO-DATE",
-    approvalRef: "REPLACE-ME-TRUSTED-KEY-APPROVAL-REF",
-  };
 }
 
 function hostedSecurityHeaderAudit(generatedAt) {
@@ -244,36 +155,6 @@ function writeTrustedKeyRegistry(root, generatedAt) {
   });
 }
 
-function writeOperationalApprovalRecords(root, version, generatedAt) {
-  writeJson(path.join(root, DEFAULT_OPERATIONAL_APPROVAL_RECORDS_PATH), {
-    schema: OPERATIONAL_APPROVAL_RECORDS_SCHEMA,
-    generatedAt,
-    packageVersion: version,
-    releaseTag: `v${version}`,
-    publicAppUrlStatus: "SET_HTTPS",
-    privacyNoticeUrlStatus: "SET_HTTPS",
-    records: REQUIRED_OPERATIONAL_APPROVAL_RECORD_TYPES.map((type, index) => approvalRecord(type, index, version, generatedAt)),
-  });
-}
-
-function writeProductionOnboarding(root, version, generatedAt) {
-  const onboardingRoot = path.join(root, DEFAULT_PRODUCTION_ONBOARDING_DIR);
-  writeText(
-    path.join(onboardingRoot, "README.md"),
-    [
-      "# JiumAI Production Onboarding Rehearsal",
-      "",
-      "Synthetic private onboarding files used only for internal go-live gate rehearsal.",
-      "",
-    ].join("\n"),
-  );
-  writeJson(path.join(onboardingRoot, "operator-checklist.json"), onboardingChecklist(version, generatedAt));
-  writeJson(path.join(onboardingRoot, "storage-decision.template.json"), storageDecision(version, generatedAt));
-  writeJson(path.join(onboardingRoot, "public-operations.template.json"), publicOperations(version, generatedAt));
-  writeJson(path.join(onboardingRoot, "trusted-key-candidate.example.json"), trustedKeyCandidateExample(generatedAt));
-  writeJson(path.join(onboardingRoot, "hosted-security-header-audit.json"), hostedSecurityHeaderAudit(generatedAt));
-}
-
 function writeServerEnv(root, storageRoot, generatedAt) {
   const auditDir = path.join(storageRoot, "audit-ledger");
   const accountDir = path.join(storageRoot, "account-registry");
@@ -306,6 +187,39 @@ function writeServerEnv(root, storageRoot, generatedAt) {
       "",
     ].join("\n"),
   );
+}
+
+function syntheticApprovalInputs(version, generatedAt) {
+  return {
+    schema: OPERATIONAL_APPROVAL_INPUTS_SCHEMA,
+    packageVersion: version,
+    operationalApprovalRecords: REQUIRED_OPERATIONAL_APPROVAL_RECORD_TYPES.map((type, index) => ({
+      type,
+      approvedByRef: `approver-ref-${String(index + 1).padStart(2, "0")}`,
+      referenceId: `OPS-REHEARSAL-${String(index + 1).padStart(2, "0")}`,
+      scope: `release-v${version}`,
+      evidenceDigest: sha256Text(`${type}:${version}:rehearsal`),
+      approvedAt: generatedAt,
+      expiresAt: "",
+    })),
+    onboardingChecklist: REQUIRED_OPERATOR_CHECKLIST_RECORDS.map((recordId, index) => ({
+      recordId,
+      evidenceRef: `evidence-ref-${String(index + 1).padStart(2, "0")}`,
+    })),
+    storageDecisions: REQUIRED_STORAGE_DECISION_SECTIONS.map((section, index) => ({
+      section: STORAGE_SECTION_CLI[section],
+      evidenceRef: `storage-ref-${String(index + 1).padStart(2, "0")}`,
+    })),
+    publicOperations: REQUIRED_PUBLIC_OPERATIONS_SECTIONS.map((section, index) => ({
+      section: PUBLIC_OPERATIONS_SECTION_CLI[section],
+      evidenceRef: `public-ref-${String(index + 1).padStart(2, "0")}`,
+    })),
+  };
+}
+
+function writeSyntheticApprovalInputs(root, version, generatedAt) {
+  writeJson(path.join(root, SYNTHETIC_APPROVAL_INPUT_PATH), syntheticApprovalInputs(version, generatedAt));
+  return SYNTHETIC_APPROVAL_INPUT_PATH;
 }
 
 function simulatedDesktopPublish(version, generatedAt, platform = process.platform) {
@@ -364,22 +278,30 @@ function simulatedDesktopPublish(version, generatedAt, platform = process.platfo
   };
 }
 
-function prepareRehearsalWorkspace({ version, generatedAt }) {
+async function prepareRehearsalWorkspace({ version, generatedAt, now }) {
   const workspaceRoot = mkdtempSync(path.join(os.tmpdir(), "jium-go-live-rehearsal-"));
   const storageRoot = mkdtempSync(path.join(os.tmpdir(), "jium-go-live-storage-"));
   writeJson(path.join(workspaceRoot, "package.json"), { version });
   writeRouteTemplates(workspaceRoot);
   writeTrustedKeyRegistry(workspaceRoot, generatedAt);
-  writeOperationalApprovalRecords(workspaceRoot, version, generatedAt);
-  writeProductionOnboarding(workspaceRoot, version, generatedAt);
   writeServerEnv(workspaceRoot, storageRoot, generatedAt);
-  return { workspaceRoot, storageRoot };
+  writeJson(path.join(workspaceRoot, DEFAULT_PRODUCTION_ONBOARDING_DIR, "hosted-security-header-audit.json"), hostedSecurityHeaderAudit(generatedAt));
+  const inputPath = writeSyntheticApprovalInputs(workspaceRoot, version, generatedAt);
+  const approvalInputs = await applyOperationalApprovalInputs({
+    root: workspaceRoot,
+    inputPath,
+    init: true,
+    generatedAt,
+    now,
+  });
+  return { workspaceRoot, storageRoot, approvalInputsReport: approvalInputs.report };
 }
 
 function buildOperationalGoLiveRehearsalReport({
   version,
   generatedAt,
   goLiveReport,
+  approvalInputsReport,
   readiness,
   cleanedTemporaryWorkspace,
   cleanupWarnings,
@@ -395,6 +317,19 @@ function buildOperationalGoLiveRehearsalReport({
       label: "Desktop publish gate is explicitly simulated for rehearsal only",
       status: "PASS",
     },
+    {
+      id: "approval-inputs-apply",
+      label: "Synthetic approval/onboarding records were applied through the batch approval input path",
+      status:
+        approvalInputsReport?.status === "APPLIED" &&
+        approvalInputsReport?.summary?.readyInputCount === approvalInputsReport?.summary?.totalInputCount &&
+        approvalInputsReport?.summary?.appliedCount === approvalInputsReport?.summary?.totalInputCount &&
+        approvalInputsReport?.summary?.approvalRecordsStatus === "READY" &&
+        approvalInputsReport?.summary?.productionOnboardingStatus === "READY" &&
+        approvalInputsReport?.leakScan?.status === "PASS"
+          ? "PASS"
+          : "BLOCKED",
+    },
     ...goLiveReport.checks,
     {
       id: "workspace-cleanup",
@@ -403,6 +338,13 @@ function buildOperationalGoLiveRehearsalReport({
     },
   ];
   const errors = [
+    ...(approvalInputsReport?.errors || []).map((error) => `approval inputs: ${error}`),
+    ...(approvalInputsReport?.status === "APPLIED" ? [] : ["approval inputs batch apply did not complete"]),
+    ...(approvalInputsReport?.summary?.appliedCount === approvalInputsReport?.summary?.totalInputCount
+      ? []
+      : ["approval inputs batch apply did not apply every required input"]),
+    ...(approvalInputsReport?.summary?.approvalRecordsStatus === "READY" ? [] : ["approval inputs did not produce READY approval records"]),
+    ...(approvalInputsReport?.summary?.productionOnboardingStatus === "READY" ? [] : ["approval inputs did not produce READY production onboarding"]),
     ...readiness.errors,
     ...(cleanedTemporaryWorkspace ? [] : ["temporary rehearsal workspace cleanup did not complete"]),
   ];
@@ -422,12 +364,19 @@ function buildOperationalGoLiveRehearsalReport({
       activeTrustedKeyCount: goLiveReport.summary.activeTrustedKeyCount,
       approvedApprovalRecordCount: goLiveReport.summary.approvedApprovalRecordCount,
       requiredApprovalRecordCount: goLiveReport.summary.requiredApprovalRecordCount,
+      approvalInputsStatus: approvalInputsReport?.status || "MISSING",
+      approvalInputsReadyInputCount: approvalInputsReport?.summary?.readyInputCount || 0,
+      approvalInputsTotalInputCount: approvalInputsReport?.summary?.totalInputCount || 0,
+      approvalInputsAppliedCount: approvalInputsReport?.summary?.appliedCount || 0,
+      approvalInputsApprovalRecordsStatus: approvalInputsReport?.summary?.approvalRecordsStatus || "MISSING",
+      approvalInputsProductionOnboardingStatus: approvalInputsReport?.summary?.productionOnboardingStatus || "MISSING",
+      approvalInputsLeakScanStatus: approvalInputsReport?.leakScan?.status || "MISSING",
       cleanedTemporaryWorkspace: cleanedTemporaryWorkspace ? "YES" : "NO",
     },
     simulation: {
       desktopPublishMode: "SIMULATED_SIGNED_ARTIFACTS",
       publicRoutesMode: "SYNTHETIC_HTTPS_URLS",
-      approvalsMode: "SYNTHETIC_PSEUDONYMOUS_APPROVALS",
+      approvalsMode: "SYNTHETIC_BATCH_INPUTS",
       workspaceMode: "TEMPORARY_REPO_EXTERNAL",
     },
     checks,
@@ -442,6 +391,7 @@ function buildOperationalGoLiveRehearsalReport({
         ],
     safetyNotes: [
       "The rehearsal creates only synthetic private data in a temporary workspace and removes it after validation.",
+      "Synthetic approvals are written only through the guarded operational approval inputs apply path.",
       "This report stores only statuses, counts, package version, and declared simulation modes.",
       "It does not store synthetic secrets, trusted origins, public URLs, hosted audit paths, storage paths, contacts, owner names, tokens, victim indicators, invite links, onion addresses, emails, or phone numbers.",
       "A READY rehearsal proves internal gate wiring only; it is not production go-live approval.",
@@ -458,7 +408,7 @@ export async function runOperationalGoLiveRehearsal({
   const resolvedRoot = path.resolve(root);
   const version = readPackageVersion(resolvedRoot);
   const cleanupWarnings = [];
-  const { workspaceRoot, storageRoot } = prepareRehearsalWorkspace({ version, generatedAt });
+  const { workspaceRoot, storageRoot, approvalInputsReport } = await prepareRehearsalWorkspace({ version, generatedAt, now });
   let readiness;
   let goLiveReport;
   let cleanedTemporaryWorkspace = false;
@@ -487,6 +437,7 @@ export async function runOperationalGoLiveRehearsal({
     version,
     generatedAt,
     goLiveReport,
+    approvalInputsReport,
     readiness,
     cleanedTemporaryWorkspace,
     cleanupWarnings,
@@ -515,6 +466,8 @@ export function formatOperationalGoLiveRehearsalMarkdown(report) {
     `- Server status: ${report.summary.serverStatus}`,
     `- Production onboarding status: ${report.summary.productionOnboardingStatus}`,
     `- Approval records: ${report.summary.approvedApprovalRecordCount}/${report.summary.requiredApprovalRecordCount}`,
+    `- Approval inputs: ${report.summary.approvalInputsAppliedCount}/${report.summary.approvalInputsTotalInputCount} (${report.summary.approvalInputsStatus})`,
+    `- Approval inputs leak scan: ${report.summary.approvalInputsLeakScanStatus}`,
     `- Active trusted keys: ${report.summary.activeTrustedKeyCount}`,
     `- Workspace cleanup: ${report.summary.cleanedTemporaryWorkspace}`,
     "",

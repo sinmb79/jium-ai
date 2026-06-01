@@ -19,7 +19,7 @@ import {
 
 const tempDirs: string[] = [];
 
-async function tempRepo(version = "0.3.96") {
+async function tempRepo(version = "0.3.97") {
   const dir = path.join(os.tmpdir(), `jium-approval-inputs-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
   tempDirs.push(dir);
   await mkdir(dir, { recursive: true });
@@ -41,7 +41,7 @@ const publicOperationsCli: Record<string, string> = {
 function validInputs() {
   return {
     schema: OPERATIONAL_APPROVAL_INPUTS_SCHEMA,
-    packageVersion: "0.3.96",
+    packageVersion: "0.3.97",
     operationalApprovalRecords: REQUIRED_OPERATIONAL_APPROVAL_RECORD_TYPES.map((type, index) => ({
       type,
       approvedByRef: `approver-${index + 1}`,

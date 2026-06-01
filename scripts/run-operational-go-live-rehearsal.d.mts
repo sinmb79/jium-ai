@@ -22,12 +22,19 @@ export interface OperationalGoLiveRehearsalReport {
     activeTrustedKeyCount: number;
     approvedApprovalRecordCount: number;
     requiredApprovalRecordCount: number;
+    approvalInputsStatus: "APPLIED" | "READY_TO_APPLY" | "BLOCKED" | "MISSING" | string;
+    approvalInputsReadyInputCount: number;
+    approvalInputsTotalInputCount: number;
+    approvalInputsAppliedCount: number;
+    approvalInputsApprovalRecordsStatus: "READY" | "BLOCKED" | "MISSING" | string;
+    approvalInputsProductionOnboardingStatus: "READY" | "BLOCKED" | "MISSING" | string;
+    approvalInputsLeakScanStatus: "PASS" | "BLOCKED" | "MISSING" | string;
     cleanedTemporaryWorkspace: "YES" | "NO";
   };
   simulation: {
     desktopPublishMode: "SIMULATED_SIGNED_ARTIFACTS";
     publicRoutesMode: "SYNTHETIC_HTTPS_URLS";
-    approvalsMode: "SYNTHETIC_PSEUDONYMOUS_APPROVALS";
+    approvalsMode: "SYNTHETIC_BATCH_INPUTS";
     workspaceMode: "TEMPORARY_REPO_EXTERNAL";
   };
   checks: OperationalGoLiveRehearsalCheck[];

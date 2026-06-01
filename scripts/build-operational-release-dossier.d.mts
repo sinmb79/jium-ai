@@ -77,6 +77,12 @@ export interface OperationalReleaseDossier {
     version: string;
     goLiveStatus: string;
     goLiveErrorCount: number;
+    approvalInputsStatus: string;
+    approvalInputsAppliedCount: number;
+    approvalInputsTotalInputCount: number;
+    approvalInputsApprovalRecordsStatus: string;
+    approvalInputsProductionOnboardingStatus: string;
+    approvalInputsLeakScanStatus: string;
     passCheckCount: number;
     blockedCheckCount: number;
     simulation: Record<string, string>;

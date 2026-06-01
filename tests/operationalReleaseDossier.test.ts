@@ -170,12 +170,19 @@ function rehearsalReport(): OperationalGoLiveRehearsalReport {
       activeTrustedKeyCount: 1,
       approvedApprovalRecordCount: 6,
       requiredApprovalRecordCount: 6,
+      approvalInputsStatus: "APPLIED",
+      approvalInputsReadyInputCount: 18,
+      approvalInputsTotalInputCount: 18,
+      approvalInputsAppliedCount: 18,
+      approvalInputsApprovalRecordsStatus: "READY",
+      approvalInputsProductionOnboardingStatus: "READY",
+      approvalInputsLeakScanStatus: "PASS",
       cleanedTemporaryWorkspace: "YES",
     },
     simulation: {
       desktopPublishMode: "SIMULATED_SIGNED_ARTIFACTS",
       publicRoutesMode: "SYNTHETIC_HTTPS_URLS",
-      approvalsMode: "SYNTHETIC_PSEUDONYMOUS_APPROVALS",
+      approvalsMode: "SYNTHETIC_BATCH_INPUTS",
       workspaceMode: "TEMPORARY_REPO_EXTERNAL",
     },
     checks: [
@@ -211,6 +218,12 @@ describe("operational release dossier", () => {
     expect(dossier.summary.blockedGateCount).toBe(5);
     expect(dossier.summary.openActionCount).toBe(2);
     expect(dossier.summary.rehearsalStatus).toBe("READY");
+    expect(dossier.rehearsal.approvalInputsStatus).toBe("APPLIED");
+    expect(dossier.rehearsal.approvalInputsAppliedCount).toBe(18);
+    expect(dossier.rehearsal.approvalInputsTotalInputCount).toBe(18);
+    expect(dossier.rehearsal.approvalInputsApprovalRecordsStatus).toBe("READY");
+    expect(dossier.rehearsal.approvalInputsProductionOnboardingStatus).toBe("READY");
+    expect(dossier.rehearsal.approvalInputsLeakScanStatus).toBe("PASS");
     expect(dossier.requiredReviewFiles.map((file) => file.path)).toContain(
       "dist/operational-handoff-bundle/operational-action-plan.md",
     );
@@ -242,6 +255,7 @@ describe("operational release dossier", () => {
     expect(dossier.leakScan.status).toBe("PASS");
     expect(markdown).toContain("JiumAI Operational Release Dossier");
     expect(markdown).toContain("READY_FOR_EXTERNAL_REVIEW");
+    expect(markdown).toContain("Approval inputs: 18/18 (APPLIED)");
     expect(serialized).not.toContain("prod.example.com");
     expect(serialized).not.toContain("support@example.com");
     expect(serialized).not.toContain("ghs_fake1234567890");
