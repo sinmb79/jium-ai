@@ -16,6 +16,7 @@ npm run desktop:distribution:check
 npm run desktop:update-feed:check -- --feed-dir ./dist/desktop
 npm run desktop:release:bundle
 npm run desktop:release:digest-evidence -- --feed-dir ./dist/desktop
+npm run desktop:publish:candidate -- --feed-dir ./dist/desktop
 npm run desktop:publish:check -- --feed-dir ./dist/desktop
 ```
 
@@ -23,6 +24,7 @@ The Desktop Signed Release workflow now runs `desktop:release:digest-evidence` a
 
 - `dist/desktop-release-bundle`
 - `dist/desktop-release-evidence-digests`
+- `dist/desktop-publish-candidate`
 
 If the optional GitHub Release upload job runs, the evidence archive uploaded to the release includes both directories.
 

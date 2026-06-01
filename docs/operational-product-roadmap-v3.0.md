@@ -1041,6 +1041,23 @@
 - 검증 범위
   - valid Netlify static-hosting config, unsafe config 차단, CLI output path guard, action-plan run order 연결을 테스트했다.
 
+## v3.93 Desktop publish candidate
+
+- Desktop publish approval evidence
+  - Version was raised to `0.3.93`.
+  - Added `desktop:publish:candidate`, JSON, and Markdown variants.
+  - The command creates a redacted review packet that can be `READY_FOR_PUBLISH_APPROVAL` before final human approval and GitHub upload context are present.
+- Operational wiring
+  - Desktop-release action plans now route release managers through `desktop:publish:candidate` after `desktop:release:digest-evidence` and before `desktop:publish:check`.
+  - Operational release dossiers and approval evidence digests include the desktop publish candidate JSON/Markdown reports.
+  - The Desktop Signed Release workflow now builds and uploads `dist/desktop-publish-candidate` with release evidence, and the publish job downloads the evidence artifact into `dist` so all evidence directories are archived as siblings.
+- Safety boundary
+  - The candidate does not approve publication and does not upload assets.
+  - Reports store setting presence, artifact counts, release tag, package version, and aggregate evidence digests only.
+  - Reports do not store GitHub repository values, tokens, update endpoints, certificate material, private paths, raw URLs, victim indicators, invite links, onion addresses, emails, or phone numbers.
+- Verification scope
+  - Tested pre-approval candidate readiness, final upload readiness, missing signed evidence blockers, redaction of unsafe technical errors, CLI output path guard, action-plan routing, release dossier inclusion, and signed workflow archive wiring.
+
 ## v3.92 Desktop publish evidence digest gate
 
 - Desktop publish gate hardening

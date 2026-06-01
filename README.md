@@ -650,3 +650,14 @@ npm run desktop:publish:check -- --feed-dir ./dist/desktop
 ```
 
 `desktop:publish:check` now validates the digest status and records only the aggregate `sha256-*` digest plus evidence file counts. The Desktop Signed Release workflow also builds and uploads `dist/desktop-release-evidence-digests` with the release evidence bundle. Details are in [Desktop Publish Evidence Digest Gate v0.3.92](docs/desktop-publish-evidence-digest-gate-v0.3.92.md).
+
+## v0.3.93 Desktop Publish Candidate
+
+Release managers can now create a redacted publish approval candidate before enabling the final GitHub Release upload:
+
+```bash
+npm run desktop:publish:candidate -- --feed-dir <signed-release-folder>
+npm run desktop:publish:candidate:json -- --feed-dir <signed-release-folder> --output dist/desktop-publish-candidate/report.json
+```
+
+The candidate can be `READY_FOR_PUBLISH_APPROVAL` even before `publish_approval=APPROVED` or a GitHub upload token is present, as long as the signed artifacts, update metadata, and release evidence digest are technically ready. It is included in operational release dossiers, approval evidence digests, and the signed release workflow evidence archive. Details are in [Desktop Publish Candidate v0.3.93](docs/desktop-publish-candidate-v0.3.93.md).

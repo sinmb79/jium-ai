@@ -40,6 +40,12 @@ When run without `--file`, the command refreshes the release dossier and digests
 - `dist/operational-handoff-bundle/operational-handoff-summary.json`
 - `dist/operational-handoff-bundle/operational-action-plan.json`
 - `dist/operational-go-live-rehearsal/operational-go-live-rehearsal-report.json`
+- `dist/server-origin-candidate/server-origin-candidate-report.json`
+- `dist/server-origin-candidate/server-origin-candidate-report.md`
+- `dist/trusted-key-approval-candidate/trusted-key-approval-candidate-report.json`
+- `dist/trusted-key-approval-candidate/trusted-key-approval-candidate-report.md`
+- `dist/desktop-publish-candidate/desktop-publish-candidate-report.json`
+- `dist/desktop-publish-candidate/desktop-publish-candidate-report.md`
 
 For an already frozen review packet:
 

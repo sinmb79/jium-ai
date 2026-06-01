@@ -25,6 +25,11 @@ import {
   TRUSTED_KEY_APPROVAL_CANDIDATE_JSON,
   TRUSTED_KEY_APPROVAL_CANDIDATE_MARKDOWN,
 } from "./build-trusted-key-approval-candidate.mjs";
+import {
+  DESKTOP_PUBLISH_CANDIDATE_DIR,
+  DESKTOP_PUBLISH_CANDIDATE_JSON,
+  DESKTOP_PUBLISH_CANDIDATE_MARKDOWN,
+} from "./build-desktop-publish-candidate.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -158,6 +163,18 @@ function buildRequiredReviewFiles() {
       label: "Trusted key approval candidate Markdown",
       path: `${TRUSTED_KEY_APPROVAL_CANDIDATE_DIR}/${TRUSTED_KEY_APPROVAL_CANDIDATE_MARKDOWN}`,
       purpose: "Human-readable trusted-key approval candidate summary.",
+    },
+    {
+      id: "desktop-publish-candidate-json",
+      label: "Desktop publish candidate JSON",
+      path: `${DESKTOP_PUBLISH_CANDIDATE_DIR}/${DESKTOP_PUBLISH_CANDIDATE_JSON}`,
+      purpose: "Redacted signed desktop publish approval candidate and evidence digest summary.",
+    },
+    {
+      id: "desktop-publish-candidate-markdown",
+      label: "Desktop publish candidate Markdown",
+      path: `${DESKTOP_PUBLISH_CANDIDATE_DIR}/${DESKTOP_PUBLISH_CANDIDATE_MARKDOWN}`,
+      purpose: "Human-readable desktop publish approval candidate summary.",
     },
     {
       id: "release-dossier-json",
