@@ -1,6 +1,6 @@
 {
   "name": "jium-ai",
-  "version": "0.3.66",
+  "version": "0.3.67",
   "private": true,
   "description": "무료·로컬 우선 디지털 권리구제 도우미",
   "author": "22B Labs",
@@ -11,7 +11,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "security:headers": "node scripts/write-static-headers.mjs && npm test -- --run tests/securityHeaders.test.ts tests/nextConfigSecurityHeaders.test.ts tests/securityHeaderAudit.test.ts",
+    "security:headers": "node scripts/write-static-headers.mjs && npm test -- --run tests/securityHeaders.test.ts tests/nextConfigSecurityHeaders.test.ts tests/securityHeaderAudit.test.ts tests/securityHeaderAuditScript.test.ts",
     "security:headers:check": "node scripts/check-security-headers.mjs",
     "security:xss": "npm test -- --run tests/readOnlyPacket.test.ts tests/submissionPackage.test.ts tests/supportHandoff.test.ts tests/preSubmissionChecklist.test.ts",
     "security:feed-keys": "node scripts/check-authorized-feed-keys.mjs",

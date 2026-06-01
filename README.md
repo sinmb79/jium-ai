@@ -358,3 +358,14 @@ Submission packets now track evidence custody metadata for real operational hand
 These are pseudonymous references only. Names, phone numbers, emails, URLs, invite links, and onion addresses are redacted from custody refs and reported as custody warnings.
 
 The pre-submission checklist now includes `evidence-custody-chain`, so missing custody metadata is visible before a victim or support worker submits the package to an official agency. Details are in [Evidence Custody Chain v0.3.66](docs/evidence-custody-chain-v0.3.66.md).
+
+## v0.3.67 Hosted Security Header Audit Evidence
+
+Hosted security header checks now produce redacted evidence reports for real deployment review:
+
+```bash
+npm run security:headers:check -- https://your-approved-domain.example --json --output dist/security-header-audit.json
+npm run security:headers:check -- https://your-approved-domain.example --markdown --output dist/security-header-audit.md
+```
+
+The report schema is `jium-security-header-url-audit-v1`. Reports intentionally omit the raw target URL, host, path, query, and response header values, while still recording whether the public endpoint is HTTPS-ready, which required headers passed, and which checks block launch. Local HTTP is accepted only for localhost-based automated tests. Details are in [Hosted Security Header Audit v0.3.67](docs/hosted-security-header-audit-v0.3.67.md).
