@@ -551,3 +551,14 @@ npm run ops:release-dossier:json -- --output dist/operational-release-dossier/re
 ```
 
 The dossier gathers the operational handoff summary, owner-routed action plan, synthetic go-live rehearsal result, required review files, gate counts, external records still needed, and priority actions. It runs a leak scan and blocks if raw URLs, contacts, tokens, invite links, onion addresses, phone numbers, repository paths, or similar unsafe values appear in the generated manifest. `ops:action-plan` now routes final go-live archiving through this command as well. Details are in [Operational Release Dossier v0.3.84](docs/operational-release-dossier-v0.3.84.md).
+
+## v0.3.85 Operational Approval Evidence Digests
+
+Approval reviewers can now create a redacted digest manifest for the exact evidence packet they reviewed:
+
+```bash
+npm run ops:approvals:digest-evidence
+npm run ops:approvals:digest-evidence:json -- --output dist/operational-approval-evidence-digests/report.json
+```
+
+The command hashes redacted review files, writes an aggregate `sha256-*` digest for `ops:approvals:approve-record -- --evidence-digest`, and blocks if a source file contains raw URLs, contacts, tokens, invite links, onion addresses, phone-like values, or unsafe paths. `ops:action-plan` and `ops:go-live:check` now route release-evidence blockers through this digest step before approval recording. Details are in [Operational Approval Evidence Digests v0.3.85](docs/operational-approval-evidence-digests-v0.3.85.md).

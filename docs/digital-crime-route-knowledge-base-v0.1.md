@@ -528,3 +528,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The final go-live action plan now includes `npm run ops:release-dossier` before release evidence archiving.
 - Dossier reports run a leak scan for raw URLs, invite links, onion addresses, emails, phone numbers, tokens, and repository root paths.
 - The dossier can be `READY_FOR_EXTERNAL_REVIEW` while final production go-live remains BLOCKED, making external approval collection clearer without weakening the launch gate.
+
+## Implemented in v0.3.85
+
+- Added `scripts/build-operational-approval-evidence-digests.mjs` and `ops:approvals:digest-evidence`.
+- The command hashes reviewed redacted release evidence files and emits one aggregate `sha256-*` digest for `ops:approvals:approve-record -- --evidence-digest`.
+- It blocks missing or unsafe evidence files before they can be used for approval records.
+- The digest report stores file names, byte counts, digests, unsafe pattern IDs, and approval command templates only.
+- `ops:action-plan` and `ops:go-live:check` now route release-evidence approval blockers through the digest step before final approval recording.

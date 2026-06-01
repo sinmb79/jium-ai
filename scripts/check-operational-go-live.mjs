@@ -72,7 +72,7 @@ function goLiveNextActionFor(error) {
     return "Apply approved go-live approval flags with npm run ops:go-live:env:apply.";
   }
   if (error.includes("JIUM_RELEASE_EVIDENCE_REVIEW")) {
-    return "Apply approved go-live approval flags with npm run ops:go-live:env:apply.";
+    return "Build npm run ops:release-dossier and npm run ops:approvals:digest-evidence before approving release evidence.";
   }
   if (error.includes("JIUM_DATA_RETENTION_POLICY_ACK")) {
     return "Apply approved go-live approval flags with npm run ops:go-live:env:apply.";
@@ -102,7 +102,7 @@ function goLiveNextActionFor(error) {
     return "Complete the private production onboarding checklist and run npm run ops:onboarding:check.";
   }
   if (error.includes("approval records")) {
-    return "Create and validate the private operational approval records packet before go-live.";
+    return "Create approval evidence digests, then validate the private operational approval records packet before go-live.";
   }
   return "Resolve this go-live blocker before production launch.";
 }

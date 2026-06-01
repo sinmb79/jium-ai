@@ -144,12 +144,14 @@ const PHASE_BLUEPRINTS = [
     evidenceTarget: "ops/private/operational-approval-records.json",
     verificationCommands: [
       "npm run ops:approvals:init",
+      "npm run ops:approvals:digest-evidence",
       "npm run ops:approvals:approve-record -- --type <approval-record-type> --approved-by-ref <pseudonymous-approver-ref> --reference-id <pseudonymous-approval-reference> --scope <approval-scope> --evidence-digest <sha256-evidence-digest>",
       "npm run ops:approvals:check",
       "npm run ops:approvals:markdown -- --output <redacted-approval-records-report.md>",
     ],
     baseActions: [
       "Create the private approval packet if it does not exist.",
+      "Build approval evidence digests from reviewed redacted release evidence with npm run ops:approvals:digest-evidence.",
       "Record each externally approved operating approval with npm run ops:approvals:approve-record.",
       "Replace placeholders only after real human review, using pseudonymous approver and evidence references.",
       "Keep URLs, contacts, owner names, secrets, victim indicators, invite links, onion addresses, emails, and phone numbers out of the packet.",

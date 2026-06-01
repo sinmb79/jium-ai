@@ -371,6 +371,9 @@ describe("operational go-live readiness", () => {
       "Apply approved go-live approval flags with npm run ops:go-live:env:apply.",
     );
     expect(report.nextActions).toContain(
+      "Build npm run ops:release-dossier and npm run ops:approvals:digest-evidence before approving release evidence.",
+    );
+    expect(report.nextActions).toContain(
       "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init before final go-live review.",
     );
     expect(readiness.errors.join("\n")).toContain("operational approval records");

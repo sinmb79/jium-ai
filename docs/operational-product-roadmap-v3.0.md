@@ -967,3 +967,17 @@
   - `READY_FOR_EXTERNAL_REVIEW`는 외부 심사용 준비 상태일 뿐이며, 생산 go-live 승인이나 법률 검토 완료를 뜻하지 않는다.
 - 검증 범위
   - blocked handoff + ready rehearsal 조합에서 external-review dossier 생성, canonical JSON/Markdown write, CLI source report mode, action-plan run order 연결, redaction과 leak scan을 테스트했다.
+
+## v3.85 operational approval evidence digests
+
+- 승인 증빙 digest 묶음
+  - 앱 version을 `0.3.85`로 올리고 `ops:approvals:digest-evidence`, JSON, Markdown variants를 추가했다.
+  - reviewed redacted release evidence files를 해시하고 approval record에 넣을 aggregate `sha256-*` digest를 생성한다.
+- 운영 연결
+  - approval-records phase의 verification commands에 digest 생성 단계를 추가했다.
+  - go-live report의 release evidence blocker도 `ops:release-dossier`와 `ops:approvals:digest-evidence`를 먼저 안내한다.
+- 안전 경계
+  - source evidence file에 원문 URL, 이메일, 전화번호, token, 초대링크, onion 주소, repo 외부 path가 있으면 aggregate digest를 비운 채 BLOCKED 처리한다.
+  - report는 file name, byte count, SHA-256 digest, unsafe pattern ID, approval command template만 저장한다.
+- 검증 범위
+  - safe evidence digest 생성, unsafe evidence 차단, canonical JSON/Markdown write, CLI repeated `--file`, action-plan/go-live next action 연결을 테스트했다.
