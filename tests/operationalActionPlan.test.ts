@@ -88,6 +88,10 @@ describe("operational action plan", () => {
       "PROGRAM_OWNER",
     ]);
     expect(plan.phases.find((phase) => phase.id === "desktop-release")?.actions.some((action) => action.source === "handoff-next-action")).toBe(true);
+    expect(plan.phases.find((phase) => phase.id === "server-storage")?.actions[0].action).toContain("server:storage:init");
+    expect(plan.runOrder.find((entry) => entry.phaseId === "server-storage")?.verificationCommands).toContain(
+      "npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env",
+    );
     expect(text).not.toContain("prod.example.com");
     expect(text).not.toContain("support@example.com");
     expect(text).not.toContain("ghs_fake123456");

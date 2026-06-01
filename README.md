@@ -307,3 +307,14 @@ npm run server:storage:init -- --storage-root <approved-absolute-storage-root> -
 The helper creates separate `audit-ledger` and `account-registry` directories outside the repository and can update `.env.server.local` placeholders after review. Existing non-placeholder env values are preserved unless `--force-env` is passed.
 
 Reports do not print absolute storage paths. The private env file may contain real paths and must stay out of git.
+
+## v0.3.63 Server Storage Runbook Integration
+
+The server storage init helper is now included in the operating runbooks:
+
+```bash
+npm run server:deployment:bundle
+npm run ops:action-plan
+```
+
+Both outputs now show `npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env` before the storage readiness checks, so operators can move from selected storage location to validated server readiness without hunting for the helper command.

@@ -105,6 +105,9 @@ describe("server deployment bundle", () => {
     expect(summaryMarkdown).toContain("JiumAI Server Deployment Bundle");
     expect(routeMarkdown).toContain("app/api/institution/login/route.ts");
     expect(formatServerDeploymentSummary(result.summary)).toContain("server-route-materialization");
+    expect(result.summary.deploymentCommands).toContain(
+      "npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env",
+    );
     expect(serialized).not.toContain("0123456789abcdef");
     expect(serialized).not.toContain("agency.example");
     expect(summaryMarkdown).not.toContain(storageRoot);

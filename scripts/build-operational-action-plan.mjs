@@ -82,10 +82,12 @@ const PHASE_BLUEPRINTS = [
     objective: "Provision audit ledger and account registry storage outside the repository and build artifacts.",
     evidenceTarget: "approved private storage decision record and redacted server storage readiness report",
     verificationCommands: [
+      "npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env",
       "npm run security:server-storage",
       "npm run security:server-storage:markdown -- --output <redacted-storage-report.md>",
     ],
     baseActions: [
+      "Prepare reviewed repo-external storage directories with npm run server:storage:init before validating readiness.",
       "Select absolute, access-controlled, repo-external storage roots for the audit ledger and account registry.",
       "Confirm the two storage roots are separate, non-nested, writable by the server process, and excluded from static artifacts.",
       "Record only pseudonymous storage decision evidence in the private onboarding packet.",

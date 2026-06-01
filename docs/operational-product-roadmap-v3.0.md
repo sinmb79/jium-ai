@@ -2,7 +2,7 @@
 
 작성일: 2026-05-31
 
-최신 구현 메모: v3.62에서 repo-external server storage directory를 만들고 private env placeholder를 안전하게 갱신하는 `server:storage:init` 명령을 추가했다. 세부 runbook은 `docs/server-storage-init-v0.3.62.md`를 기준으로 한다.
+최신 구현 메모: v3.63에서 `server:storage:init`을 server deployment bundle과 operational action plan의 표준 runbook에 연결했다. 세부 runbook은 `docs/server-storage-runbook-integration-v0.3.63.md`를 기준으로 한다.
 
 ## 운영제품 기준
 
@@ -932,6 +932,13 @@
 - `--write-env` updates `.env.server.local` placeholders with the approved storage paths, while preserving existing non-placeholder env values unless `--force-env` is used.
 - The init report is redacted and stores only directory roles, directory names, statuses, and counts.
 - Verification covered directory creation, env placeholder update, preservation of existing values, CLI JSON output, repo-contained path rejection, and report redaction.
+
+## v3.63 server storage runbook integration
+
+- Added `server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env` to the server deployment bundle command order.
+- Added the same command to the `server-storage` phase verification commands in `ops:action-plan`.
+- The action plan now begins the server-storage phase with a concrete preparation action before readiness validation.
+- Verification covered action-plan command surfacing and server deployment bundle command surfacing.
 
 ## v3.57 production onboarding scaffold
 

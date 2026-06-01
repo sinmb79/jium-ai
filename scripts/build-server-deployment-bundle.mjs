@@ -231,6 +231,7 @@ export async function buildServerDeploymentBundle({
     },
     deploymentCommands: [
       "npm run server:env:init",
+      "npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env",
       "npm run security:trusted-key:review -- --candidate <approved-public-key.json> --patch-output <trusted-key-registry.patch.json>",
       "npm run security:server-storage",
       "npm run security:server-readiness",
