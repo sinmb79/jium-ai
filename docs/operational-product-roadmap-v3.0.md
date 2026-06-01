@@ -1024,3 +1024,19 @@
   - raw public URL, host, path, query, response header value, contact, incident owner, secret, token, certificate material, victim indicator는 저장하지 않는다.
 - 검증 범위
   - ready `_headers` capable HTTPS deployment preflight, missing security header BLOCKED case, CLI unsafe output path guard, action-plan/go-live next action 연결을 테스트했다.
+
+## v3.89 Netlify hosting config
+
+- Netlify 운영 호스팅 설정
+  - 앱 version을 `0.3.89`로 올리고 `netlify.toml`, `.netlifyignore`, `public:netlify:check`, JSON, Markdown variants를 추가했다.
+  - Netlify build command는 `npm run public:hosting:bundle`, publish directory는 `dist/static-hosting-bundle/site`로 고정했다.
+- 운영 연결
+  - go-live phase의 verification commands에 `npm run public:netlify:check`를 추가했다.
+  - Netlify 배포 전 설정 검증, 배포 후 `public:hosting:preflight` 순서로 공개 호스팅 운영 증거를 만들도록 정리했다.
+  - Netlify MCP upload lane은 `npm run public:hosting:bundle` 이후 `dist/static-hosting-bundle/site`에서 실행하도록 액션 플랜에 명시했다.
+- 안전 경계
+  - `netlify.toml`에 raw URL, contact, token, private path, secret-like assignment가 있으면 BLOCKED 처리한다.
+  - `.netlifyignore`가 local dependency, generated artifact, private operating file을 제외하지 않으면 BLOCKED 처리한다.
+  - report는 readiness state, expected command, required ignore entry, unsafe pattern ID만 저장하고 Netlify token, public URL, host, owner, victim indicator는 저장하지 않는다.
+- 검증 범위
+  - valid Netlify static-hosting config, unsafe config 차단, CLI output path guard, action-plan run order 연결을 테스트했다.

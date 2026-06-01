@@ -1,0 +1,7 @@
+[build]
+  command = "npm run public:hosting:bundle"
+  publish = "dist/static-hosting-bundle/site"
+
+[build.environment]
+  NODE_VERSION = "24"
+  NEXT_TELEMETRY_DISABLED = "1"

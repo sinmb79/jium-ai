@@ -137,6 +137,9 @@ describe("operational action plan", () => {
       "npm run public:hosting:bundle",
     );
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
+      "npm run public:netlify:check",
+    );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
       "npm run public:hosting:preflight -- <approved-https-public-app-url>",
     );
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
@@ -167,6 +170,9 @@ describe("operational action plan", () => {
       false,
     );
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("dist/static-hosting-bundle/site"))).toBe(
+      true,
+    );
+    expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("Netlify MCP upload lane"))).toBe(
       true,
     );
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("public:hosting:preflight"))).toBe(true);

@@ -596,3 +596,17 @@ npm run public:hosting:preflight:json -- <approved-https-public-app-url> --outpu
 ```
 
 The command checks that the static export is ready for a `_headers`-capable provider and that the approved HTTPS host actually returns every required security header. It writes a redacted hosted-audit candidate that can be applied with `npm run ops:hosted-audit:apply` only when the preflight is `READY`. Details are in [Public Hosting Go-Live Preflight v0.3.88](docs/public-hosting-go-live-preflight-v0.3.88.md).
+
+## v0.3.89 Netlify Hosting Config
+
+The repository now includes a production-oriented `netlify.toml` for the existing Netlify hosting lane:
+
+```bash
+npm run public:netlify:check
+npm run public:hosting:bundle
+npm run public:hosting:preflight -- <approved-netlify-https-url>
+```
+
+Netlify is configured to run `npm run public:hosting:bundle` and publish `dist/static-hosting-bundle/site`, so the generated `_headers` file is deployed with the app. The checker blocks raw URLs, contacts, tokens, private paths, and secret-like assignments in `netlify.toml`, and verifies `.netlifyignore` excludes local dependencies, generated artifacts, and private operating files. Details are in [Netlify Hosting Config v0.3.89](docs/netlify-hosting-config-v0.3.89.md).
+
+For the Netlify MCP upload lane, build the bundle first and run the generated deploy command from `dist/static-hosting-bundle/site`. This keeps the deployment focused on the exported static app and the `_headers` policy.
