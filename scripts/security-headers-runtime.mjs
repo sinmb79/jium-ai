@@ -1,6 +1,9 @@
 import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const securityHeadersData = JSON.parse(readFileSync(new URL("../lib/securityHeadersData.json", import.meta.url), "utf8"));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const securityHeadersData = JSON.parse(readFileSync(path.join(__dirname, "..", "lib", "securityHeadersData.json"), "utf8"));
 
 export function getSecurityHeaders() {
   return [

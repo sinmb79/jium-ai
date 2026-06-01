@@ -395,3 +395,13 @@ npm run ops:onboarding:check
 ```
 
 `ops:onboarding:check` now blocks unless the referenced audit report is READY, HTTPS-targeted, fetched successfully, below HTTP 400, and has zero header failures. The report remains redacted and does not store the audit report path, public URL, host, path, query, response header values, contacts, tokens, or victim indicators. Details are in [Hosted Security Header Onboarding Gate v0.3.69](docs/hosted-security-header-onboarding-gate-v0.3.69.md).
+
+## v0.3.70 Secure Static Hosting Bundle
+
+GitHub Pages remains useful for demo access, but it does not enforce the required `_headers` policy. For production-style static hosting, operators can now build a redacted bundle for `_headers`-capable providers:
+
+```bash
+npm run public:hosting:bundle
+```
+
+The bundle writes `dist/static-hosting-bundle/site` for Cloudflare Pages or Netlify, verifies that exported routes do not use the GitHub Pages base path, and checks that `_headers` exactly matches the repository security policy. Details are in [Secure Static Hosting Bundle v0.3.70](docs/secure-static-hosting-bundle-v0.3.70.md).

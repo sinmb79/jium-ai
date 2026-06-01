@@ -1,5 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import nextConfig from "../next.config";
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.resetModules();
+});
 
 describe("Next.js security headers", () => {
   it("sets production security headers for hosted operation", async () => {
@@ -15,5 +20,15 @@ describe("Next.js security headers", () => {
     expect(headers.get("Content-Security-Policy")).toContain("script-src 'self'");
     expect(headers.get("Content-Security-Policy-Report-Only")).toContain("frame-ancestors 'none'");
     expect(headers.get("Content-Security-Policy-Report-Only")).toContain("object-src 'none'");
+  });
+
+  it("omits Next custom headers for static export profiles", async () => {
+    vi.stubEnv("JIUM_STATIC_HOSTING_EXPORT", "true");
+    vi.resetModules();
+
+    const module = await import("../next.config");
+
+    expect(module.default.output).toBe("export");
+    expect(module.default.headers).toBeUndefined();
   });
 });
