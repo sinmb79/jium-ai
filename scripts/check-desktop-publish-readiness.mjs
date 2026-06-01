@@ -93,7 +93,7 @@ export function inspectDesktopPublishArtifacts({ feedDir = path.join(repoRoot, "
 
 function publishNextActionFor(error) {
   if (error.includes("release tag")) {
-    return "Set JIUM_DESKTOP_RELEASE_TAG to the approved installer release tag, for example v0.3.48.";
+    return "Set JIUM_DESKTOP_RELEASE_TAG to the approved installer release tag that matches package.json, for example vMAJOR.MINOR.PATCH.";
   }
   if (error.includes("package version")) {
     return "Align package.json version, update metadata version, and the approved release tag before publishing.";

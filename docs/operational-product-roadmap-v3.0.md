@@ -782,3 +782,18 @@
   - URL 원문, support 연락처, 담당자명, secret, token, 인증서 material, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호는 저장하지 않는다.
 - 검증 범위
   - 승인/URL 요약, 완전 승인 profile, 서버·데스크톱 downstream blocker, redaction을 테스트했다.
+
+## v3.50 운영 인수인계 bundle
+
+- 운영 증적 묶음
+  - 앱 version을 `0.3.50`으로 올리고 `ops:handoff:bundle`, `ops:handoff:json`, `ops:handoff:markdown`을 추가했다.
+  - bundle은 서버 runtime readiness report, desktop publish readiness report, operational go-live report, 운영 handoff runbook을 `dist/operational-handoff-bundle`에 모은다.
+  - summary에는 gate별 READY/BLOCKED, 오류 수, package version, commit, platform, 필요한 외부 승인 기록, 다음 조치를 남긴다.
+- 운영 인수인계 경계
+  - 이 bundle은 운영자가 승인 증적을 검토하기 위한 자료이며, 기관 승인·법무 승인·서명·update hosting 완료를 대체하지 않는다.
+  - 공개 repo 기본 상태에서는 server runtime, desktop publish, go-live gate 중 하나라도 BLOCKED이면 bundle도 BLOCKED로 남아야 정상이다.
+- 개인정보와 secret 최소화
+  - report와 runbook은 승인 상태, 카운트, release tag, package version, 상대 artifact 이름, 설정 존재 여부만 저장한다.
+  - public URL 값, support 연락처, incident owner 이름, secret, token, 인증서 material, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호는 저장하지 않는다.
+- 검증 범위
+  - READY bundle 생성, BLOCKED bundle 생성, redaction, 외부 승인 기록 checklist, 안전한 bundle directory cleanup을 테스트했다.

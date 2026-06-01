@@ -352,3 +352,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The go-live gate combines server runtime readiness, desktop publish readiness, public HTTPS URL checks, legal/go-live/release-evidence/data-retention approvals, support route, and incident-response assignment.
 - Default public-repo operation remains BLOCKED until institution keys, server env, signed desktop artifacts, update feed metadata, release approval, and human operating approvals are present.
 - Go-live reports store approval states, URL validity states, counts, release tag, and package version only, while excluding public URL values, support contacts, owner names, secrets, tokens, certificate material, and victim indicators.
+
+## Implemented in v3.50
+
+- Added `scripts/build-operational-handoff-bundle.mjs` and `ops:handoff:bundle` to gather server runtime readiness, desktop publish readiness, operational go-live, and runbook reports.
+- The handoff bundle records gate status, package version, commit, platform, required external approval records, and next actions.
+- The bundle is an operator handoff packet and does not replace legal, institution, signing, update-hosting, or go-live approval.
+- Handoff bundle reports continue to exclude public URL values, support contacts, owner names, secrets, tokens, certificate material, victim indicators, raw URLs, invite links, onion addresses, emails, and phone numbers.
