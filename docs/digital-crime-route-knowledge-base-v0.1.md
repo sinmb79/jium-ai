@@ -504,3 +504,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Reports store only env update status, audit readiness states, failure counts, and SHA-256 digest values; raw audit report paths and raw public URLs remain out of generated reports.
 - Hosted audit evidence parsing now tolerates UTF-8 BOM JSON files created by Windows review tools.
 - `ops:action-plan`, `ops:onboarding:check`, and `ops:go-live:check` now route hosted audit env blockers to the guarded command instead of undocumented manual edits.
+
+## Implemented in v0.3.82
+
+- Added `scripts/server-runtime-env-file.mjs` to load allowlisted values from ignored `.env.server.local` during readiness checks.
+- `security:server-readiness`, `security:server-storage`, and `ops:go-live:check` now consume the same private env file updated by guarded setup/apply commands.
+- Process environment values still override file values, preserving CI and emergency override behavior.
+- The loader tolerates UTF-8 BOM env files and ignores unknown keys.
+- Reports continue to redact server secrets, trusted origins, storage paths, hosted audit paths, public URLs, contacts, victim indicators, invite links, onion addresses, emails, and phone numbers.

@@ -21,6 +21,7 @@ import {
 import {
   validateHostedSecurityHeaderAuditEvidence,
 } from "./hosted-security-header-audit-evidence.mjs";
+import { loadServerRuntimeEnvFile } from "./server-runtime-env-file.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -141,16 +142,17 @@ export async function validateOperationalGoLive({
   platform = process.platform,
   validations,
 } = {}) {
-  const envSummary = summarizeOperationalGoLiveEnv(env);
+  const effectiveEnv = loadServerRuntimeEnvFile({ root, env });
+  const envSummary = summarizeOperationalGoLiveEnv(effectiveEnv);
   const errors = envErrors(envSummary);
-  const serverRuntime = validations?.serverRuntime || validateServerRuntimeReadiness({ root, env });
+  const serverRuntime = validations?.serverRuntime || validateServerRuntimeReadiness({ root, env: effectiveEnv });
   const desktopPublish =
     validations?.desktopPublish ||
-    (await validateDesktopPublishReadiness({ root, env, platform, feedDir: path.join(root, "dist", "desktop") }));
-  const approvalRecords = validations?.approvalRecords || validateOperationalApprovalRecords({ root, env });
-  const productionOnboarding = validations?.productionOnboarding || validateProductionOnboarding({ root, env });
+    (await validateDesktopPublishReadiness({ root, env: effectiveEnv, platform, feedDir: path.join(root, "dist", "desktop") }));
+  const approvalRecords = validations?.approvalRecords || validateOperationalApprovalRecords({ root, env: effectiveEnv });
+  const productionOnboarding = validations?.productionOnboarding || validateProductionOnboarding({ root, env: effectiveEnv });
   const hostedSecurityHeaderAudit =
-    validations?.hostedSecurityHeaderAudit || validateHostedSecurityHeaderAuditEvidence({ root, env });
+    validations?.hostedSecurityHeaderAudit || validateHostedSecurityHeaderAuditEvidence({ root, env: effectiveEnv });
 
   if (!serverRuntime.valid) {
     serverRuntime.errors.forEach((error) => errors.push(`operational server runtime: ${error}`));

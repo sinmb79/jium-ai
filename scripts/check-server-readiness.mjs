@@ -11,6 +11,7 @@ import {
 import { truthy, validateDeploymentProfile } from "./check-deployment-profile.mjs";
 import { listServerRouteTemplates } from "./materialize-server-routes.mjs";
 import { validateServerStorageReadiness } from "./check-server-storage-readiness.mjs";
+import { loadServerRuntimeEnvFile } from "./server-runtime-env-file.mjs";
 
 export const REQUIRED_SERVER_ROUTE_TEMPLATES = [
   "api/institution/accounts/route.ts",
@@ -107,20 +108,21 @@ export function validateServerRuntimeReadiness({
   env = process.env,
 } = {}) {
   const errors = [];
-  const deployment = validateDeploymentProfile(env, root);
-  const envSummary = summarizeServerRuntimeEnv(env);
-  const storage = validateServerStorageReadiness({ root, env });
+  const effectiveEnv = loadServerRuntimeEnvFile({ root, env });
+  const deployment = validateDeploymentProfile(effectiveEnv, root);
+  const envSummary = summarizeServerRuntimeEnv(effectiveEnv);
+  const storage = validateServerStorageReadiness({ root, env: effectiveEnv });
 
-  if (!truthy(env.JIUM_SERVER_ROUTES)) {
+  if (!truthy(effectiveEnv.JIUM_SERVER_ROUTES)) {
     errors.push("JIUM_SERVER_ROUTES=true is required for server runtime readiness");
   }
-  if (truthy(env.GITHUB_PAGES)) {
+  if (truthy(effectiveEnv.GITHUB_PAGES)) {
     errors.push("GITHUB_PAGES=true cannot be used for server runtime readiness");
   }
   if (envSummary.INSTITUTION_SESSION_SECRET === "SET_WEAK") {
     errors.push("INSTITUTION_SESSION_SECRET must be a server-only high-entropy secret of at least 32 bytes");
   }
-  validateAllowedOrigins(env.INSTITUTION_ALLOWED_ORIGINS).forEach((error) => errors.push(error));
+  validateAllowedOrigins(effectiveEnv.INSTITUTION_ALLOWED_ORIGINS).forEach((error) => errors.push(error));
   deployment.errors.forEach((error) => errors.push(`deployment profile: ${error}`));
   storage.errors.forEach((error) => errors.push(error));
 

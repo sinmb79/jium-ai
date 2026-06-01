@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   AUTHORIZED_FEED_SIGNATURE_ALGORITHM,
   TRUSTED_KEY_REGISTRY_VERSION,
@@ -13,6 +16,24 @@ describe("authorized feed trusted key registry check", () => {
 
     expect(registry.version).toBe(TRUSTED_KEY_REGISTRY_VERSION);
     expect(runTrustedAuthorizedFeedKeyCheck()).toEqual([]);
+  });
+
+  it("loads a trusted key registry with a UTF-8 BOM", () => {
+    const root = mkdtempSync(join(tmpdir(), "jium-trusted-key-bom-"));
+    const registryPath = join(root, "trusted-authorized-feed-keys.json");
+    writeFileSync(
+      registryPath,
+      `\uFEFF${JSON.stringify({
+        version: TRUSTED_KEY_REGISTRY_VERSION,
+        keys: [],
+      })}`,
+      "utf8",
+    );
+
+    expect(loadTrustedAuthorizedFeedKeyRegistry(registryPath)).toEqual({
+      version: TRUSTED_KEY_REGISTRY_VERSION,
+      keys: [],
+    });
   });
 
   it("rejects accidental private JWK material and private key usages", () => {

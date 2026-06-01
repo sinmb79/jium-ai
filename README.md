@@ -516,3 +516,15 @@ npm run ops:hosted-audit:apply -- --audit-report ops/private/production-onboardi
 ```
 
 The command only accepts a READY `jium-security-header-url-audit-v1` report that targets HTTPS production hosting, fetched successfully, returned below HTTP 400, and has zero header failures. It writes only the relative audit report path to the ignored server env file and emits redacted reports with status fields plus a SHA-256 digest. Details are in [Hosted Security Header Audit Env Apply v0.3.81](docs/hosted-security-header-audit-env-apply-v0.3.81.md).
+
+## v0.3.82 Server Runtime Env File Loading
+
+Operational readiness checks now load allowlisted values from the ignored `.env.server.local` file:
+
+```bash
+npm run security:server-readiness
+npm run security:server-storage
+npm run ops:go-live:check
+```
+
+This lets the guarded commands that write `.env.server.local` feed the final readiness gates without undocumented manual shell exports. Process environment values still override file values, and generated reports continue to redact secrets, trusted origins, storage paths, hosted audit paths, public URLs, and contacts. Details are in [Server Runtime Env File Loading v0.3.82](docs/server-runtime-env-file-loading-v0.3.82.md).

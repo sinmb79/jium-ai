@@ -2,6 +2,7 @@
 import { mkdirSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadServerRuntimeEnvFile } from "./server-runtime-env-file.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -144,11 +145,12 @@ export function validateServerStorageReadiness({
   env = process.env,
   writeProbe = true,
 } = {}) {
+  const effectiveEnv = loadServerRuntimeEnvFile({ root, env });
   const rootRealpath = safeRealpath(root);
   const results = REQUIRED_SERVER_STORAGE_ENV_KEYS.map((envKey) =>
     validateStorageTarget({
       envKey,
-      value: env[envKey],
+      value: effectiveEnv[envKey],
       root,
       rootRealpath,
       writeProbe,

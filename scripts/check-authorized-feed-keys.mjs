@@ -24,7 +24,7 @@ function parseIsoDate(value) {
 }
 
 export function loadTrustedAuthorizedFeedKeyRegistry(filePath = resolve(process.cwd(), TRUSTED_KEY_REGISTRY_PATH)) {
-  return JSON.parse(readFileSync(filePath, "utf8"));
+  return JSON.parse(readFileSync(filePath, "utf8").replace(/^\uFEFF/, ""));
 }
 
 export function validateTrustedAuthorizedFeedKeyRegistry(registry) {
