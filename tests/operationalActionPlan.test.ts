@@ -105,6 +105,9 @@ describe("operational action plan", () => {
     expect(plan.runOrder.find((entry) => entry.phaseId === "production-onboarding")?.verificationCommands).toContain(
       "npm run ops:onboarding:approve-public-operations -- --section <public-app|privacy-notice|support-route> --evidence-ref <pseudonymous-public-operations-evidence-reference>",
     );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "production-onboarding")?.verificationCommands).toContain(
+      "npm run ops:onboarding:digest-evidence",
+    );
     expect(plan.runOrder.find((entry) => entry.phaseId === "approval-records")?.verificationCommands).toContain(
       "npm run ops:approvals:digest-evidence",
     );
@@ -163,6 +166,7 @@ describe("operational action plan", () => {
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:go-live:env:apply"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:release-dossier"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:approvals:digest-evidence"))).toBe(true);
+    expect(plan.phases.find((phase) => phase.id === "production-onboarding")?.actions.some((action) => action.action.includes("ops:onboarding:digest-evidence"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:go-live:env:apply"))).toBe(
       false,
     );

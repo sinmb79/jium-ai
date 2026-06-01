@@ -99,7 +99,7 @@ function goLiveNextActionFor(error) {
     return "Resolve desktop publish blockers, including signed artifacts, update feed, and release upload approval.";
   }
   if (error.includes("production onboarding")) {
-    return "Complete the private production onboarding checklist and run npm run ops:onboarding:check.";
+    return "Complete the private production onboarding checklist, build npm run ops:onboarding:digest-evidence, and run npm run ops:onboarding:check.";
   }
   if (error.includes("approval records")) {
     return "Create approval evidence digests, then validate the private operational approval records packet before go-live.";

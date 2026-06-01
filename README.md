@@ -562,3 +562,14 @@ npm run ops:approvals:digest-evidence:json -- --output dist/operational-approval
 ```
 
 The command hashes redacted review files, writes an aggregate `sha256-*` digest for `ops:approvals:approve-record -- --evidence-digest`, and blocks if a source file contains raw URLs, contacts, tokens, invite links, onion addresses, phone-like values, or unsafe paths. `ops:action-plan` and `ops:go-live:check` now route release-evidence blockers through this digest step before approval recording. Details are in [Operational Approval Evidence Digests v0.3.85](docs/operational-approval-evidence-digests-v0.3.85.md).
+
+## v0.3.86 Production Onboarding Evidence Digests
+
+Operators can now create a redacted digest manifest for the private onboarding packet:
+
+```bash
+npm run ops:onboarding:digest-evidence
+npm run ops:onboarding:digest-evidence:json -- --output dist/production-onboarding-evidence-digests/report.json
+```
+
+The command hashes reviewed private onboarding files, writes an aggregate `sha256-*` digest for launch evidence archiving, and blocks if those files contain placeholders, raw URLs, contacts, secrets, private key material, phone-like values, or filesystem paths. `.env.server.local` is intentionally excluded because it may contain approved deployment values. Details are in [Production Onboarding Evidence Digests v0.3.86](docs/production-onboarding-evidence-digests-v0.3.86.md).

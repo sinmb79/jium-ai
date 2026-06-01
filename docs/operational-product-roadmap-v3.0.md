@@ -981,3 +981,17 @@
   - report는 file name, byte count, SHA-256 digest, unsafe pattern ID, approval command template만 저장한다.
 - 검증 범위
   - safe evidence digest 생성, unsafe evidence 차단, canonical JSON/Markdown write, CLI repeated `--file`, action-plan/go-live next action 연결을 테스트했다.
+
+## v3.86 production onboarding evidence digests
+
+- 비공개 온보딩 digest 묶음
+  - 앱 version을 `0.3.86`으로 올리고 `ops:onboarding:digest-evidence`, JSON, Markdown variants를 추가했다.
+  - reviewed private onboarding files를 원문 없이 해시하고 최종 온보딩 archive에 붙일 aggregate `sha256-*` digest를 생성한다.
+- 운영 연결
+  - production-onboarding phase의 verification commands에 digest 생성 단계를 추가했다.
+  - action plan에서 최종 onboarding archive 전에 `ops:onboarding:digest-evidence`를 실행하도록 안내한다.
+- 안전 경계
+  - source evidence file에 placeholder, raw URL, 연락처, token, private key, server secret, filesystem path가 있으면 aggregate digest를 비운 채 BLOCKED 처리한다.
+  - report는 file name, role, byte count, SHA-256 digest, unsafe pattern ID만 저장하고 private path, evidence reference, URL, 연락처, secret, victim indicator는 저장하지 않는다.
+- 검증 범위
+  - ready private onboarding digest 생성, unsafe value 차단, CLI output path guard, canonical JSON/Markdown write, action-plan run order 연결을 테스트했다.

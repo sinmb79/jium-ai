@@ -376,6 +376,9 @@ describe("operational go-live readiness", () => {
     expect(report.nextActions).toContain(
       "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init before final go-live review.",
     );
+    expect(report.nextActions).toContain(
+      "Complete the private production onboarding checklist, build npm run ops:onboarding:digest-evidence, and run npm run ops:onboarding:check.",
+    );
     expect(readiness.errors.join("\n")).toContain("operational approval records");
     expect(readiness.errors.join("\n")).toContain("operational production onboarding");
     expect(readiness.errors.join("\n")).toContain("operational server runtime");

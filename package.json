@@ -1,6 +1,6 @@
 {
   "name": "jium-ai",
-  "version": "0.3.85",
+  "version": "0.3.86",
   "private": true,
   "description": "무료·로컬 우선 디지털 권리구제 도우미",
   "author": "22B Labs",
@@ -100,6 +100,9 @@
     "ops:onboarding:approve-public-operations": "node scripts/approve-production-onboarding-public-operations.mjs",
     "ops:onboarding:approve-public-operations:json": "node scripts/approve-production-onboarding-public-operations.mjs --json",
     "ops:onboarding:approve-public-operations:markdown": "node scripts/approve-production-onboarding-public-operations.mjs --markdown",
+    "ops:onboarding:digest-evidence": "node scripts/build-production-onboarding-evidence-digests.mjs",
+    "ops:onboarding:digest-evidence:json": "node scripts/build-production-onboarding-evidence-digests.mjs --json",
+    "ops:onboarding:digest-evidence:markdown": "node scripts/build-production-onboarding-evidence-digests.mjs --markdown",
     "ops:onboarding:check": "node scripts/check-production-onboarding.mjs",
     "ops:onboarding:check:json": "node scripts/check-production-onboarding.mjs --json",
     "ops:onboarding:check:markdown": "node scripts/check-production-onboarding.mjs --markdown",
