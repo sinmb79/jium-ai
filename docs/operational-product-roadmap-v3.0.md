@@ -1073,6 +1073,22 @@
 - Verification scope
   - Tested direct API and CLI rehearsal output, batch-apply status fields, all-input count checks, cleanup, and redaction.
 
+## v3.98 Operational launch inputs
+
+- Launch input intake
+  - Version was raised to `0.3.98`.
+  - Added `ops:launch-inputs` and `ops:launch-inputs:review`, with JSON and Markdown variants.
+  - The template consolidates public routes, hosted-audit path, server origins, trusted-key candidate/patch paths, repo-external storage paths, desktop release settings, signed feed location, approval evidence digest, approved batch input path, and incident owner reference.
+- Operational wiring
+  - The go-live action plan now routes operators through `ops:launch-inputs` and `ops:launch-inputs:review` before scattered guarded apply commands.
+  - Operational release dossiers and approval evidence digests include the launch-input template JSON/Markdown reports.
+- Safety boundary
+  - The review command does not write env files, approval files, trusted keys, or desktop release settings.
+  - Reports store field status, counts, and SHA-256 digests only.
+  - Reports do not store raw URLs, storage paths, feed paths, support contacts, incident owner names, secrets, tokens, certificate material, victim indicators, invite links, onion addresses, emails, or phone numbers.
+- Verification scope
+  - Tested template generation, filled private input review, placeholder blocking, raw-value redaction, CLI review output, output path guard, action-plan routing, release dossier inclusion, and approval evidence digest inclusion.
+
 ## v3.95 Operational launch console
 
 - Operator launch board

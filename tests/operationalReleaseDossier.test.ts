@@ -245,7 +245,11 @@ describe("operational release dossier", () => {
     expect(dossier.requiredReviewFiles.map((file) => file.path)).toContain(
       "dist/operational-approval-inputs/operational-approval-inputs-template.md",
     );
+    expect(dossier.requiredReviewFiles.map((file) => file.path)).toContain(
+      "dist/operational-launch-inputs/operational-launch-inputs-template.md",
+    );
     expect(dossier.nextCommands).toContain("npm run ops:launch-console");
+    expect(dossier.nextCommands).toContain("npm run ops:launch-inputs");
     expect(dossier.nextCommands).toContain("npm run ops:approvals:input-template");
     expect(dossier.priorityActions[0]).toMatchObject({
       phaseId: "production-onboarding",

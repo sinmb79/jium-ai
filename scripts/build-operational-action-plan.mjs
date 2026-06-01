@@ -186,6 +186,8 @@ const PHASE_BLUEPRINTS = [
     evidenceTarget: "dist/operational-handoff-bundle",
     verificationCommands: [
       "npm run ops:go-live:rehearsal",
+      "npm run ops:launch-inputs",
+      "npm run ops:launch-inputs:review -- --input <private-approved-launch-inputs.json>",
       "npm run public:hosting:bundle",
       "npm run public:netlify:check",
       "npm run public:hosting:preflight -- <approved-https-public-app-url>",
@@ -201,6 +203,8 @@ const PHASE_BLUEPRINTS = [
     ],
     baseActions: [
       "Run npm run ops:go-live:rehearsal to verify the internal gate wiring before collecting real launch approvals.",
+      "Build the private-fill launch inputs template with npm run ops:launch-inputs before collecting operator URLs, paths, and release refs.",
+      "Review the filled private launch inputs with npm run ops:launch-inputs:review before running guarded apply commands.",
       "Build the production static hosting bundle with npm run public:hosting:bundle.",
       "Validate the Netlify static hosting config with npm run public:netlify:check before Netlify deployment.",
       "Run npm run public:hosting:preflight against the approved HTTPS public app URL before applying hosted audit evidence.",

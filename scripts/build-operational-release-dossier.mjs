@@ -45,6 +45,11 @@ import {
   OPERATIONAL_APPROVAL_INPUTS_TEMPLATE_JSON,
   OPERATIONAL_APPROVAL_INPUTS_TEMPLATE_MARKDOWN,
 } from "./operational-approval-inputs.mjs";
+import {
+  OPERATIONAL_LAUNCH_INPUTS_DIR,
+  OPERATIONAL_LAUNCH_INPUTS_TEMPLATE_JSON,
+  OPERATIONAL_LAUNCH_INPUTS_TEMPLATE_MARKDOWN,
+} from "./build-operational-launch-inputs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -226,6 +231,18 @@ function buildRequiredReviewFiles() {
       label: "Operational approval inputs template Markdown",
       path: `${OPERATIONAL_APPROVAL_INPUTS_DIR}/${OPERATIONAL_APPROVAL_INPUTS_TEMPLATE_MARKDOWN}`,
       purpose: "Human-readable guide for preparing a private approval input file.",
+    },
+    {
+      id: "operational-launch-inputs-template-json",
+      label: "Operational launch inputs template JSON",
+      path: `${OPERATIONAL_LAUNCH_INPUTS_DIR}/${OPERATIONAL_LAUNCH_INPUTS_TEMPLATE_JSON}`,
+      purpose: "Private-fill template for public routes, server origins, trusted-key paths, desktop release settings, storage paths, and final launch references.",
+    },
+    {
+      id: "operational-launch-inputs-template-markdown",
+      label: "Operational launch inputs template Markdown",
+      path: `${OPERATIONAL_LAUNCH_INPUTS_DIR}/${OPERATIONAL_LAUNCH_INPUTS_TEMPLATE_MARKDOWN}`,
+      purpose: "Human-readable guide for reviewing private operating inputs before guarded apply commands.",
     },
     {
       id: "release-dossier-json",
@@ -465,6 +482,7 @@ export async function buildOperationalReleaseDossier({
       "npm run ops:handoff:bundle",
       "npm run ops:action-plan",
       "npm run ops:launch-console",
+      "npm run ops:launch-inputs",
       "npm run ops:approvals:input-template",
       "npm run ops:go-live:rehearsal",
       "npm run ops:release-dossier",

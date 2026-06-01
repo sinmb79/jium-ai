@@ -164,6 +164,12 @@ describe("operational action plan", () => {
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
       "npm run ops:go-live:rehearsal",
     );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
+      "npm run ops:launch-inputs",
+    );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
+      "npm run ops:launch-inputs:review -- --input <private-approved-launch-inputs.json>",
+    );
     expect(plan.runOrder.find((entry) => entry.phaseId === "desktop-release")?.verificationCommands).toContain(
       "npm run desktop:release-env:apply -- --channel <approved-release-channel> --update-url <approved-https-update-url> --publish-approval-ref <pseudonymous-desktop-publish-approval-reference>",
     );
@@ -204,6 +210,7 @@ describe("operational action plan", () => {
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:go-live:env:apply"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:release-dossier"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:launch-console"))).toBe(true);
+    expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("ops:launch-inputs"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:approvals:digest-evidence"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:approvals:command-packet"))).toBe(true);
     expect(plan.phases.find((phase) => phase.id === "approval-records")?.actions.some((action) => action.action.includes("ops:approvals:input-template"))).toBe(true);
