@@ -830,3 +830,19 @@
   - 승인 packet이 실제 운영 자료가 되는 시점에도 가명 reference, release scope, sha256 증거 지문만 사용하도록 유도한다.
 - 검증 범위
   - template 생성, overwrite 차단, force overwrite, release tag 정렬, placeholder 기반 BLOCKED 판정을 테스트했다.
+
+## v3.53 기관 공개키 후보 review CLI
+
+- 신뢰 공개키 온보딩 보조
+  - 앱 version을 `0.3.53`으로 올리고 `security:trusted-key:review`를 추가했다.
+  - 운영자는 후보 공개키 JSON을 바로 registry에 붙이지 않고, 먼저 fingerprint/checklist/error/warning report를 생성한다.
+  - BLOCKED 후보는 registry patch를 쓰지 않고, 통과 또는 검토 필요 상태일 때만 `--patch-output`으로 patch를 생성한다.
+- 개인정보와 secret 최소화
+  - review report는 keyId, issuerName, fingerprint, algorithm 상태, 유효기간 설정 여부, registry key count만 저장한다.
+  - raw public-key modulus, private key material, 연락처, URL, secret, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호는 report에 저장하지 않는다.
+  - patch output에는 공개키 material만 포함되며, 승인 기록과 별도 PR/관리자 검토를 거쳐야 한다.
+- 운영 승인 연결
+  - fingerprint를 private approval records packet에 남기고, 별도 신뢰 채널로 발급기관이 제공한 fingerprint와 대조한다.
+  - patch 적용 뒤 `npm run security:feed-keys`와 `npm run security:server-readiness`를 다시 실행한다.
+- 검증 범위
+  - 정상 후보 patch 생성, report redaction, private JWK 차단, missing validUntil NEEDS_REVIEW, BLOCKED 후보 patch 미생성을 테스트했다.

@@ -189,3 +189,13 @@ npm run ops:approvals:init
 ```
 
 The generated packet stays BLOCKED until every `REPLACE-ME` placeholder is replaced and each record is changed to `APPROVED` after real human approval. Existing packets are not overwritten unless `-- --force` is passed.
+
+## v0.3.53 Trusted Key Candidate Review
+
+Institution public-key onboarding can now be reviewed from the CLI:
+
+```bash
+npm run security:trusted-key:review -- --candidate ./partner-public-key.json --patch-output ./trusted-key-registry.patch.json
+```
+
+The review prints a redacted fingerprint/checklist report and writes a registry patch only when the candidate is not blocked. Reports do not include raw public-key modulus values, contacts, URLs, secrets, or victim indicators.

@@ -375,3 +375,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The validator now rejects placeholder values such as `REPLACE-ME`, `TODO`, `TBD`, `PLACEHOLDER`, and `PENDING_APPROVAL`.
 - The init command refuses to overwrite an existing private packet unless `--force` is explicitly passed.
 - The generated scaffold avoids raw URLs, contacts, names, secrets, tokens, victim indicators, invite links, onion addresses, emails, and phone numbers.
+
+## Implemented in v3.53
+
+- Added `scripts/review-trusted-key-candidate.mjs` and `security:trusted-key:review` for institution public-key onboarding.
+- The review command emits a redacted fingerprint/checklist report and writes a registry patch only when the candidate is not blocked.
+- Candidate review rejects private JWK fields, private key usages, unsupported fields, raw URLs, contacts, secrets, victim indicators, invite links, onion addresses, emails, and phone numbers.
+- Candidates without `validUntil` remain `NEEDS_REVIEW` so rotation planning is recorded before approval.
+- Reports exclude raw public-key modulus values; the optional patch file contains public key material and must go through approval before applying to the registry.

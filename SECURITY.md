@@ -82,6 +82,14 @@ npm run security:feeds
 npm run security:feed-keys
 ```
 
+신규 기관 공개키는 바로 registry에 붙이지 말고 먼저 redacted review를 만듭니다.
+
+```bash
+npm run security:trusted-key:review -- --candidate ./partner-public-key.json --patch-output ./trusted-key-registry.patch.json
+```
+
+이 명령은 fingerprint, checklist, warning/error만 report에 남기고 raw modulus, 연락처, URL, secret, 피해자 지표는 report에 저장하지 않습니다. BLOCKED 후보는 patch를 쓰지 않습니다. `validUntil`이 없는 후보는 NEEDS_REVIEW로 남겨 회전 계획을 승인 기록에 남기게 합니다.
+
 기관·파트너 운영자 세션은 `jium-authorized-operator-credential-signed-v1` credential로 열 수 있습니다. credential은 같은 신뢰 공개키 체계로 검증되며, subjectId는 이메일·전화번호·URL·초대링크가 아닌 가명 운영자 ID여야 합니다. 로컬 확인 문장 세션은 네트워크 없는 현장용 보조 장치이며, 운영 배포에서는 서명 credential 또는 서버 기반 기관 계정 인증을 우선해야 합니다.
 
 서버 기반 기관 계정 세션은 역할별 capability matrix와 MFA 요구사항을 통과해야 합니다. PROGRAM_ADMIN의 계정 발급·해지, 신뢰 공개키 검토, 감사 원장 검토 같은 고위험 권한은 `SERVER_SESSION_MFA`와 `mfaVerifiedAt` 검증이 필요합니다.
