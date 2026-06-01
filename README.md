@@ -726,3 +726,13 @@ npm run ops:launch-inputs:commands -- --input ops/private/production-onboarding/
 ```
 
 The public report stores only command counts, statuses, and SHA-256 digests. The raw commands are written only under ignored `ops/private`, so approved URLs, paths, refs, and feed locations do not have to be copied into public reports or release notes. Details are in [Operational Launch Command Packet v0.3.99](docs/operational-launch-command-packet-v0.3.99.md).
+
+## v0.3.100 Operational Launch Apply Readiness
+
+Before running the private launch command packet, operators can check the filled launch input file against current private artifacts and env prerequisites:
+
+```bash
+npm run ops:launch-inputs:apply-check -- --input ops/private/production-onboarding/approved-launch-inputs.json
+```
+
+The report shows which phases are ready, ready-to-create, pending review output, or blocked across hosted audit evidence, server storage, server origin, trusted key review/apply, desktop feed, approval inputs, and go-live env. It does not apply anything and keeps raw URLs, paths, refs, and contacts out of public output. Details are in [Operational Launch Apply Readiness v0.3.100](docs/operational-launch-apply-readiness-v0.3.100.md).

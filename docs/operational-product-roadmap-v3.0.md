@@ -1073,6 +1073,22 @@
 - Verification scope
   - Tested direct API and CLI rehearsal output, batch-apply status fields, all-input count checks, cleanup, and redaction.
 
+## v3.100 Operational launch apply readiness
+
+- Pre-apply readiness
+  - Version was raised to `0.3.100`.
+  - Added `ops:launch-inputs:apply-check`, with JSON and Markdown variants.
+  - The command reads a filled private launch input file and checks current private artifacts/env prerequisites before operators run the command packet.
+- Operational wiring
+  - The go-live action plan now routes operators through template generation, input review, apply readiness, and then private command-packet generation.
+  - Operational release dossiers list the apply-check step before command generation so missing private artifacts are found earlier.
+- Safety boundary
+  - The checker does not apply env files, approval records, trusted keys, desktop release settings, or go-live flags.
+  - Reports store statuses, counts, relative private paths, and SHA-256 digests only.
+  - Raw approved URLs, storage paths, release feed paths, support contacts, incident owner refs, secrets, tokens, victim indicators, invite links, onion addresses, emails, and phone numbers are excluded from public reports.
+- Verification scope
+  - Tested filled private input apply readiness, hosted-audit readiness, server-storage ready-to-create status, desktop blocker surfacing, redaction of raw values, report writing, CLI output, and output path guard.
+
 ## v3.99 Operational launch command packet
 
 - Private command packet
