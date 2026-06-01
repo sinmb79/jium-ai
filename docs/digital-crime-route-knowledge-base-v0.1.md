@@ -383,3 +383,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Candidate review rejects private JWK fields, private key usages, unsupported fields, raw URLs, contacts, secrets, victim indicators, invite links, onion addresses, emails, and phone numbers.
 - Candidates without `validUntil` remain `NEEDS_REVIEW` so rotation planning is recorded before approval.
 - Reports exclude raw public-key modulus values; the optional patch file contains public key material and must go through approval before applying to the registry.
+
+## Implemented in v3.54
+
+- Added `scripts/init-server-runtime-env.mjs` and `server:env:init` to create a private `.env.server.local` scaffold.
+- The scaffold generates a 48-byte random `INSTITUTION_SESSION_SECRET`, omits `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET`, and refuses overwrite unless `--force` is passed.
+- `INSTITUTION_ALLOWED_ORIGINS` remains a `REPLACE-ME` placeholder so server readiness stays blocked until an approved HTTPS operator origin is configured.
+- Server readiness now classifies weak or placeholder session secrets as `SET_WEAK` and blocks them.
+- Server readiness rejects non-HTTPS, placeholder, credentialed, query, or fragment-bearing institution origins.

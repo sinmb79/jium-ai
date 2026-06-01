@@ -43,6 +43,17 @@ function present(value) {
   return Boolean(String(value || "").trim());
 }
 
+function serverSecretStatus(value) {
+  const clean = String(value || "").trim();
+  if (!clean) {
+    return "MISSING";
+  }
+  if (Buffer.byteLength(clean, "utf8") < 32 || /\b(?:REPLACE[-_ ]?ME|TODO|TBD|PLACEHOLDER|CHANGE[-_ ]?ME)\b/i.test(clean)) {
+    return "SET_WEAK";
+  }
+  return "SET";
+}
+
 function csvCount(value) {
   return String(value || "")
     .split(",")
@@ -50,11 +61,36 @@ function csvCount(value) {
     .filter(Boolean).length;
 }
 
+function validateAllowedOrigins(value) {
+  return String(value || "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .flatMap((entry) => {
+      const errors = [];
+      if (/\b(?:REPLACE[-_ ]?ME|TODO|TBD|PLACEHOLDER)\b/i.test(entry)) {
+        errors.push("INSTITUTION_ALLOWED_ORIGINS must not contain placeholders");
+      }
+      try {
+        const url = new URL(entry);
+        if (url.protocol !== "https:") {
+          errors.push("INSTITUTION_ALLOWED_ORIGINS entries must use HTTPS");
+        }
+        if (url.username || url.password || url.search || url.hash) {
+          errors.push("INSTITUTION_ALLOWED_ORIGINS entries must be origins only, without credentials, query, or fragment");
+        }
+      } catch {
+        errors.push("INSTITUTION_ALLOWED_ORIGINS entries must be valid HTTPS origins");
+      }
+      return errors;
+    });
+}
+
 export function summarizeServerRuntimeEnv(env = process.env) {
   return {
     JIUM_SERVER_ROUTES: truthy(env.JIUM_SERVER_ROUTES) ? "TRUE" : "MISSING_OR_FALSE",
     GITHUB_PAGES: truthy(env.GITHUB_PAGES) ? "TRUE_BLOCKED" : "NOT_TRUE",
-    INSTITUTION_SESSION_SECRET: present(env.INSTITUTION_SESSION_SECRET) ? "SET" : "MISSING",
+    INSTITUTION_SESSION_SECRET: serverSecretStatus(env.INSTITUTION_SESSION_SECRET),
     NEXT_PUBLIC_INSTITUTION_SESSION_SECRET: present(env.NEXT_PUBLIC_INSTITUTION_SESSION_SECRET) ? "SET_BLOCKED" : "NOT_SET",
     INSTITUTION_ALLOWED_ORIGINS: present(env.INSTITUTION_ALLOWED_ORIGINS) ? "SET" : "MISSING",
     INSTITUTION_ALLOWED_ORIGINS_COUNT: csvCount(env.INSTITUTION_ALLOWED_ORIGINS),
@@ -79,6 +115,10 @@ export function validateServerRuntimeReadiness({
   if (truthy(env.GITHUB_PAGES)) {
     errors.push("GITHUB_PAGES=true cannot be used for server runtime readiness");
   }
+  if (envSummary.INSTITUTION_SESSION_SECRET === "SET_WEAK") {
+    errors.push("INSTITUTION_SESSION_SECRET must be a server-only high-entropy secret of at least 32 bytes");
+  }
+  validateAllowedOrigins(env.INSTITUTION_ALLOWED_ORIGINS).forEach((error) => errors.push(error));
   deployment.errors.forEach((error) => errors.push(`deployment profile: ${error}`));
 
   let keyCount = 0;
@@ -172,7 +212,11 @@ export function buildServerRuntimeReadinessReport(readiness, options = {}) {
     {
       id: "trusted-origins",
       label: "Trusted institution origins are configured",
-      status: readiness.envSummary.INSTITUTION_ALLOWED_ORIGINS === "SET" ? "PASS" : "BLOCKED",
+      status:
+        readiness.envSummary.INSTITUTION_ALLOWED_ORIGINS === "SET" &&
+        !readiness.errors.some((error) => error.includes("INSTITUTION_ALLOWED_ORIGINS"))
+          ? "PASS"
+          : "BLOCKED",
     },
     {
       id: "storage-paths",

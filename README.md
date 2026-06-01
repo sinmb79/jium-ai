@@ -199,3 +199,13 @@ npm run security:trusted-key:review -- --candidate ./partner-public-key.json --p
 ```
 
 The review prints a redacted fingerprint/checklist report and writes a registry patch only when the candidate is not blocked. Reports do not include raw public-key modulus values, contacts, URLs, secrets, or victim indicators.
+
+## v0.3.54 Server Runtime Env Init
+
+Server deployments can now create a private env scaffold with:
+
+```bash
+npm run server:env:init
+```
+
+The scaffold writes `.env.server.local`, generates a 48-byte random server session secret, keeps `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET` out, and intentionally leaves `INSTITUTION_ALLOWED_ORIGINS` as a blocked placeholder until the approved HTTPS operator origin is known.

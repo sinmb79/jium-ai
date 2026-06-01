@@ -139,7 +139,10 @@ npm run build:server
 ```bash
 npm run security:server-readiness:json -- --output ./server-readiness.json
 npm run security:server-readiness:markdown -- --output ./server-readiness.md
+npm run server:env:init
 ```
+
+`server:env:init`은 git에서 제외되는 `.env.server.local` 초안을 만들고 48바이트 random server session secret을 생성합니다. 다만 `INSTITUTION_ALLOWED_ORIGINS`는 `REPLACE-ME` placeholder로 남아 readiness가 BLOCKED가 되도록 설계되어 있습니다. 승인된 HTTPS 운영자 origin을 넣고, 공개키 registry와 private approval records가 준비된 뒤에만 서버 readiness를 다시 통과시켜야 합니다. `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET`은 생성하지 않습니다.
 
 ### 데스크톱 release readiness
 

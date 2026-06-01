@@ -846,3 +846,18 @@
   - patch 적용 뒤 `npm run security:feed-keys`와 `npm run security:server-readiness`를 다시 실행한다.
 - 검증 범위
   - 정상 후보 patch 생성, report redaction, private JWK 차단, missing validUntil NEEDS_REVIEW, BLOCKED 후보 patch 미생성을 테스트했다.
+
+## v3.54 서버 runtime env init과 weak secret 차단
+
+- 서버 env 초안 생성
+  - 앱 version을 `0.3.54`로 올리고 `server:env:init`을 추가했다.
+  - 기본 출력은 git에서 제외되는 `.env.server.local`이며, 48바이트 random `INSTITUTION_SESSION_SECRET`을 생성한다.
+  - `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET`은 생성하지 않는다.
+- 의도적 BLOCKED 초안
+  - `INSTITUTION_ALLOWED_ORIGINS`는 `REPLACE-ME-https-origin` placeholder로 남겨 실제 승인 origin이 들어오기 전에는 readiness가 BLOCKED가 되도록 했다.
+  - 기존 env 파일은 `--force` 없이는 덮어쓰지 않는다.
+- readiness 강화
+  - `INSTITUTION_SESSION_SECRET`는 32바이트 미만 또는 placeholder 값을 `SET_WEAK`으로 분류하고 BLOCKED 처리한다.
+  - `INSTITUTION_ALLOWED_ORIGINS`는 HTTPS origin이어야 하며 placeholder, query, fragment, credential을 거부한다.
+- 검증 범위
+  - env template 생성, strong secret 생성, placeholder origin BLOCKED, overwrite 차단, force overwrite, weak secret summary를 테스트했다.
