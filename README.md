@@ -168,3 +168,14 @@ npm run build
 지움AI도 같은 방향에 서 있습니다. 피해자의 데이터를 더 모으는 기술이 아니라, 피해자가 덜 드러나고도 다시 움직일 수 있게 하는 기술이어야 합니다.
 
 22B Labs · 제4의 길 (The 4th Path)
+
+## v0.3.51 Operational Approval Records
+
+Production go-live now requires a private, redacted approval records packet in addition to environment approval flags.
+
+- `npm run ops:approvals:check` validates the private approval packet.
+- `npm run ops:go-live:check` now includes the approval-record gate.
+- `npm run ops:handoff:bundle` includes `operational-approval-records-report.json` and `.md`.
+- The default private path is `ops/private/operational-approval-records.json`, and `ops/private` is ignored by git.
+
+The approval packet must contain only pseudonymous references, release/package alignment, HTTPS status fields, and required approval types. Do not store raw URLs, contacts, owner names, secrets, tokens, victim indicators, invite links, onion addresses, emails, or phone numbers in the packet.

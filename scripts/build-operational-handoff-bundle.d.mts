@@ -1,4 +1,5 @@
 import type { DesktopPublishReadiness } from "./check-desktop-publish-readiness.mjs";
+import type { OperationalApprovalRecordsReadiness } from "./check-operational-approval-records.mjs";
 import type { OperationalGoLiveReadiness } from "./check-operational-go-live.mjs";
 import type { ServerRuntimeReadiness } from "./check-server-readiness.mjs";
 
@@ -30,6 +31,7 @@ export function buildOperationalHandoffBundle(options?: {
   validations?: {
     serverRuntime?: ServerRuntimeReadiness;
     desktopPublish?: DesktopPublishReadiness;
+    approvalRecords?: OperationalApprovalRecordsReadiness;
     goLive?: OperationalGoLiveReadiness;
   };
 }): Promise<{

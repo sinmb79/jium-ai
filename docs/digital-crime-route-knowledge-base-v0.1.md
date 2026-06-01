@@ -359,3 +359,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - The handoff bundle records gate status, package version, commit, platform, required external approval records, and next actions.
 - The bundle is an operator handoff packet and does not replace legal, institution, signing, update-hosting, or go-live approval.
 - Handoff bundle reports continue to exclude public URL values, support contacts, owner names, secrets, tokens, certificate material, victim indicators, raw URLs, invite links, onion addresses, emails, and phone numbers.
+
+## Implemented in v3.51
+
+- Added `scripts/check-operational-approval-records.mjs` and `ops:approvals:check` to validate a private go-live approval records packet.
+- The approval records gate requires redacted records for go-live approval, legal review, release evidence review, data retention acknowledgement, support route assignment, and incident-response owner assignment.
+- `ops:go-live:check` now requires the approval records gate in addition to environment approval flags, server readiness, and desktop publish readiness.
+- `ops:handoff:bundle` now includes redacted operational approval records reports in JSON and Markdown.
+- Approval packets and reports reject raw URLs, contacts, names, secrets, tokens, certificate material, victim indicators, invite links, onion addresses, emails, and phone numbers.

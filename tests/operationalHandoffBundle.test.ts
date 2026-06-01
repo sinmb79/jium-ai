@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { buildOperationalHandoffBundle } from "../scripts/build-operational-handoff-bundle.mjs";
+import type { OperationalApprovalRecordsReadiness } from "../scripts/check-operational-approval-records.mjs";
 
 const tempDirs: string[] = [];
 
@@ -86,6 +87,37 @@ function desktopPublish(valid = true) {
   };
 }
 
+function approvalRecords(valid = true): OperationalApprovalRecordsReadiness {
+  return {
+    valid,
+    errors: valid ? [] : ["operational approval records file missing"],
+    packageVersion: "0.3.50",
+    expectedReleaseTag: "v0.3.50",
+    sourceSummary: {
+      JIUM_OPERATIONAL_APPROVAL_RECORDS: "SET" as const,
+      fileStatus: valid ? ("FOUND" as const) : ("MISSING" as const),
+    },
+    recordTypesPresent: valid
+      ? [
+          "DATA_RETENTION_POLICY_ACK",
+          "GO_LIVE_APPROVAL",
+          "INCIDENT_RESPONSE_OWNER_ASSIGNED",
+          "LEGAL_REVIEW_APPROVAL",
+          "RELEASE_EVIDENCE_REVIEW",
+          "SUPPORT_CONTACT_ROUTE_ASSIGNED",
+        ]
+      : [],
+    requiredRecordStatus: {
+      GO_LIVE_APPROVAL: valid ? ("APPROVED" as const) : ("MISSING" as const),
+      LEGAL_REVIEW_APPROVAL: "APPROVED" as const,
+      RELEASE_EVIDENCE_REVIEW: "APPROVED" as const,
+      DATA_RETENTION_POLICY_ACK: "APPROVED" as const,
+      SUPPORT_CONTACT_ROUTE_ASSIGNED: "APPROVED" as const,
+      INCIDENT_RESPONSE_OWNER_ASSIGNED: "APPROVED" as const,
+    },
+  };
+}
+
 function goLive(valid = true) {
   return {
     valid,
@@ -99,9 +131,11 @@ function goLive(valid = true) {
       JIUM_PRIVACY_NOTICE_URL: "SET_HTTPS" as const,
       JIUM_SUPPORT_CONTACT_ROUTE: "SET" as const,
       JIUM_INCIDENT_RESPONSE_OWNER: "SET" as const,
+      JIUM_OPERATIONAL_APPROVAL_RECORDS: "SET" as const,
     },
     serverRuntime: serverRuntime(valid),
     desktopPublish: desktopPublish(valid),
+    approvalRecords: approvalRecords(valid),
   };
 }
 
@@ -120,6 +154,7 @@ describe("operational handoff bundle", () => {
       validations: {
         serverRuntime: serverRuntime(true),
         desktopPublish: desktopPublish(true),
+        approvalRecords: approvalRecords(true),
         goLive: goLive(true),
       },
     });
@@ -128,7 +163,7 @@ describe("operational handoff bundle", () => {
 
     expect(result.valid).toBe(true);
     expect(result.summary.status).toBe("READY");
-    expect(result.summary.gates.map((gate) => gate.status)).toEqual(["READY", "READY", "READY"]);
+    expect(result.summary.gates.map((gate) => gate.status)).toEqual(["READY", "READY", "READY", "READY"]);
     expect(summaryMarkdown).toContain("JiumAI Operational Handoff Runbook");
     expect(goLiveMarkdown).toContain("JiumAI Operational Go-Live Report");
     expect(summaryMarkdown).not.toContain(root);
@@ -150,6 +185,7 @@ describe("operational handoff bundle", () => {
       validations: {
         serverRuntime: serverRuntime(false),
         desktopPublish: desktopPublish(false),
+        approvalRecords: approvalRecords(false),
         goLive: goLive(false),
       },
     });
@@ -160,6 +196,7 @@ describe("operational handoff bundle", () => {
     expect(result.summary.gates).toEqual([
       { id: "server-runtime-readiness", status: "BLOCKED", errorCount: 1 },
       { id: "desktop-publish-readiness", status: "BLOCKED", errorCount: 1 },
+      { id: "operational-approval-records", status: "BLOCKED", errorCount: 1 },
       { id: "operational-go-live", status: "BLOCKED", errorCount: 1 },
     ]);
     expect(bundleText).toContain("External Records Needed");

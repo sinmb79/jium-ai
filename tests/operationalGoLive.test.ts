@@ -8,6 +8,10 @@ import {
   summarizeOperationalGoLiveEnv,
   validateOperationalGoLive,
 } from "../scripts/check-operational-go-live.mjs";
+import {
+  DEFAULT_OPERATIONAL_APPROVAL_RECORDS_PATH,
+  REQUIRED_OPERATIONAL_APPROVAL_RECORD_TYPES,
+} from "../scripts/check-operational-approval-records.mjs";
 
 const tempDirs: string[] = [];
 
@@ -17,6 +21,36 @@ async function tempRepo() {
   await mkdir(dir, { recursive: true });
   await writeFile(path.join(dir, "package.json"), JSON.stringify({ version: "0.3.49" }), "utf8");
   return dir;
+}
+
+async function writeApprovalPacket(root: string, version = "0.3.49") {
+  const filePath = path.join(root, DEFAULT_OPERATIONAL_APPROVAL_RECORDS_PATH);
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(
+    filePath,
+    JSON.stringify(
+      {
+        schema: "jium-operational-approval-records-v1",
+        generatedAt: "2026-06-01T00:00:00.000Z",
+        packageVersion: version,
+        releaseTag: `v${version}`,
+        publicAppUrlStatus: "SET_HTTPS",
+        privacyNoticeUrlStatus: "SET_HTTPS",
+        records: REQUIRED_OPERATIONAL_APPROVAL_RECORD_TYPES.map((type, index) => ({
+          id: `approval-${index + 1}`,
+          type,
+          status: "APPROVED",
+          approvedAt: "2026-06-01T00:00:00.000Z",
+          approvedByRef: `approver-${index + 1}`,
+          referenceId: `OPS-2026-${String(index + 1).padStart(4, "0")}`,
+          scope: `release-v${version}`,
+        })),
+      },
+      null,
+      2,
+    ),
+    "utf8",
+  );
 }
 
 function readyServerRuntime() {
@@ -118,6 +152,7 @@ describe("operational go-live readiness", () => {
 
   it("accepts a fully approved server and desktop launch profile", async () => {
     const root = await tempRepo();
+    await writeApprovalPacket(root);
     const readiness = await validateOperationalGoLive({
       root,
       env: {
@@ -140,6 +175,7 @@ describe("operational go-live readiness", () => {
 
     expect(readiness.valid).toBe(true);
     expect(report.status).toBe("READY");
+    expect(report.summary.approvalRecordsStatus).toBe("READY");
     expect(markdown).toContain("JiumAI Operational Go-Live Report");
     expect(markdown).not.toContain("prod.example.com");
     expect(markdown).not.toContain("owner-redacted");
@@ -159,10 +195,12 @@ describe("operational go-live readiness", () => {
 
     expect(readiness.valid).toBe(false);
     expect(readiness.errors.join("\n")).toContain("JIUM_GO_LIVE_APPROVAL");
+    expect(readiness.errors.join("\n")).toContain("operational approval records");
     expect(readiness.errors.join("\n")).toContain("operational server runtime");
     expect(readiness.errors.join("\n")).toContain("operational desktop publish");
     expect(report.checks.filter((check) => check.status === "BLOCKED").map((check) => check.id)).toEqual(
       expect.arrayContaining(["human-go-live-approval", "server-runtime", "desktop-publish"]),
     );
+    expect(report.checks.filter((check) => check.status === "BLOCKED").map((check) => check.id)).toContain("approval-records");
   });
 });

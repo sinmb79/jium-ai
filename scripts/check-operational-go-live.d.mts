@@ -1,4 +1,5 @@
 import type { DesktopPublishReadiness } from "./check-desktop-publish-readiness.mjs";
+import type { OperationalApprovalRecordsReadiness } from "./check-operational-approval-records.mjs";
 import type { ServerRuntimeReadiness } from "./check-server-readiness.mjs";
 
 export type OperationalGoLiveEnvSummary = {
@@ -10,6 +11,7 @@ export type OperationalGoLiveEnvSummary = {
   JIUM_PRIVACY_NOTICE_URL: "SET_HTTPS" | "SET_NOT_HTTPS" | "SET_INVALID" | "MISSING";
   JIUM_SUPPORT_CONTACT_ROUTE: "SET" | "MISSING";
   JIUM_INCIDENT_RESPONSE_OWNER: "SET" | "MISSING";
+  JIUM_OPERATIONAL_APPROVAL_RECORDS: "SET" | "DEFAULT_PRIVATE_PATH";
 };
 
 export type OperationalGoLiveReadiness = {
@@ -18,6 +20,7 @@ export type OperationalGoLiveReadiness = {
   envSummary: OperationalGoLiveEnvSummary;
   serverRuntime: ServerRuntimeReadiness;
   desktopPublish: DesktopPublishReadiness;
+  approvalRecords: OperationalApprovalRecordsReadiness;
 };
 
 export type OperationalGoLiveReport = {
@@ -27,6 +30,9 @@ export type OperationalGoLiveReport = {
     errorCount: number;
     serverStatus: "READY" | "BLOCKED";
     desktopPublishStatus: "READY" | "BLOCKED";
+    approvalRecordsStatus: "READY" | "BLOCKED";
+    approvedApprovalRecordCount: number;
+    requiredApprovalRecordCount: number;
     activeTrustedKeyCount: number;
     desktopReleaseTag: string;
     desktopPackageVersion: string;
@@ -52,6 +58,7 @@ export function validateOperationalGoLive(options?: {
   validations?: {
     serverRuntime?: ServerRuntimeReadiness;
     desktopPublish?: DesktopPublishReadiness;
+    approvalRecords?: OperationalApprovalRecordsReadiness;
   };
 }): Promise<OperationalGoLiveReadiness>;
 

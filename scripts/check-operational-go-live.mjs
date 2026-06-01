@@ -7,6 +7,10 @@ import {
   validateDesktopPublishReadiness,
 } from "./check-desktop-publish-readiness.mjs";
 import {
+  buildOperationalApprovalRecordsReport,
+  validateOperationalApprovalRecords,
+} from "./check-operational-approval-records.mjs";
+import {
   buildServerRuntimeReadinessReport,
   validateServerRuntimeReadiness,
 } from "./check-server-readiness.mjs";
@@ -43,6 +47,7 @@ export function summarizeOperationalGoLiveEnv(env = process.env) {
     JIUM_PRIVACY_NOTICE_URL: httpsUrlStatus(env.JIUM_PRIVACY_NOTICE_URL),
     JIUM_SUPPORT_CONTACT_ROUTE: present(env.JIUM_SUPPORT_CONTACT_ROUTE) ? "SET" : "MISSING",
     JIUM_INCIDENT_RESPONSE_OWNER: present(env.JIUM_INCIDENT_RESPONSE_OWNER) ? "SET" : "MISSING",
+    JIUM_OPERATIONAL_APPROVAL_RECORDS: present(env.JIUM_OPERATIONAL_APPROVAL_RECORDS) ? "SET" : "DEFAULT_PRIVATE_PATH",
   };
 }
 
@@ -76,6 +81,9 @@ function goLiveNextActionFor(error) {
   }
   if (error.includes("desktop publish")) {
     return "Resolve desktop publish blockers, including signed artifacts, update feed, and release upload approval.";
+  }
+  if (error.includes("approval records")) {
+    return "Create and validate the private operational approval records packet before go-live.";
   }
   return "Resolve this go-live blocker before production launch.";
 }
@@ -121,12 +129,16 @@ export async function validateOperationalGoLive({
   const desktopPublish =
     validations?.desktopPublish ||
     (await validateDesktopPublishReadiness({ root, env, platform, feedDir: path.join(root, "dist", "desktop") }));
+  const approvalRecords = validations?.approvalRecords || validateOperationalApprovalRecords({ root, env });
 
   if (!serverRuntime.valid) {
     serverRuntime.errors.forEach((error) => errors.push(`operational server runtime: ${error}`));
   }
   if (!desktopPublish.valid) {
     desktopPublish.errors.forEach((error) => errors.push(`operational desktop publish: ${error}`));
+  }
+  if (!approvalRecords.valid) {
+    approvalRecords.errors.forEach((error) => errors.push(`operational approval records: ${error}`));
   }
 
   return {
@@ -135,6 +147,7 @@ export async function validateOperationalGoLive({
     envSummary,
     serverRuntime,
     desktopPublish,
+    approvalRecords,
   };
 }
 
@@ -142,6 +155,7 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
   const generatedAt = options.generatedAt || new Date().toISOString();
   const serverReport = buildServerRuntimeReadinessReport(readiness.serverRuntime, { generatedAt });
   const desktopReport = buildDesktopPublishReadinessReport(readiness.desktopPublish, { generatedAt });
+  const approvalRecordsReport = buildOperationalApprovalRecordsReport(readiness.approvalRecords, { generatedAt });
   const checks = [
     {
       id: "human-go-live-approval",
@@ -182,6 +196,11 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
           : "BLOCKED",
     },
     {
+      id: "approval-records",
+      label: "Private operational approval records packet is complete and redacted",
+      status: readiness.approvalRecords.valid ? "PASS" : "BLOCKED",
+    },
+    {
       id: "server-runtime",
       label: "Institution server runtime readiness passes",
       status: readiness.serverRuntime.valid ? "PASS" : "BLOCKED",
@@ -200,6 +219,9 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
       errorCount: readiness.errors.length,
       serverStatus: serverReport.status,
       desktopPublishStatus: desktopReport.status,
+      approvalRecordsStatus: approvalRecordsReport.status,
+      approvedApprovalRecordCount: approvalRecordsReport.summary.approvedRecordCount,
+      requiredApprovalRecordCount: approvalRecordsReport.summary.requiredRecordCount,
       activeTrustedKeyCount: serverReport.summary.activeKeyCount,
       desktopReleaseTag: desktopReport.summary.releaseTag,
       desktopPackageVersion: desktopReport.summary.packageVersion,
@@ -214,7 +236,7 @@ export function buildOperationalGoLiveReport(readiness, options = {}) {
     safetyNotes: [
       "This report stores approval states, URL validity states, counts, release tag, and package version only.",
       "It does not store public URL values, support contact details, incident owner names, secrets, tokens, certificate material, victim indicators, raw URLs, invite links, onion addresses, emails, or phone numbers.",
-      "A READY result is a technical and operating gate summary; it must still be archived with the human approval records for the release.",
+      "A READY result is a technical and operating gate summary; it must still be archived with the private human approval records for the release.",
     ],
   };
 }
@@ -227,6 +249,8 @@ export function formatOperationalGoLiveMarkdown(report) {
     `- Status: ${report.status}`,
     `- Server status: ${report.summary.serverStatus}`,
     `- Desktop publish status: ${report.summary.desktopPublishStatus}`,
+    `- Approval records status: ${report.summary.approvalRecordsStatus}`,
+    `- Approval records: ${report.summary.approvedApprovalRecordCount}/${report.summary.requiredApprovalRecordCount}`,
     `- Active trusted keys: ${report.summary.activeTrustedKeyCount}`,
     `- Desktop package version: ${report.summary.desktopPackageVersion || "MISSING"}`,
     `- Desktop release tag: ${report.summary.desktopReleaseTag || "MISSING"}`,

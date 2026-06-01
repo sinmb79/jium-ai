@@ -797,3 +797,21 @@
   - public URL 값, support 연락처, incident owner 이름, secret, token, 인증서 material, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호는 저장하지 않는다.
 - 검증 범위
   - READY bundle 생성, BLOCKED bundle 생성, redaction, 외부 승인 기록 checklist, 안전한 bundle directory cleanup을 테스트했다.
+
+## v3.51 운영 승인 증빙 records gate
+
+- 승인 기록의 기계 검증
+  - 앱 version을 `0.3.51`로 올리고 `ops:approvals:check`, `ops:approvals:json`, `ops:approvals:markdown`을 추가했다.
+  - go-live 승인은 환경변수 `APPROVED`만으로 끝나지 않고, 비공개 approval records packet까지 검증한다.
+  - 기본 packet 경로는 `ops/private/operational-approval-records.json`이며, `ops/private`는 git에서 제외한다.
+- 필수 승인 유형
+  - go-live approval, legal review, release evidence review, data retention acknowledgement, support route assignment, incident response owner assignment를 모두 요구한다.
+  - 각 record는 가명 approver reference, 내부 reference ID, scope, 승인 시각, 선택적 sha256 증거 지문만 담는다.
+- 개인정보와 secret 최소화
+  - approval report는 승인 유형별 상태, package version, release tag, source/file 존재 여부, 카운트만 저장한다.
+  - raw URL, support 연락처, 담당자명, secret, token, 인증서 material, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호는 packet과 report 모두에서 차단한다.
+- go-live/handoff 연동
+  - `ops:go-live:check`는 approval records gate를 포함해 최종 READY/BLOCKED를 판단한다.
+  - `ops:handoff:bundle`은 `operational-approval-records-report.json`과 `.md`를 함께 묶는다.
+- 검증 범위
+  - 완전한 approval packet, 누락된 승인 유형, raw URL 유출 차단, 경로 redaction, go-live/handoff 연동을 테스트했다.
