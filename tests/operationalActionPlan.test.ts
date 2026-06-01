@@ -94,6 +94,14 @@ describe("operational action plan", () => {
     expect(plan.runOrder.find((entry) => entry.phaseId === "server-storage")?.verificationCommands).toContain(
       "npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env",
     );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "server-runtime")?.verificationCommands).toContain(
+      "npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>",
+    );
+    expect(
+      plan.phases
+        .find((phase) => phase.id === "server-runtime")
+        ?.actions.some((action) => action.action.includes("repo-external private key")),
+    ).toBe(true);
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
       "npm run public:hosting:bundle",
     );

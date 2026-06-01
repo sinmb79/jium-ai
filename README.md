@@ -416,3 +416,13 @@ npm run ops:action-plan
 ```
 
 The generated action plan keeps public URLs, contacts, tokens, and victim indicators redacted while still requiring the evidence needed for production launch. Details are in [Static Hosting Go-Live Bridge v0.3.71](docs/static-hosting-go-live-bridge-v0.3.71.md).
+
+## v0.3.72 Trusted Key Onboarding Init
+
+Institution server readiness now has a safer first step for trusted public-key onboarding. Operators can generate an RSA signing keypair with the private JWK written only to a repo-external approved directory, while Jium AI writes the public candidate, registry patch, and redacted review report into the operating evidence flow:
+
+```bash
+npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>
+```
+
+The operational action plan now includes this command in the server-runtime phase before `security:trusted-key:review`. Reports intentionally omit private key values, raw public-key modulus values, private filesystem paths, contacts, URLs, and victim indicators. Details are in [Trusted Key Onboarding Init v0.3.72](docs/trusted-key-onboarding-init-v0.3.72.md).

@@ -60,12 +60,14 @@ const PHASE_BLUEPRINTS = [
     objective: "Prepare the server-only deployment profile, trusted institution key, session secret, and approved origins.",
     evidenceTarget: ".env.server.local, data/trusted-authorized-feed-keys.json, and server deployment evidence bundle",
     verificationCommands: [
+      "npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>",
       "npm run security:trusted-key:review -- --candidate <approved-public-key.json> --patch-output <trusted-key-registry.patch.json>",
       "npm run security:server-readiness",
       "npm run server:deployment:bundle",
     ],
     baseActions: [
       "Create or refresh the server env scaffold with npm run server:env:init.",
+      "Generate a repo-external private key and public trusted-key candidate with npm run server:trusted-key:init.",
       "Review an approved institution public-key candidate before applying any trusted-key registry patch.",
       "Verify server-only secrets, allowed HTTPS origins, and generated institution route readiness.",
     ],

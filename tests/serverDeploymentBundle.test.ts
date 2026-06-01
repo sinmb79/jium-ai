@@ -106,6 +106,9 @@ describe("server deployment bundle", () => {
     expect(routeMarkdown).toContain("app/api/institution/login/route.ts");
     expect(formatServerDeploymentSummary(result.summary)).toContain("server-route-materialization");
     expect(result.summary.deploymentCommands).toContain(
+      "npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>",
+    );
+    expect(result.summary.deploymentCommands).toContain(
       "npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env",
     );
     expect(serialized).not.toContain("0123456789abcdef");
