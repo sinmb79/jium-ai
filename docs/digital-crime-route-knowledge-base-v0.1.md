@@ -415,3 +415,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Existing private onboarding files are kept unless `--force` is explicitly passed.
 - The command output records relative paths and CREATED/EXISTS states only and does not print generated server session secrets.
 - Onboarding templates warn operators not to store victim indicators, raw URLs, invite links, onion addresses, emails, phone numbers, passwords, tokens, or certificate material.
+
+## Implemented in v3.58
+
+- Added `scripts/check-production-onboarding.mjs` and `ops:onboarding:check`.
+- The check validates private onboarding file presence, server env readiness, repo-external storage readiness, operational approval records, approved operator checklist records, approved storage decisions, and trusted-key example safety.
+- JSON and Markdown reports redact generated secrets, trusted origins, storage paths, support contacts, incident owner names, victim indicators, raw URLs, invite links, onion addresses, emails, phone numbers, passwords, tokens, and certificate material.
+- Incomplete scaffolds remain BLOCKED by design, giving operators a single pre-production checklist before server deployment, desktop publication, go-live approval, and handoff bundling.

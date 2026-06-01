@@ -35,6 +35,14 @@ npm run ops:go-live:check
 npm run ops:handoff:bundle
 ```
 
+From v0.3.58 onward, run the dedicated readiness gate before the follow-up gates:
+
+```bash
+npm run ops:onboarding:check
+```
+
+See `docs/production-onboarding-check-v0.3.58.md`.
+
 ## Safety
 
 The onboarding summary redacts generated server session secrets and uses relative paths only. Do not store victim indicators, raw URLs, invite links, onion addresses, emails, phone numbers, passwords, tokens, or certificate material in onboarding files.

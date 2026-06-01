@@ -2,7 +2,7 @@
 
 작성일: 2026-05-31
 
-최신 구현 메모: v3.57에서 production onboarding scaffold를 추가했다. 세부 runbook은 `docs/production-onboarding-v0.3.57.md`를 기준으로 한다.
+최신 구현 메모: v3.58에서 production onboarding readiness check를 추가했다. 세부 runbook은 `docs/production-onboarding-check-v0.3.58.md`를 기준으로 한다.
 
 ## 운영제품 기준
 
@@ -892,6 +892,14 @@
   - 운영 승인, 기관 공개키 승인, 호스팅 승인, 보관정책 승인은 여전히 외부 증빙으로 남는다.
 - 검증 범위
   - ready bundle 생성, redacted summary/runbook, blocked route materialization, dry-run non-write 동작을 테스트했다.
+
+## v3.58 production onboarding readiness check
+
+- Added `scripts/check-production-onboarding.mjs` with `ops:onboarding:check`, `ops:onboarding:check:json`, and `ops:onboarding:check:markdown`.
+- The check combines private onboarding file presence, server env readiness, repo-external storage readiness, private operational approval records, approved operator checklist records, approved storage decisions, and trusted-key example safety.
+- The report is redacted: it keeps states, counts, package version, and relative private paths only.
+- The gate remains BLOCKED until real institution, legal, storage, signing, support, and incident-response approvals replace scaffold placeholders.
+- Verification covered ready and blocked fixtures, CLI JSON output, report redaction, approval-record alignment, and server storage integration.
 
 ## v3.57 production onboarding scaffold
 

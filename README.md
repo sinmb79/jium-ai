@@ -246,3 +246,15 @@ npm run ops:onboarding:init
 ```
 
 It creates `.env.server.local`, `ops/private/operational-approval-records.json`, and private onboarding checklist/storage/key templates under `ops/private/production-onboarding`. Existing files are not overwritten unless `-- --force` is passed, and command output does not print generated server secrets.
+
+## v0.3.58 Production Onboarding Check
+
+Operators can now validate the completed private onboarding scaffold with:
+
+```bash
+npm run ops:onboarding:check
+npm run ops:onboarding:check:json -- --output ./production-onboarding-readiness.json
+npm run ops:onboarding:check:markdown -- --output ./production-onboarding-readiness.md
+```
+
+The check stays BLOCKED until server env values, repo-external server storage, private approval records, operator checklist records, and storage decisions are all approved. Reports store only readiness states, counts, version, and relative private paths; they exclude generated secrets, trusted origins, storage paths, support contacts, victim indicators, raw URLs, invite links, onion addresses, emails, phone numbers, passwords, tokens, and certificate material.
