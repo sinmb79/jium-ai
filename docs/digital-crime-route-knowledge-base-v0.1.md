@@ -399,3 +399,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - `security:server-readiness` now includes the storage gate.
 - `ops:handoff:bundle` now includes redacted server storage readiness JSON and Markdown reports.
 - `server:env:init` now leaves server storage directories as explicit deployment placeholders.
+
+## Implemented in v3.56
+
+- Added `scripts/build-server-deployment-bundle.mjs` and `server:deployment:bundle`.
+- The server deployment bundle gathers runtime readiness, storage readiness, route materialization, summary, and runbook reports under `dist/server-deployment-bundle`.
+- Route materialization is checked as a dry-run plan and records only relative route template/generated route paths.
+- The bundle remains BLOCKED until server runtime readiness, private storage readiness, and route materialization readiness all pass.
+- Reports exclude server secrets, trusted origin values, storage directory paths, victim indicators, raw URLs, invite links, onion addresses, emails, and phone numbers.

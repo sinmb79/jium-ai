@@ -2,7 +2,7 @@
 
 작성일: 2026-05-31
 
-최신 구현 메모: v3.55에서 production server storage readiness gate를 추가했다. 세부 runbook은 `docs/server-storage-readiness-v0.3.55.md`를 기준으로 한다.
+최신 구현 메모: v3.56에서 server deployment bundle을 추가했다. 세부 runbook은 `docs/server-deployment-bundle-v0.3.56.md`를 기준으로 한다.
 
 ## 운영제품 기준
 
@@ -878,3 +878,17 @@
   - `server:env:init`의 storage 값은 repo-local 기본값 대신 `REPLACE-ME` 배포 placeholder로 남긴다.
 - 검증 범위
   - 정상 외부 writable directory, 상대경로, placeholder, repo/public 경로, nested directory, file target, CLI JSON redaction, server readiness/handoff 연결을 테스트했다.
+
+## v3.56 서버 deployment bundle
+
+- 서버 배포 증적 묶음
+  - 앱 version을 `0.3.56`으로 올리고 `server:deployment:bundle`, `server:deployment:json`, `server:deployment:markdown`을 추가했다.
+  - bundle은 `dist/server-deployment-bundle` 아래에 runtime readiness, storage readiness, route materialization, summary, runbook report를 생성한다.
+- route materialization dry-run
+  - 실제 `app/api`에 쓰기 전에 route template과 materialized route file 계획을 dry-run으로 검증한다.
+  - report에는 상대 route path와 template path만 남기고, secret, origin, storage path는 저장하지 않는다.
+- 운영 연결
+  - server deployment bundle은 server runtime, private storage, route materialization이 모두 READY일 때만 READY가 된다.
+  - 운영 승인, 기관 공개키 승인, 호스팅 승인, 보관정책 승인은 여전히 외부 증빙으로 남는다.
+- 검증 범위
+  - ready bundle 생성, redacted summary/runbook, blocked route materialization, dry-run non-write 동작을 테스트했다.
