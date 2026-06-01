@@ -2,7 +2,7 @@
 
 작성일: 2026-05-31
 
-최신 구현 메모: v3.61에서 operational handoff bundle을 owner-routed action plan으로 바꾸는 `ops:action-plan` 명령을 추가했다. 세부 runbook은 `docs/operational-action-plan-v0.3.61.md`를 기준으로 한다.
+최신 구현 메모: v3.62에서 repo-external server storage directory를 만들고 private env placeholder를 안전하게 갱신하는 `server:storage:init` 명령을 추가했다. 세부 runbook은 `docs/server-storage-init-v0.3.62.md`를 기준으로 한다.
 
 ## 운영제품 기준
 
@@ -924,6 +924,14 @@
 - The plan covers production onboarding, server runtime, server storage, signed desktop release, private approval records, and final go-live.
 - Each phase includes gate status, report references, evidence targets, verification commands, completion criteria, and handoff-derived next actions.
 - The report remains redacted and excludes raw URLs, contacts, owner names, secrets, tokens, certificate material, victim indicators, invite links, onion addresses, emails, phone numbers, and private storage paths.
+
+## v3.62 server storage init
+
+- Added `scripts/init-server-storage.mjs` with `server:storage:init`, JSON, and Markdown variants.
+- The command creates repo-external audit-ledger and account-registry storage directories for local pilot or deployment preparation.
+- `--write-env` updates `.env.server.local` placeholders with the approved storage paths, while preserving existing non-placeholder env values unless `--force-env` is used.
+- The init report is redacted and stores only directory roles, directory names, statuses, and counts.
+- Verification covered directory creation, env placeholder update, preservation of existing values, CLI JSON output, repo-contained path rejection, and report redaction.
 
 ## v3.57 production onboarding scaffold
 

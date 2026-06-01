@@ -294,3 +294,16 @@ npm run ops:action-plan:markdown
 The plan writes `operational-action-plan.json` and `operational-action-plan.md` under `dist/operational-handoff-bundle`. It groups blockers by onboarding, server runtime, server storage, desktop release, approval records, and go-live owner role, then attaches evidence targets and verification commands for each phase.
 
 The action plan remains redacted. It must not contain raw URLs, support contacts, incident owner names, secrets, tokens, certificate material, victim indicators, invite links, onion addresses, emails, phone numbers, or private storage paths.
+
+## v0.3.62 Server Storage Init
+
+Operators can prepare repo-external server storage directories with a redacted helper:
+
+```bash
+npm run server:storage:init
+npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env
+```
+
+The helper creates separate `audit-ledger` and `account-registry` directories outside the repository and can update `.env.server.local` placeholders after review. Existing non-placeholder env values are preserved unless `--force-env` is passed.
+
+Reports do not print absolute storage paths. The private env file may contain real paths and must stay out of git.

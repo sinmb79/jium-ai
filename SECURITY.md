@@ -141,11 +141,14 @@ npm run security:server-readiness:json -- --output ./server-readiness.json
 npm run security:server-readiness:markdown -- --output ./server-readiness.md
 npm run security:server-storage:json -- --output ./server-storage-readiness.json
 npm run security:server-storage:markdown -- --output ./server-storage-readiness.md
+npm run server:storage:init
 npm run server:deployment:bundle
 npm run server:env:init
 ```
 
 `security:server-storage` validates the two server-side storage roots before production use. `INSTITUTION_AUDIT_LEDGER_DIR` and `INSTITUTION_ACCOUNT_REGISTRY_DIR` must be absolute, outside the repository workspace, outside public/build artifact folders, separate non-nested directories, and writable by the server process. The JSON/Markdown reports redact filesystem paths and include only PASS/BLOCKED states.
+
+`server:storage:init` creates repo-external `audit-ledger` and `account-registry` directories and can update `.env.server.local` placeholders with `--write-env`. The init report stores only directory roles, names, statuses, and counts. It does not print absolute storage paths. Existing non-placeholder env values are preserved unless `--force-env` is used, so real production storage decisions still require human review.
 
 `server:deployment:bundle` creates `dist/server-deployment-bundle` with runtime readiness, storage readiness, route materialization, summary, and runbook reports. The bundle records only readiness states, counts, relative route file names, package version, and commit. It must not contain secret values, trusted origin values, storage directory paths, victim indicators, raw URLs, invite links, onion addresses, emails, or phone numbers.
 

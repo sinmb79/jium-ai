@@ -1,6 +1,6 @@
 {
   "name": "jium-ai",
-  "version": "0.3.61",
+  "version": "0.3.62",
   "private": true,
   "description": "무료·로컬 우선 디지털 권리구제 도우미",
   "author": "22B Labs",
@@ -22,6 +22,9 @@
     "security:server-storage": "node scripts/check-server-storage-readiness.mjs",
     "security:server-storage:json": "node scripts/check-server-storage-readiness.mjs --json",
     "security:server-storage:markdown": "node scripts/check-server-storage-readiness.mjs --markdown",
+    "server:storage:init": "node scripts/init-server-storage.mjs",
+    "server:storage:init:json": "node scripts/init-server-storage.mjs --json",
+    "server:storage:init:markdown": "node scripts/init-server-storage.mjs --markdown",
     "security:server-readiness": "node scripts/check-server-readiness.mjs",
     "security:server-readiness:json": "node scripts/check-server-readiness.mjs --json",
     "security:server-readiness:markdown": "node scripts/check-server-readiness.mjs --markdown",
