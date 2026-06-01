@@ -1073,6 +1073,22 @@
 - Verification scope
   - Tested direct API and CLI rehearsal output, batch-apply status fields, all-input count checks, cleanup, and redaction.
 
+## v3.99 Operational launch command packet
+
+- Private command packet
+  - Version was raised to `0.3.99`.
+  - Added `ops:launch-inputs:commands`, with JSON and Markdown variants.
+  - The command consumes a reviewed private launch input file and writes exact apply commands only under ignored `ops/private`.
+- Operational wiring
+  - The go-live action plan now routes operators from template generation to review and then to private command-packet generation.
+  - Operational release dossiers list the command-packet step as the next private operating action without requiring raw values in public evidence.
+- Safety boundary
+  - Public reports store only command counts, statuses, private relative paths, and SHA-256 digests.
+  - Raw approved URLs, storage paths, release feed paths, support contacts, incident owner refs, secrets, tokens, victim indicators, invite links, onion addresses, emails, and phone numbers are excluded from public reports.
+  - The command packet does not execute anything; it prepares reviewed private commands for authorized operators.
+- Verification scope
+  - Tested command-packet generation, private script output, raw-value redaction in public reports, CLI output generation, private output path guard, action-plan routing, and release dossier routing.
+
 ## v3.98 Operational launch inputs
 
 - Launch input intake

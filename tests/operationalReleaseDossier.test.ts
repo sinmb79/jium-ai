@@ -250,6 +250,7 @@ describe("operational release dossier", () => {
     );
     expect(dossier.nextCommands).toContain("npm run ops:launch-console");
     expect(dossier.nextCommands).toContain("npm run ops:launch-inputs");
+    expect(dossier.nextCommands).toContain("npm run ops:launch-inputs:commands -- --input <private-approved-launch-inputs.json>");
     expect(dossier.nextCommands).toContain("npm run ops:approvals:input-template");
     expect(dossier.priorityActions[0]).toMatchObject({
       phaseId: "production-onboarding",

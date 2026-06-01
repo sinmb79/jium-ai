@@ -14,6 +14,13 @@ export const OPERATIONAL_LAUNCH_INPUTS_TEMPLATE_JSON = "operational-launch-input
 export const OPERATIONAL_LAUNCH_INPUTS_TEMPLATE_MARKDOWN = "operational-launch-inputs-template.md";
 export const OPERATIONAL_LAUNCH_INPUTS_REVIEW_JSON = "operational-launch-inputs-review.json";
 export const OPERATIONAL_LAUNCH_INPUTS_REVIEW_MARKDOWN = "operational-launch-inputs-review.md";
+export const OPERATIONAL_LAUNCH_COMMAND_PACKET_SCHEMA = "jium-operational-launch-command-packet-v1";
+export const OPERATIONAL_LAUNCH_COMMAND_PACKET_DIR = "dist/operational-launch-command-packet";
+export const OPERATIONAL_LAUNCH_COMMAND_PACKET_JSON = "operational-launch-command-packet.json";
+export const OPERATIONAL_LAUNCH_COMMAND_PACKET_MARKDOWN = "operational-launch-command-packet.md";
+export const OPERATIONAL_LAUNCH_PRIVATE_COMMAND_PACKET_DIR = "ops/private/production-onboarding/launch-apply-commands";
+export const OPERATIONAL_LAUNCH_PRIVATE_COMMAND_PACKET_JSON = "operational-launch-private-command-packet.json";
+export const OPERATIONAL_LAUNCH_PRIVATE_COMMAND_PACKET_PS1 = "operational-launch-apply-commands.ps1";
 
 const SAFE_REF_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{2,96}$/;
 const RELEASE_CHANNEL_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{1,32}$/;
@@ -108,6 +115,34 @@ function assertSafeFixedDir(root, target, expectedRelative) {
 
 function safePrepareReportDir(root) {
   const resolved = assertSafeFixedDir(root, OPERATIONAL_LAUNCH_INPUTS_DIR, OPERATIONAL_LAUNCH_INPUTS_DIR);
+  rmSync(resolved, { recursive: true, force: true });
+  mkdirSync(resolved, { recursive: true });
+  return resolved;
+}
+
+function safePrepareCommandPacketReportDir(root) {
+  const resolved = assertSafeFixedDir(
+    root,
+    OPERATIONAL_LAUNCH_COMMAND_PACKET_DIR,
+    OPERATIONAL_LAUNCH_COMMAND_PACKET_DIR,
+  );
+  rmSync(resolved, { recursive: true, force: true });
+  mkdirSync(resolved, { recursive: true });
+  return resolved;
+}
+
+function resolvePrivateCommandPacketDir(root, target) {
+  const resolvedRoot = path.resolve(root);
+  const privateRoot = path.resolve(resolvedRoot, "ops/private");
+  const resolved = path.resolve(resolvedRoot, target || OPERATIONAL_LAUNCH_PRIVATE_COMMAND_PACKET_DIR);
+  if (!isPathInside(privateRoot, resolved) || resolved === privateRoot) {
+    throw new Error("private command output dir must stay under ops/private");
+  }
+  return resolved;
+}
+
+function safePreparePrivateCommandPacketDir(root, target) {
+  const resolved = resolvePrivateCommandPacketDir(root, target);
   rmSync(resolved, { recursive: true, force: true });
   mkdirSync(resolved, { recursive: true });
   return resolved;
@@ -324,6 +359,86 @@ function validatePathValue({ root, value, type }) {
   };
 }
 
+function normalizeHttpsUrlForCompare(value) {
+  const text = String(value || "").trim();
+  try {
+    const parsed = new URL(text);
+    parsed.hash = "";
+    parsed.search = "";
+    return parsed.toString();
+  } catch {
+    return "";
+  }
+}
+
+function normalizeBaseUrlForRoutes(value) {
+  const text = String(value || "").trim();
+  try {
+    const parsed = new URL(text);
+    parsed.hash = "";
+    parsed.search = "";
+    if (!parsed.pathname.endsWith("/")) {
+      parsed.pathname = `${parsed.pathname}/`;
+    }
+    return parsed.toString();
+  } catch {
+    return "";
+  }
+}
+
+function storageRootFromApprovedDirs(input) {
+  const auditLedgerDir = String(input?.serverRuntime?.auditLedgerDir || "").trim();
+  const accountRegistryDir = String(input?.serverRuntime?.accountRegistryDir || "").trim();
+  if (
+    !auditLedgerDir ||
+    !accountRegistryDir ||
+    PLACEHOLDER_PATTERN.test(auditLedgerDir) ||
+    PLACEHOLDER_PATTERN.test(accountRegistryDir) ||
+    !path.isAbsolute(auditLedgerDir) ||
+    !path.isAbsolute(accountRegistryDir)
+  ) {
+    return { storageRoot: "", errors: [] };
+  }
+  const auditResolved = path.resolve(auditLedgerDir);
+  const accountResolved = path.resolve(accountRegistryDir);
+  const auditParent = path.dirname(auditResolved);
+  const accountParent = path.dirname(accountResolved);
+  const errors = [];
+  if (auditResolved === accountResolved || isPathInside(auditResolved, accountResolved) || isPathInside(accountResolved, auditResolved)) {
+    errors.push("server-runtime storage directories must be separate and non-nested");
+  }
+  if (auditParent !== accountParent) {
+    errors.push("server-runtime storage directories must share one approved storage root");
+  }
+  if (path.basename(auditResolved) !== "audit-ledger") {
+    errors.push("server-runtime auditLedgerDir must end with audit-ledger for guarded server:storage:init");
+  }
+  if (path.basename(accountResolved) !== "account-registry") {
+    errors.push("server-runtime accountRegistryDir must end with account-registry for guarded server:storage:init");
+  }
+  return { storageRoot: errors.length ? "" : auditParent, errors };
+}
+
+function validateLaunchInputCrossChecks({ input }) {
+  const errors = [];
+  const baseUrl = normalizeBaseUrlForRoutes(input?.publicOperations?.publicBaseUrl);
+  if (baseUrl) {
+    const expected = {
+      publicAppUrl: normalizeHttpsUrlForCompare(new URL("", baseUrl).toString()),
+      privacyNoticeUrl: normalizeHttpsUrlForCompare(new URL("privacy/", baseUrl).toString()),
+      supportRoute: normalizeHttpsUrlForCompare(new URL("support/", baseUrl).toString()),
+    };
+    for (const [field, expectedValue] of Object.entries(expected)) {
+      const actual = normalizeHttpsUrlForCompare(input?.publicOperations?.[field]);
+      if (actual && actual !== expectedValue) {
+        errors.push(`public-operations/${field}: value must match approved base URL route`);
+      }
+    }
+  }
+  errors.push(...storageRootFromApprovedDirs(input).errors.map((error) => `server-runtime/${error}`));
+  return errors;
+}
+
 function validateField({ root, input, field }) {
   const value = fieldValue(input, field.id);
   const result =
@@ -352,14 +467,122 @@ function validateField({ root, input, field }) {
 function commandPlan() {
   return [
     "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
+    "npm run ops:hosted-audit:apply -- --audit-report <ready-hosted-security-header-audit-report>",
+    "npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env",
     "npm run server:origin:apply -- --origin <approved-https-operator-origin> --approval-ref <pseudonymous-origin-approval-reference>",
     "npm run security:trusted-key:review -- --candidate <approved-public-key.json> --patch-output <trusted-key-registry.patch.json>",
     "npm run server:trusted-key:apply -- --patch <trusted-key-registry.patch.json> --approval-ref <pseudonymous-approval-reference>",
     "npm run desktop:release-env:apply -- --channel <approved-release-channel> --update-url <approved-https-update-url> --publish-approval-ref <pseudonymous-desktop-publish-approval-reference>",
+    "npm run desktop:update-feed:check -- --feed-dir <signed-release-folder>",
+    "npm run desktop:release:digest-evidence -- --feed-dir <signed-release-folder>",
+    "npm run desktop:publish:check -- --feed-dir <signed-release-folder>",
     "npm run ops:approvals:apply-inputs -- --input <private-approved-operational-inputs.json> --init",
     "npm run ops:go-live:env:apply -- --incident-owner-ref <pseudonymous-incident-owner-reference>",
     "npm run ops:go-live:check",
   ];
+}
+
+function psQuote(value) {
+  return `'${String(value || "").replace(/'/g, "''")}'`;
+}
+
+function commandEntry(id, description, command) {
+  return {
+    id,
+    description,
+    command,
+    commandDigest: sha256Text(command),
+  };
+}
+
+function commandPlanFromApprovedInput(input) {
+  const storage = storageRootFromApprovedDirs(input);
+  const origins = Array.isArray(input?.serverRuntime?.serverAllowedOrigins)
+    ? input.serverRuntime.serverAllowedOrigins.map((origin) => String(origin || "").trim()).filter(Boolean)
+    : [];
+  const originArgs = origins.map((origin) => `--origin ${psQuote(origin)}`).join(" ");
+  const commands = [
+    commandEntry(
+      "public-operations-env",
+      "Apply approved public app, privacy, and support route env values.",
+      `npm run ops:public-env:init -- --base-url ${psQuote(input.publicOperations.publicBaseUrl)} --write-env`,
+    ),
+    commandEntry(
+      "hosted-security-header-audit",
+      "Apply the reviewed hosted security-header audit evidence path.",
+      `npm run ops:hosted-audit:apply -- --audit-report ${psQuote(input.publicOperations.hostedSecurityHeaderAuditReportPath)}`,
+    ),
+    commandEntry(
+      "server-storage",
+      "Apply reviewed repo-external server storage root to the private server env.",
+      `npm run server:storage:init -- --storage-root ${psQuote(storage.storageRoot)} --write-env`,
+    ),
+    commandEntry(
+      "server-origin",
+      "Apply approved HTTPS institution operator origins.",
+      `npm run server:origin:apply -- ${originArgs} --approval-ref ${psQuote(input.serverRuntime.serverOriginApprovalRef)}`,
+    ),
+    commandEntry(
+      "trusted-key-review",
+      "Review the approved institution public key candidate into a registry patch.",
+      `npm run security:trusted-key:review -- --candidate ${psQuote(input.serverRuntime.trustedKeyCandidatePath)} --patch-output ${psQuote(input.serverRuntime.trustedKeyRegistryPatchPath)}`,
+    ),
+    commandEntry(
+      "trusted-key-apply",
+      "Apply the approved trusted-key registry patch.",
+      `npm run server:trusted-key:apply -- --patch ${psQuote(input.serverRuntime.trustedKeyRegistryPatchPath)} --approval-ref ${psQuote(input.serverRuntime.trustedKeyApprovalRef)}`,
+    ),
+    commandEntry(
+      "desktop-release-env",
+      "Apply non-secret desktop release lane, update endpoint, and publish approval state.",
+      `npm run desktop:release-env:apply -- --channel ${psQuote(input.desktopRelease.desktopReleaseChannel)} --update-url ${psQuote(input.desktopRelease.desktopUpdateUrl)} --publish-approval-ref ${psQuote(input.desktopRelease.desktopPublishApprovalRef)}`,
+    ),
+    commandEntry(
+      "desktop-update-feed-check",
+      "Verify signed desktop update metadata before publish approval.",
+      `npm run desktop:update-feed:check -- --feed-dir ${psQuote(input.desktopRelease.signedDesktopFeedDir)}`,
+    ),
+    commandEntry(
+      "desktop-release-evidence-digest",
+      "Build desktop release evidence digest from signed artifacts.",
+      `npm run desktop:release:digest-evidence -- --feed-dir ${psQuote(input.desktopRelease.signedDesktopFeedDir)}`,
+    ),
+    commandEntry(
+      "desktop-publish-check",
+      "Verify desktop publish readiness with signed artifacts and release approval.",
+      `npm run desktop:publish:check -- --feed-dir ${psQuote(input.desktopRelease.signedDesktopFeedDir)}`,
+    ),
+    commandEntry(
+      "approval-inputs-apply",
+      "Apply the reviewed private approval/onboarding input packet.",
+      `npm run ops:approvals:apply-inputs -- --input ${psQuote(input.approvalRecords.approvedOperationalInputsPath)} --init`,
+    ),
+    commandEntry(
+      "go-live-env-apply",
+      "Apply go-live approval flags and pseudonymous incident owner reference after approval records are ready.",
+      `npm run ops:go-live:env:apply -- --incident-owner-ref ${psQuote(input.goLive.incidentOwnerRef)}`,
+    ),
+    commandEntry(
+      "go-live-check",
+      "Run the final operational go-live gate.",
+      "npm run ops:go-live:check",
+    ),
+  ];
+  return { commands, errors: storage.errors };
+}
+
+function formatPrivateCommandScript(packet) {
+  return [
+    "# JiumAI private operational launch apply commands",
+    "# Generated from a reviewed private launch input file. Keep this file under ops/private.",
+    "$ErrorActionPreference = 'Stop'",
+    "",
+    ...packet.commands.flatMap((command, index) => [
+      `# ${index + 1}. ${command.id}: ${command.description}`,
+      command.command,
+      "",
+    ]),
+  ].join("\n");
 }
 
 export function reviewOperationalLaunchInputs({
@@ -385,10 +608,11 @@ export function reviewOperationalLaunchInputs({
   }
   const fields = INPUT_FIELDS.map((field) => validateField({ root: resolvedRoot, input, field }));
   const fieldErrors = fields.flatMap((field) => field.errors.map((error) => `${field.group}/${field.id}: ${error}`));
+  const crossCheckErrors = validateLaunchInputCrossChecks({ input });
   const baseReport = {
     schema: OPERATIONAL_LAUNCH_INPUTS_REVIEW_SCHEMA,
     generatedAt,
-    status: errors.length || fieldErrors.length ? "BLOCKED" : "READY_FOR_OPERATOR_APPLY",
+    status: errors.length || fieldErrors.length || crossCheckErrors.length ? "BLOCKED" : "READY_FOR_OPERATOR_APPLY",
     version: readPackageVersion(resolvedRoot),
     summary: {
       totalInputCount: fields.length,
@@ -402,7 +626,7 @@ export function reviewOperationalLaunchInputs({
     },
     fields,
     commandPlan: commandPlan(),
-    errors: [...errors, ...fieldErrors],
+    errors: [...errors, ...fieldErrors, ...crossCheckErrors],
     warnings: ["Review only; this command does not write env files, approval files, trusted keys, or desktop release settings."],
     safetyNotes: [
       "This review stores only field statuses, counts, and SHA-256 digests of private values.",
@@ -419,6 +643,94 @@ export function reviewOperationalLaunchInputs({
       ...baseReport.errors,
       ...leakScan.findings.map((finding) => `launch inputs review contains unsafe ${finding.label}`),
     ],
+  };
+}
+
+export function buildOperationalLaunchCommandPacket({
+  root = repoRoot,
+  inputPath = "",
+  privateOutputDir = OPERATIONAL_LAUNCH_PRIVATE_COMMAND_PACKET_DIR,
+  generatedAt = new Date().toISOString(),
+} = {}) {
+  const resolvedRoot = path.resolve(root);
+  if (!inputPath) {
+    throw new Error("launch inputs commands --input is required");
+  }
+  const resolvedInput = resolveInsideRepo(resolvedRoot, inputPath, "input");
+  if (!existsSync(resolvedInput)) {
+    throw new Error("launch inputs file is missing");
+  }
+  const privateDir = resolvePrivateCommandPacketDir(resolvedRoot, privateOutputDir);
+  const input = readJson(resolvedInput);
+  const review = reviewOperationalLaunchInputs({
+    root: resolvedRoot,
+    inputPath,
+    generatedAt,
+  });
+  const commandPlanResult = review.status === "READY_FOR_OPERATOR_APPLY"
+    ? commandPlanFromApprovedInput(input)
+    : { commands: [], errors: [] };
+  const commands = commandPlanResult.commands;
+  const privatePacket = {
+    schema: OPERATIONAL_LAUNCH_COMMAND_PACKET_SCHEMA,
+    generatedAt,
+    inputDigest: review.summary.inputDigest,
+    commandCount: commands.length,
+    commands: commands.map(({ id, description, command }) => ({ id, description, command })),
+    safetyNotes: [
+      "This private packet contains approved raw operating values and must stay under ops/private or another approved private store.",
+      "Run these commands only after institution/legal approval and separate-channel evidence review.",
+      "Do not copy this packet into public reports, issues, releases, chat, or source control.",
+    ],
+  };
+  const privateScript = formatPrivateCommandScript(privatePacket);
+  const privatePacketDigest = commands.length ? sha256Text(JSON.stringify(privatePacket)) : "";
+  const baseReport = {
+    schema: OPERATIONAL_LAUNCH_COMMAND_PACKET_SCHEMA,
+    generatedAt,
+    status: review.status === "READY_FOR_OPERATOR_APPLY" && !commandPlanResult.errors.length
+      ? "READY_PRIVATE_COMMAND_PACKET"
+      : "BLOCKED",
+    version: readPackageVersion(resolvedRoot),
+    summary: {
+      inputDigest: review.summary.inputDigest,
+      commandCount: commands.length,
+      readyInputCount: review.summary.readyInputCount,
+      blockedInputCount: review.summary.blockedInputCount,
+      privateOutputStatus: commands.length ? "READY_TO_WRITE_PRIVATE_PACKET" : "SKIPPED",
+      privateOutputDir: relativePath(resolvedRoot, privateDir),
+      privatePacketDigest,
+    },
+    commands: commands.map((command) => ({
+      id: command.id,
+      description: command.description,
+      commandDigest: command.commandDigest,
+      status: "READY_PRIVATE_COMMAND",
+    })),
+    errors: [...review.errors, ...commandPlanResult.errors.map((error) => `command-packet/${error}`)],
+    warnings: [
+      "The public report is redacted. The private command packet contains raw approved operating values.",
+      "This command packet does not execute the apply commands.",
+    ],
+    safetyNotes: [
+      "This report stores only statuses, counts, private relative paths, and SHA-256 digests.",
+      "It does not store raw URLs, storage paths, feed paths, support contacts, incident owner names, secrets, tokens, certificate material, victim indicators, invite links, onion addresses, emails, or phone numbers.",
+      "Keep the generated private command packet ignored, access-controlled, and out of public release evidence.",
+    ],
+  };
+  const leakScan = scanReportForLeaks(baseReport);
+  return {
+    report: {
+      ...baseReport,
+      status: leakScan.status === "PASS" ? baseReport.status : "BLOCKED",
+      leakScan,
+      errors: [
+        ...baseReport.errors,
+        ...leakScan.findings.map((finding) => `launch command packet report contains unsafe ${finding.label}`),
+      ],
+    },
+    privatePacket,
+    privateScript,
   };
 }
 
@@ -467,6 +779,50 @@ export function writeOperationalLaunchInputsReviewFiles({ root = repoRoot, revie
     markdownPath,
     jsonPathRelative: relativePath(resolvedRoot, jsonPath),
     markdownPathRelative: relativePath(resolvedRoot, markdownPath),
+  };
+}
+
+export function writeOperationalLaunchCommandPacketFiles({
+  root = repoRoot,
+  packet,
+  privateOutputDir = OPERATIONAL_LAUNCH_PRIVATE_COMMAND_PACKET_DIR,
+  outputPath = "",
+  format = "markdown",
+} = {}) {
+  const resolvedRoot = path.resolve(root);
+  const reportDir = safePrepareCommandPacketReportDir(resolvedRoot);
+  const jsonPath = path.join(reportDir, OPERATIONAL_LAUNCH_COMMAND_PACKET_JSON);
+  const markdownPath = path.join(reportDir, OPERATIONAL_LAUNCH_COMMAND_PACKET_MARKDOWN);
+  writeJson(jsonPath, packet.report);
+  writeText(markdownPath, formatOperationalLaunchCommandPacketMarkdown(packet.report));
+  let privateDir = "";
+  let privateJsonPath = "";
+  let privateScriptPath = "";
+  if (packet.report.status === "READY_PRIVATE_COMMAND_PACKET") {
+    privateDir = safePreparePrivateCommandPacketDir(resolvedRoot, privateOutputDir);
+    privateJsonPath = path.join(privateDir, OPERATIONAL_LAUNCH_PRIVATE_COMMAND_PACKET_JSON);
+    privateScriptPath = path.join(privateDir, OPERATIONAL_LAUNCH_PRIVATE_COMMAND_PACKET_PS1);
+    writeJson(privateJsonPath, packet.privatePacket);
+    writeText(privateScriptPath, packet.privateScript);
+  }
+  if (outputPath) {
+    const resolvedOutput = resolveInsideRepo(resolvedRoot, outputPath, "output");
+    writeText(
+      resolvedOutput,
+      format === "json" ? `${JSON.stringify(packet.report, null, 2)}\n` : formatOperationalLaunchCommandPacketMarkdown(packet.report),
+    );
+  }
+  return {
+    reportDir,
+    reportDirRelative: relativePath(resolvedRoot, reportDir),
+    jsonPath,
+    markdownPath,
+    jsonPathRelative: relativePath(resolvedRoot, jsonPath),
+    markdownPathRelative: relativePath(resolvedRoot, markdownPath),
+    privateDir,
+    privateDirRelative: privateDir ? relativePath(resolvedRoot, privateDir) : "",
+    privateJsonPath,
+    privateScriptPath,
   };
 }
 
@@ -522,8 +878,48 @@ export function formatOperationalLaunchInputsReviewMarkdown(review) {
   return `${lines.join("\n")}\n`;
 }
 
+export function formatOperationalLaunchCommandPacketMarkdown(report) {
+  const lines = [
+    "# JiumAI Operational Launch Command Packet",
+    "",
+    `- Generated at: ${report.generatedAt}`,
+    `- Status: ${report.status}`,
+    `- Version: ${report.version || "MISSING"}`,
+    `- Ready inputs: ${report.summary.readyInputCount}`,
+    `- Blocked inputs: ${report.summary.blockedInputCount}`,
+    `- Command count: ${report.summary.commandCount}`,
+    `- Input digest: ${report.summary.inputDigest}`,
+    `- Private output: ${report.summary.privateOutputStatus}`,
+    `- Private output dir: ${report.summary.privateOutputDir}`,
+    `- Private packet digest: ${report.summary.privatePacketDigest || "MISSING"}`,
+    `- Leak scan: ${report.leakScan.status}`,
+    "",
+    "## Commands",
+    ...(report.commands.length
+      ? report.commands.map((command) => `- ${command.status} ${command.id}: ${command.commandDigest}`)
+      : ["- None"]),
+    "",
+    "## Errors",
+    ...(report.errors.length ? report.errors.map((error) => `- ${error}`) : ["- None"]),
+    "",
+    "## Warnings",
+    ...(report.warnings.length ? report.warnings.map((warning) => `- ${warning}`) : ["- None"]),
+    "",
+    "## Safety Notes",
+    ...report.safetyNotes.map((note) => `- ${note}`),
+  ];
+  return `${lines.join("\n")}\n`;
+}
+
 function parseCliArgs(argv) {
-  const args = { mode: "template", root: repoRoot, inputPath: "", outputPath: "", format: "text" };
+  const args = {
+    mode: "template",
+    root: repoRoot,
+    inputPath: "",
+    outputPath: "",
+    privateOutputDir: OPERATIONAL_LAUNCH_PRIVATE_COMMAND_PACKET_DIR,
+    format: "text",
+  };
   const positional = [];
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -544,13 +940,18 @@ function parseCliArgs(argv) {
       index += 1;
     } else if (arg.startsWith("--output=")) {
       args.outputPath = arg.slice("--output=".length);
+    } else if (arg === "--private-output-dir") {
+      args.privateOutputDir = argv[index + 1] || args.privateOutputDir;
+      index += 1;
+    } else if (arg.startsWith("--private-output-dir=")) {
+      args.privateOutputDir = arg.slice("--private-output-dir=".length);
     } else if (arg === "--json") {
       args.format = "json";
     } else if (arg === "--markdown" || arg === "--md") {
       args.format = "markdown";
     }
   }
-  if (positional[0] === "template" || positional[0] === "review") {
+  if (positional[0] === "template" || positional[0] === "review" || positional[0] === "commands") {
     args.mode = positional[0];
   }
   return args;
@@ -580,6 +981,31 @@ if (path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1
       }
       console.log(`Operational launch inputs review written: ${args.outputPath || written.reportDirRelative}`);
       if (review.status === "BLOCKED") {
+        process.exit(1);
+      }
+    } else if (args.mode === "commands") {
+      const packet = buildOperationalLaunchCommandPacket({
+        root: args.root,
+        inputPath: args.inputPath,
+        privateOutputDir: args.privateOutputDir,
+      });
+      const written = writeOperationalLaunchCommandPacketFiles({
+        root: args.root,
+        packet,
+        privateOutputDir: args.privateOutputDir,
+        outputPath: args.outputPath,
+        format: args.format === "json" ? "json" : "markdown",
+      });
+      if (args.format === "json") {
+        console.log(JSON.stringify(packet.report, null, 2));
+      } else {
+        console.log(formatOperationalLaunchCommandPacketMarkdown(packet.report));
+      }
+      console.log(`Operational launch command packet written: ${args.outputPath || written.reportDirRelative}`);
+      if (packet.report.status === "READY_PRIVATE_COMMAND_PACKET") {
+        console.log(`Private command packet written: ${written.privateDirRelative}`);
+      }
+      if (packet.report.status === "BLOCKED") {
         process.exit(1);
       }
     } else {

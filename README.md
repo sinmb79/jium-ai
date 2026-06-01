@@ -716,3 +716,13 @@ npm run ops:launch-inputs:review -- --input ops/private/production-onboarding/ap
 ```
 
 The review covers public routes, hosted-audit path, server origins, trusted-key candidate/patch paths, repo-external storage paths, desktop release settings, signed feed location, approval evidence digest, approved batch input path, and incident owner reference. It does not apply anything; it emits a redacted report with only statuses, counts, and SHA-256 digests. Details are in [Operational Launch Inputs v0.3.98](docs/operational-launch-inputs-v0.3.98.md).
+
+## v0.3.99 Operational Launch Command Packet
+
+After a filled launch input file passes review, operators can generate a private command packet:
+
+```bash
+npm run ops:launch-inputs:commands -- --input ops/private/production-onboarding/approved-launch-inputs.json
+```
+
+The public report stores only command counts, statuses, and SHA-256 digests. The raw commands are written only under ignored `ops/private`, so approved URLs, paths, refs, and feed locations do not have to be copied into public reports or release notes. Details are in [Operational Launch Command Packet v0.3.99](docs/operational-launch-command-packet-v0.3.99.md).

@@ -483,6 +483,7 @@ export async function buildOperationalReleaseDossier({
       "npm run ops:action-plan",
       "npm run ops:launch-console",
       "npm run ops:launch-inputs",
+      "npm run ops:launch-inputs:commands -- --input <private-approved-launch-inputs.json>",
       "npm run ops:approvals:input-template",
       "npm run ops:go-live:rehearsal",
       "npm run ops:release-dossier",

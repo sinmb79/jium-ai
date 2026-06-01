@@ -7,16 +7,19 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   OPERATIONAL_LAUNCH_INPUTS_REVIEW_SCHEMA,
   OPERATIONAL_LAUNCH_INPUTS_SCHEMA,
+  buildOperationalLaunchCommandPacket,
   buildOperationalLaunchInputsTemplate,
+  formatOperationalLaunchCommandPacketMarkdown,
   formatOperationalLaunchInputsReviewMarkdown,
   formatOperationalLaunchInputsTemplateMarkdown,
+  writeOperationalLaunchCommandPacketFiles,
   reviewOperationalLaunchInputs,
   writeOperationalLaunchInputsTemplateFiles,
 } from "../scripts/build-operational-launch-inputs.mjs";
 
 const tempDirs: string[] = [];
 
-async function tempRepo(version = "0.3.98") {
+async function tempRepo(version = "0.3.99") {
   const dir = path.join(os.tmpdir(), `jium-launch-inputs-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
   tempDirs.push(dir);
   await mkdir(dir, { recursive: true });
@@ -29,12 +32,12 @@ function validInputs(root: string) {
   tempDirs.push(outside);
   return {
     schema: OPERATIONAL_LAUNCH_INPUTS_SCHEMA,
-    packageVersion: "0.3.98",
+    packageVersion: "0.3.99",
     publicOperations: {
-      publicBaseUrl: "https://prod.example.test/jium",
-      publicAppUrl: "https://prod.example.test/jium",
-      privacyNoticeUrl: "https://prod.example.test/jium/privacy",
-      supportRoute: "https://prod.example.test/jium/support",
+      publicBaseUrl: "https://prod.example.test/jium/",
+      publicAppUrl: "https://prod.example.test/jium/",
+      privacyNoticeUrl: "https://prod.example.test/jium/privacy/",
+      supportRoute: "https://prod.example.test/jium/support/",
       hostedSecurityHeaderAuditReportPath: "ops/private/production-onboarding/hosted-security-header-audit.json",
     },
     serverRuntime: {
@@ -131,6 +134,7 @@ describe("operational launch inputs", () => {
     input.publicOperations.publicBaseUrl = "<approved-https-public-base-url>";
     input.serverRuntime.serverAllowedOrigins = ["https://ops.example.test/path"];
     input.serverRuntime.serverOriginApprovalRef = "support@example.com";
+    input.serverRuntime.auditLedgerDir = path.join(root, "unsafe-audit-ledger");
     input.approvalRecords.approvalEvidenceDigest = "sha256-not-valid";
     await writeInput(root, "ops/private/production-onboarding/blocked-launch-inputs.json", input);
 
@@ -145,8 +149,37 @@ describe("operational launch inputs", () => {
     expect(review.summary.blockedInputCount).toBeGreaterThanOrEqual(4);
     expect(review.errors.join("\n")).toContain("public-operations/publicBaseUrl");
     expect(review.errors.join("\n")).toContain("server-runtime/serverAllowedOrigins");
+    expect(review.errors.join("\n")).toContain("server-runtime/auditLedgerDir");
     expect(serialized).not.toContain("support@example.com");
     expect(serialized).not.toContain("ops.example.test");
+  });
+
+  it("builds a private command packet without leaking raw values in public reports", async () => {
+    const root = await tempRepo();
+    await writeInput(root, "ops/private/production-onboarding/approved-launch-inputs.json", validInputs(root));
+
+    const packet = buildOperationalLaunchCommandPacket({
+      root,
+      inputPath: "ops/private/production-onboarding/approved-launch-inputs.json",
+      generatedAt: "2026-06-02T00:00:00.000Z",
+    });
+    const written = writeOperationalLaunchCommandPacketFiles({ root, packet });
+    const reportMarkdown = await readFile(written.markdownPath, "utf8");
+    const privateScript = await readFile(written.privateScriptPath, "utf8");
+    const serializedReport = JSON.stringify(packet.report);
+
+    expect(packet.report.status).toBe("READY_PRIVATE_COMMAND_PACKET");
+    expect(packet.report.summary.commandCount).toBe(13);
+    expect(packet.report.leakScan.status).toBe("PASS");
+    expect(formatOperationalLaunchCommandPacketMarkdown(packet.report)).toContain("Command count: 13");
+    expect(reportMarkdown).toContain("Operational Launch Command Packet");
+    expect(privateScript).toContain("prod.example.test");
+    expect(privateScript).toContain("incident-owner-ref-001");
+    expect(serializedReport).not.toContain("prod.example.test");
+    expect(serializedReport).not.toContain("ops.example.test");
+    expect(serializedReport).not.toContain("updates.example.test");
+    expect(serializedReport).not.toContain("incident-owner-ref-001");
+    expect(serializedReport).not.toContain(root);
   });
 
   it("writes template reports and guards CLI output paths", async () => {
@@ -199,5 +232,54 @@ describe("operational launch inputs", () => {
     expect(report.schema).toBe(OPERATIONAL_LAUNCH_INPUTS_REVIEW_SCHEMA);
     expect(report.status).toBe("READY_FOR_OPERATOR_APPLY");
     expect(report.summary.readyInputCount).toBe(19);
+  });
+
+  it("runs the command packet CLI and guards private output directories", async () => {
+    const root = await tempRepo();
+    await writeInput(root, "ops/private/production-onboarding/approved-launch-inputs.json", validInputs(root));
+    const scriptPath = path.join(process.cwd(), "scripts", "build-operational-launch-inputs.mjs");
+    const run = spawnSync(
+      process.execPath,
+      [
+        scriptPath,
+        "commands",
+        "--root",
+        root,
+        "--input",
+        "ops/private/production-onboarding/approved-launch-inputs.json",
+        "--private-output-dir",
+        "ops/private/custom-launch-commands",
+        "--json",
+        "--output",
+        "reports/launch-command-packet.json",
+      ],
+      { encoding: "utf8" },
+    );
+    const report = JSON.parse(await readFile(path.join(root, "reports/launch-command-packet.json"), "utf8"));
+    const privateScript = await readFile(path.join(root, "ops/private/custom-launch-commands/operational-launch-apply-commands.ps1"), "utf8");
+
+    expect(run.status).toBe(0);
+    expect(report.status).toBe("READY_PRIVATE_COMMAND_PACKET");
+    expect(report.summary.commandCount).toBe(13);
+    expect(privateScript).toContain("desktop-publish-ref-001");
+    expect(JSON.stringify(report)).not.toContain("desktop-publish-ref-001");
+
+    const blocked = spawnSync(
+      process.execPath,
+      [
+        scriptPath,
+        "commands",
+        "--root",
+        root,
+        "--input",
+        "ops/private/production-onboarding/approved-launch-inputs.json",
+        "--private-output-dir",
+        "dist/not-private",
+      ],
+      { encoding: "utf8" },
+    );
+
+    expect(blocked.status).toBe(1);
+    expect(blocked.stderr).toContain("private command output dir must stay under ops/private");
   });
 });
