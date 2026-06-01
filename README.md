@@ -623,3 +623,17 @@ npm run server:origin:candidate:json -- --from-public-env --output dist/server-o
 The command derives HTTPS origin candidates from the private public-operations env, writes the raw `server:origin:apply` command only under `ops/private/server-origin-candidate`, and emits a redacted report with counts and SHA-256 digests. It does not approve or apply server origins. Details are in [Server Origin Candidate v0.3.90](docs/server-origin-candidate-v0.3.90.md).
 
 The operational release dossier and approval evidence digest now include this redacted candidate report so origin approval can be reviewed without exposing raw URLs in public evidence.
+
+## v0.3.91 Trusted Key Approval Candidate
+
+The trusted institution public-key approval step now has a redacted evidence packet before any registry change is applied:
+
+```bash
+npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>
+npm run server:trusted-key:approval-candidate
+npm run server:trusted-key:approval-candidate:json -- --output dist/trusted-key-approval-candidate/report.json
+```
+
+The command reads the trusted-key onboarding artifacts, verifies that the private key stayed repo-external, confirms the public candidate and registry patch are present, and emits only statuses, fingerprints, artifact names, byte counts, and SHA-256 digests. It does not expose raw public-key modulus values or private key material, and it does not approve or apply the key. Details are in [Trusted Key Approval Candidate v0.3.91](docs/trusted-key-approval-candidate-v0.3.91.md).
+
+The operational release dossier and approval evidence digest now include this trusted-key candidate report, so reviewers can see whether the active institution-key blocker is ready for approval or still unresolved.

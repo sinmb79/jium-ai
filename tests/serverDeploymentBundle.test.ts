@@ -109,6 +109,9 @@ describe("server deployment bundle", () => {
       "npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>",
     );
     expect(result.summary.deploymentCommands).toContain(
+      "npm run server:trusted-key:approval-candidate",
+    );
+    expect(result.summary.deploymentCommands).toContain(
       "npm run server:origin:candidate -- --from-public-env",
     );
     expect(result.summary.deploymentCommands).toContain(

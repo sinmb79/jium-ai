@@ -233,6 +233,7 @@ export async function buildServerDeploymentBundle({
       "npm run server:env:init",
       "npm run server:origin:candidate -- --from-public-env",
       "npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>",
+      "npm run server:trusted-key:approval-candidate",
       "npm run server:origin:apply -- --origin <approved-https-operator-origin> --approval-ref <pseudonymous-origin-approval-reference>",
       "npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env",
       "npm run security:trusted-key:review -- --candidate <approved-public-key.json> --patch-output <trusted-key-registry.patch.json>",

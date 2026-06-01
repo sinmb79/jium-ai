@@ -20,6 +20,11 @@ import {
   SERVER_ORIGIN_CANDIDATE_JSON,
   SERVER_ORIGIN_CANDIDATE_MARKDOWN,
 } from "./build-server-origin-candidate.mjs";
+import {
+  TRUSTED_KEY_APPROVAL_CANDIDATE_DIR,
+  TRUSTED_KEY_APPROVAL_CANDIDATE_JSON,
+  TRUSTED_KEY_APPROVAL_CANDIDATE_MARKDOWN,
+} from "./build-trusted-key-approval-candidate.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -141,6 +146,18 @@ function buildRequiredReviewFiles() {
       label: "Server origin candidate Markdown",
       path: `${SERVER_ORIGIN_CANDIDATE_DIR}/${SERVER_ORIGIN_CANDIDATE_MARKDOWN}`,
       purpose: "Human-readable server origin approval candidate summary.",
+    },
+    {
+      id: "trusted-key-approval-candidate-json",
+      label: "Trusted key approval candidate JSON",
+      path: `${TRUSTED_KEY_APPROVAL_CANDIDATE_DIR}/${TRUSTED_KEY_APPROVAL_CANDIDATE_JSON}`,
+      purpose: "Redacted trusted-key approval candidate and artifact digests.",
+    },
+    {
+      id: "trusted-key-approval-candidate-markdown",
+      label: "Trusted key approval candidate Markdown",
+      path: `${TRUSTED_KEY_APPROVAL_CANDIDATE_DIR}/${TRUSTED_KEY_APPROVAL_CANDIDATE_MARKDOWN}`,
+      purpose: "Human-readable trusted-key approval candidate summary.",
     },
     {
       id: "release-dossier-json",

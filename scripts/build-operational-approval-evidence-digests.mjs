@@ -17,6 +17,12 @@ import {
   SERVER_ORIGIN_CANDIDATE_MARKDOWN,
   buildServerOriginCandidate,
 } from "./build-server-origin-candidate.mjs";
+import {
+  TRUSTED_KEY_APPROVAL_CANDIDATE_DIR,
+  TRUSTED_KEY_APPROVAL_CANDIDATE_JSON,
+  TRUSTED_KEY_APPROVAL_CANDIDATE_MARKDOWN,
+  buildTrustedKeyApprovalCandidate,
+} from "./build-trusted-key-approval-candidate.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -34,6 +40,8 @@ const DEFAULT_EVIDENCE_FILES = [
   `${OPERATIONAL_GO_LIVE_REHEARSAL_BUNDLE_DIR}/operational-go-live-rehearsal-report.json`,
   `${SERVER_ORIGIN_CANDIDATE_DIR}/${SERVER_ORIGIN_CANDIDATE_JSON}`,
   `${SERVER_ORIGIN_CANDIDATE_DIR}/${SERVER_ORIGIN_CANDIDATE_MARKDOWN}`,
+  `${TRUSTED_KEY_APPROVAL_CANDIDATE_DIR}/${TRUSTED_KEY_APPROVAL_CANDIDATE_JSON}`,
+  `${TRUSTED_KEY_APPROVAL_CANDIDATE_DIR}/${TRUSTED_KEY_APPROVAL_CANDIDATE_MARKDOWN}`,
 ];
 
 const UNSAFE_PATTERNS = [
@@ -148,6 +156,7 @@ async function ensureDefaultEvidenceFiles({ root, env, platform, generatedAt, no
     return DEFAULT_EVIDENCE_FILES;
   }
   await buildServerOriginCandidate({ root, env, fromPublicEnv: true, generatedAt });
+  await buildTrustedKeyApprovalCandidate({ root, generatedAt });
   const dossier = await buildOperationalReleaseDossier({ root, env, platform, generatedAt });
   writeOperationalReleaseDossierFiles({ root, dossier });
   return DEFAULT_EVIDENCE_FILES;

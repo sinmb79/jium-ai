@@ -190,7 +190,7 @@ function nextActionFor(error) {
     return "Set INSTITUTION_ACCOUNT_REGISTRY_DIR to an access-controlled account registry path.";
   }
   if (error.includes("trusted key registry")) {
-    return "Approve and register at least one active institution public key.";
+    return "Prepare a redacted trusted-key approval candidate with npm run server:trusted-key:approval-candidate, then approve and register at least one active institution public key.";
   }
   if (error.includes("server route template missing")) {
     return "Restore all required server route templates before materializing server routes.";

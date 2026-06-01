@@ -121,6 +121,9 @@ describe("operational action plan", () => {
       "npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>",
     );
     expect(plan.runOrder.find((entry) => entry.phaseId === "server-runtime")?.verificationCommands).toContain(
+      "npm run server:trusted-key:approval-candidate",
+    );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "server-runtime")?.verificationCommands).toContain(
       "npm run server:origin:apply -- --origin <approved-https-operator-origin> --approval-ref <pseudonymous-origin-approval-reference>",
     );
     expect(plan.runOrder.find((entry) => entry.phaseId === "server-runtime")?.verificationCommands).toContain(
@@ -135,6 +138,11 @@ describe("operational action plan", () => {
       plan.phases
         .find((phase) => phase.id === "server-runtime")
         ?.actions.some((action) => action.action.includes("repo-external private key")),
+    ).toBe(true);
+    expect(
+      plan.phases
+        .find((phase) => phase.id === "server-runtime")
+        ?.actions.some((action) => action.action.includes("trusted-key approval candidate")),
     ).toBe(true);
     expect(
       plan.phases

@@ -70,6 +70,7 @@ const PHASE_BLUEPRINTS = [
     verificationCommands: [
       "npm run server:origin:candidate -- --from-public-env",
       "npm run server:trusted-key:init -- --private-key-dir <approved-repo-external-private-key-dir> --key-id <approved-key-id> --issuer <approved-issuer-name>",
+      "npm run server:trusted-key:approval-candidate",
       "npm run server:origin:apply -- --origin <approved-https-operator-origin> --approval-ref <pseudonymous-origin-approval-reference>",
       "npm run security:trusted-key:review -- --candidate <approved-public-key.json> --patch-output <trusted-key-registry.patch.json>",
       "npm run server:trusted-key:apply -- --patch <trusted-key-registry.patch.json> --approval-ref <pseudonymous-approval-reference>",
@@ -81,6 +82,7 @@ const PHASE_BLUEPRINTS = [
       "Generate a redacted server origin approval candidate with npm run server:origin:candidate -- --from-public-env after public operations routes are configured.",
       "Apply the approved HTTPS operator origin list with npm run server:origin:apply before server readiness.",
       "Generate a repo-external private key and public trusted-key candidate with npm run server:trusted-key:init.",
+      "Build a redacted trusted-key approval candidate with npm run server:trusted-key:approval-candidate before release evidence digesting.",
       "Review an approved institution public-key candidate before applying any trusted-key registry patch.",
       "Apply the approved trusted-key registry patch with a pseudonymous approval reference after fingerprint comparison.",
       "Verify server-only secrets, allowed HTTPS origins, and generated institution route readiness.",

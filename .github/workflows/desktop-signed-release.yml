@@ -13,7 +13,7 @@ on:
       release_tag:
         description: Existing GitHub Release tag that matches package.json version
         required: true
-        default: v0.3.90
+        default: v0.3.91
       publish_to_github_release:
         description: Upload signed installer assets to the existing GitHub Release
         required: true

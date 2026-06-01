@@ -1041,6 +1041,22 @@
 - 검증 범위
   - valid Netlify static-hosting config, unsafe config 차단, CLI output path guard, action-plan run order 연결을 테스트했다.
 
+## v3.91 Trusted key approval candidate
+
+- Server trusted-key approval evidence
+  - Version was raised to `0.3.91`.
+  - Added `server:trusted-key:approval-candidate`, JSON, and Markdown variants.
+  - The command reads the trusted-key onboarding report and emits a redacted approval-candidate report with only key id, fingerprint, status, artifact paths, byte counts, and SHA-256 digests.
+- Operational wiring
+  - Server-runtime action plans and deployment bundles now include the trusted-key approval candidate command between key onboarding and final registry apply.
+  - Operational release dossiers and approval evidence digests now include the trusted-key approval candidate JSON/Markdown reports.
+  - Server-readiness trusted-key blockers now route operators to the redacted approval-candidate step before final approval and registry registration.
+- Safety boundary
+  - The report does not store raw public-key modulus values, private JWK fields, private filesystem paths, raw approval references, contacts, URLs, victim indicators, invite links, onion addresses, emails, phone numbers, tokens, or certificate material.
+  - A blocked report is still a useful release evidence artifact because it tells reviewers exactly which trusted-key approval prerequisite is missing.
+- Verification scope
+  - Tested ready onboarding artifacts, missing onboarding reports, unsafe private JWK leakage in patch artifacts, CLI output path guard, release dossier inclusion, action-plan run order, and server deployment command inclusion.
+
 ## v3.90 Server origin candidate
 
 - 서버 origin 승인 후보 생성
