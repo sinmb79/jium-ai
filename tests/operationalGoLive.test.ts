@@ -78,6 +78,17 @@ function readyServerRuntime() {
       INSTITUTION_ACCOUNT_REGISTRY_DIR: "SET" as const,
       INSTITUTION_SECURE_COOKIES: "DEFAULT_OR_TRUE" as const,
     },
+    storage: {
+      valid: true,
+      errors: [],
+      writeProbe: "ENABLED" as const,
+      summary: {
+        requiredDirectoryCount: 2,
+        configuredDirectoryCount: 2,
+        readyDirectoryCount: 2,
+      },
+      targets: [],
+    },
   };
 }
 

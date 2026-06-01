@@ -23,7 +23,7 @@ export function buildServerRuntimeEnvTemplate({
 } = {}) {
   return [
     "# JiumAI private server runtime env",
-    "# Keep this file out of git. Replace the origin placeholder before go-live.",
+    "# Keep this file out of git. Replace the origin and storage placeholders before go-live.",
     `# Generated at: ${generatedAt}`,
     "JIUM_SERVER_ROUTES=true",
     "NODE_ENV=production",
@@ -33,9 +33,9 @@ export function buildServerRuntimeEnvTemplate({
     "INSTITUTION_SESSION_SECRET_VALID_UNTIL=",
     "INSTITUTION_ALLOWED_ORIGINS=REPLACE-ME-https-origin",
     "INSTITUTION_SECURE_COOKIES=true",
-    "INSTITUTION_AUDIT_LEDGER_DIR=ops/private/server-audit-ledger",
+    "INSTITUTION_AUDIT_LEDGER_DIR=REPLACE-ME-ABSOLUTE-SECURE-AUDIT-LEDGER-DIR",
     "INSTITUTION_AUDIT_LEDGER_FILE=institution-auth-audit-ledger.jsonl",
-    "INSTITUTION_ACCOUNT_REGISTRY_DIR=ops/private/institution-accounts",
+    "INSTITUTION_ACCOUNT_REGISTRY_DIR=REPLACE-ME-ABSOLUTE-SECURE-ACCOUNT-REGISTRY-DIR",
     "",
   ].join("\n");
 }
@@ -85,7 +85,9 @@ if (path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1
     console.log(`Server runtime env template written: ${result.outputPathRelative}`);
     console.log("Secret status: GENERATED");
     console.log("Origin status: PLACEHOLDER_BLOCKED");
-    console.log("Replace INSTITUTION_ALLOWED_ORIGINS with the approved HTTPS operator origin, then run npm run security:server-readiness.");
+    console.log(
+      "Replace INSTITUTION_ALLOWED_ORIGINS and the server storage directories with approved deployment values, then run npm run security:server-readiness.",
+    );
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(1);

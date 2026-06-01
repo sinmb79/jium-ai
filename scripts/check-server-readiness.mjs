@@ -10,6 +10,7 @@ import {
 } from "./check-authorized-feed-keys.mjs";
 import { truthy, validateDeploymentProfile } from "./check-deployment-profile.mjs";
 import { listServerRouteTemplates } from "./materialize-server-routes.mjs";
+import { validateServerStorageReadiness } from "./check-server-storage-readiness.mjs";
 
 export const REQUIRED_SERVER_ROUTE_TEMPLATES = [
   "api/institution/accounts/route.ts",
@@ -108,6 +109,7 @@ export function validateServerRuntimeReadiness({
   const errors = [];
   const deployment = validateDeploymentProfile(env, root);
   const envSummary = summarizeServerRuntimeEnv(env);
+  const storage = validateServerStorageReadiness({ root, env });
 
   if (!truthy(env.JIUM_SERVER_ROUTES)) {
     errors.push("JIUM_SERVER_ROUTES=true is required for server runtime readiness");
@@ -120,6 +122,7 @@ export function validateServerRuntimeReadiness({
   }
   validateAllowedOrigins(env.INSTITUTION_ALLOWED_ORIGINS).forEach((error) => errors.push(error));
   deployment.errors.forEach((error) => errors.push(`deployment profile: ${error}`));
+  storage.errors.forEach((error) => errors.push(error));
 
   let keyCount = 0;
   let activeKeyCount = 0;
@@ -157,6 +160,7 @@ export function validateServerRuntimeReadiness({
     activeKeyCount,
     templateFiles,
     envSummary,
+    storage,
   };
 }
 
@@ -220,12 +224,8 @@ export function buildServerRuntimeReadinessReport(readiness, options = {}) {
     },
     {
       id: "storage-paths",
-      label: "Audit ledger and account registry storage paths are configured",
-      status:
-        readiness.envSummary.INSTITUTION_AUDIT_LEDGER_DIR === "SET" &&
-        readiness.envSummary.INSTITUTION_ACCOUNT_REGISTRY_DIR === "SET"
-          ? "PASS"
-          : "BLOCKED",
+      label: "Audit ledger and account registry storage paths are private, repo-external, and writable",
+      status: readiness.storage.valid ? "PASS" : "BLOCKED",
     },
     {
       id: "trusted-public-key",
@@ -254,6 +254,9 @@ export function buildServerRuntimeReadinessReport(readiness, options = {}) {
       routeTemplateCount: readiness.templateFiles.length,
       requiredRouteTemplateCount: REQUIRED_SERVER_ROUTE_TEMPLATES.length,
       allowedOriginCount: readiness.envSummary.INSTITUTION_ALLOWED_ORIGINS_COUNT,
+      storageStatus: readiness.storage.valid ? "READY" : "BLOCKED",
+      storageReadyDirectoryCount: readiness.storage.summary.readyDirectoryCount,
+      storageRequiredDirectoryCount: readiness.storage.summary.requiredDirectoryCount,
     },
     envSummary: readiness.envSummary,
     checks,
@@ -261,6 +264,7 @@ export function buildServerRuntimeReadinessReport(readiness, options = {}) {
     nextActions: readiness.errors.length ? Array.from(new Set(readiness.errors.map(nextActionFor))) : ["Proceed with controlled server build and deployment approval."],
     safetyNotes: [
       "This report intentionally redacts secret values, trusted origins, and filesystem paths.",
+      "Server storage readiness uses a temporary write probe and records only PASS/BLOCKED states.",
       "Do not store credentials, session tokens, raw victim indicators, URLs, invite links, onion addresses, emails, or phone numbers in the report.",
       "A READY result proves technical readiness only; institution approval and operating procedures still need human sign-off.",
     ],
@@ -277,6 +281,7 @@ export function formatServerRuntimeReadinessMarkdown(report) {
     `- Active trusted keys: ${report.summary.activeKeyCount}/${report.summary.keyCount}`,
     `- Route templates: ${report.summary.routeTemplateCount}/${report.summary.requiredRouteTemplateCount}`,
     `- Trusted origin count: ${report.summary.allowedOriginCount}`,
+    `- Server storage: ${report.summary.storageStatus} (${report.summary.storageReadyDirectoryCount}/${report.summary.storageRequiredDirectoryCount})`,
     "",
     "## Checks",
     ...report.checks.map((check) => `- ${check.status} ${check.id}: ${check.label}`),

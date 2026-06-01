@@ -23,6 +23,10 @@ import {
   formatServerRuntimeReadinessMarkdown,
   validateServerRuntimeReadiness,
 } from "./check-server-readiness.mjs";
+import {
+  buildServerStorageReadinessReport,
+  formatServerStorageReadinessMarkdown,
+} from "./check-server-storage-readiness.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -126,6 +130,7 @@ export async function buildOperationalHandoffBundle({
     }));
 
   const serverReport = buildServerRuntimeReadinessReport(serverRuntime, { generatedAt });
+  const serverStorageReport = buildServerStorageReadinessReport(serverRuntime.storage, { generatedAt });
   const desktopReport = buildDesktopPublishReadinessReport(desktopPublish, { generatedAt });
   const approvalRecordsReport = buildOperationalApprovalRecordsReport(approvalRecords, { generatedAt });
   const goLiveReport = buildOperationalGoLiveReport(goLive, { generatedAt });
@@ -133,7 +138,9 @@ export async function buildOperationalHandoffBundle({
   const summary = {
     schema: "jium-operational-handoff-bundle-v1",
     generatedAt,
-    status: [serverReport.status, desktopReport.status, approvalRecordsReport.status, goLiveReport.status].every((status) => status === "READY")
+    status: [serverReport.status, serverStorageReport.status, desktopReport.status, approvalRecordsReport.status, goLiveReport.status].every(
+      (status) => status === "READY",
+    )
       ? "READY"
       : "BLOCKED",
     version: readPackageVersion(root),
@@ -141,6 +148,7 @@ export async function buildOperationalHandoffBundle({
     platform,
     gates: [
       { id: "server-runtime-readiness", status: serverReport.status, errorCount: serverReport.errors.length },
+      { id: "server-storage-readiness", status: serverStorageReport.status, errorCount: serverStorageReport.errors.length },
       { id: "desktop-publish-readiness", status: desktopReport.status, errorCount: desktopReport.errors.length },
       { id: "operational-approval-records", status: approvalRecordsReport.status, errorCount: approvalRecordsReport.errors.length },
       { id: "operational-go-live", status: goLiveReport.status, errorCount: goLiveReport.errors.length },
@@ -148,6 +156,8 @@ export async function buildOperationalHandoffBundle({
     reports: {
       serverRuntimeJson: "server-runtime-readiness-report.json",
       serverRuntimeMarkdown: "server-runtime-readiness-report.md",
+      serverStorageJson: "server-storage-readiness-report.json",
+      serverStorageMarkdown: "server-storage-readiness-report.md",
       desktopPublishJson: "desktop-publish-readiness-report.json",
       desktopPublishMarkdown: "desktop-publish-readiness-report.md",
       approvalRecordsJson: "operational-approval-records-report.json",
@@ -159,12 +169,18 @@ export async function buildOperationalHandoffBundle({
     externalRecordsNeeded: [
       "Approved institution public key registry and approval record",
       "Server-only institution session secret and trusted origin deployment record",
-      "Access-controlled audit ledger and account registry storage decision",
+      "Access-controlled, repo-external, writable audit ledger and account registry storage decision",
       "Signed desktop installer, blockmap, and update metadata from the same build",
       "GitHub Release publish approval and asset review record",
       "Private operational approval records packet for legal, data retention, support route, incident-response, release evidence, and go-live approval",
     ],
-    nextActions: uniqueActions(serverReport.nextActions, desktopReport.nextActions, approvalRecordsReport.nextActions, goLiveReport.nextActions),
+    nextActions: uniqueActions(
+      serverReport.nextActions,
+      serverStorageReport.nextActions,
+      desktopReport.nextActions,
+      approvalRecordsReport.nextActions,
+      goLiveReport.nextActions,
+    ),
     safetyNotes: [
       "This bundle is an operational handoff packet, not proof that human approval is complete.",
       "Reports store approval states, counts, release tags, package versions, relative artifact names, and setting presence only.",
@@ -174,6 +190,8 @@ export async function buildOperationalHandoffBundle({
 
   writeJson(path.join(bundleDir, "server-runtime-readiness-report.json"), serverReport);
   writeText(path.join(bundleDir, "server-runtime-readiness-report.md"), formatServerRuntimeReadinessMarkdown(serverReport));
+  writeJson(path.join(bundleDir, "server-storage-readiness-report.json"), serverStorageReport);
+  writeText(path.join(bundleDir, "server-storage-readiness-report.md"), formatServerStorageReadinessMarkdown(serverStorageReport));
   writeJson(path.join(bundleDir, "desktop-publish-readiness-report.json"), desktopReport);
   writeText(path.join(bundleDir, "desktop-publish-readiness-report.md"), formatDesktopPublishReadinessMarkdown(desktopReport));
   writeJson(path.join(bundleDir, "operational-approval-records-report.json"), approvalRecordsReport);

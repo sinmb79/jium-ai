@@ -2,6 +2,8 @@
 
 작성일: 2026-05-31
 
+최신 구현 메모: v3.55에서 production server storage readiness gate를 추가했다. 세부 runbook은 `docs/server-storage-readiness-v0.3.55.md`를 기준으로 한다.
+
 ## 운영제품 기준
 
 해커톤 MVP는 "시연 가능"이 기준이지만, 실제 운영제품은 피해자가 현실 사건에서 안전하게 쓰고 담당자가 제출자료를 신뢰할 수 있어야 한다.
@@ -861,3 +863,18 @@
   - `INSTITUTION_ALLOWED_ORIGINS`는 HTTPS origin이어야 하며 placeholder, query, fragment, credential을 거부한다.
 - 검증 범위
   - env template 생성, strong secret 생성, placeholder origin BLOCKED, overwrite 차단, force overwrite, weak secret summary를 테스트했다.
+
+## v3.55 서버 storage readiness gate
+
+- 서버 저장소 안전성 점검
+  - 앱 version을 `0.3.55`로 올리고 `security:server-storage`를 추가했다.
+  - `INSTITUTION_AUDIT_LEDGER_DIR`와 `INSTITUTION_ACCOUNT_REGISTRY_DIR`는 절대경로, repo 외부, public/build artifact 외부, 서로 분리된 non-nested directory, 서버 process 쓰기 가능 상태여야 한다.
+  - placeholder, 상대경로, repo 내부 경로, public/out/dist/.next/app/server-route-templates/data 하위 경로, 쓰기 불가 대상은 BLOCKED가 된다.
+- readiness와 handoff 연결
+  - `security:server-readiness`가 storage gate 결과를 포함한다.
+  - `ops:handoff:bundle`이 `server-storage-readiness-report.json`과 `.md`를 별도로 생성한다.
+  - report는 filesystem path 원문을 저장하지 않고 PASS/BLOCKED 상태와 count만 남긴다.
+- env 초안 보강
+  - `server:env:init`의 storage 값은 repo-local 기본값 대신 `REPLACE-ME` 배포 placeholder로 남긴다.
+- 검증 범위
+  - 정상 외부 writable directory, 상대경로, placeholder, repo/public 경로, nested directory, file target, CLI JSON redaction, server readiness/handoff 연결을 테스트했다.

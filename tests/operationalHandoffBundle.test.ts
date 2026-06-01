@@ -40,6 +40,17 @@ function serverRuntime(valid = true) {
       INSTITUTION_ACCOUNT_REGISTRY_DIR: "SET" as const,
       INSTITUTION_SECURE_COOKIES: "DEFAULT_OR_TRUE" as const,
     },
+    storage: {
+      valid,
+      errors: valid ? [] : ["INSTITUTION_AUDIT_LEDGER_DIR must be outside the repository workspace"],
+      writeProbe: "ENABLED" as const,
+      summary: {
+        requiredDirectoryCount: 2,
+        configuredDirectoryCount: valid ? 2 : 1,
+        readyDirectoryCount: valid ? 2 : 0,
+      },
+      targets: [],
+    },
   };
 }
 
@@ -163,7 +174,7 @@ describe("operational handoff bundle", () => {
 
     expect(result.valid).toBe(true);
     expect(result.summary.status).toBe("READY");
-    expect(result.summary.gates.map((gate) => gate.status)).toEqual(["READY", "READY", "READY", "READY"]);
+    expect(result.summary.gates.map((gate) => gate.status)).toEqual(["READY", "READY", "READY", "READY", "READY"]);
     expect(summaryMarkdown).toContain("JiumAI Operational Handoff Runbook");
     expect(goLiveMarkdown).toContain("JiumAI Operational Go-Live Report");
     expect(summaryMarkdown).not.toContain(root);
@@ -195,6 +206,7 @@ describe("operational handoff bundle", () => {
     expect(result.summary.status).toBe("BLOCKED");
     expect(result.summary.gates).toEqual([
       { id: "server-runtime-readiness", status: "BLOCKED", errorCount: 1 },
+      { id: "server-storage-readiness", status: "BLOCKED", errorCount: 1 },
       { id: "desktop-publish-readiness", status: "BLOCKED", errorCount: 1 },
       { id: "operational-approval-records", status: "BLOCKED", errorCount: 1 },
       { id: "operational-go-live", status: "BLOCKED", errorCount: 1 },

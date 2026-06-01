@@ -139,10 +139,14 @@ npm run build:server
 ```bash
 npm run security:server-readiness:json -- --output ./server-readiness.json
 npm run security:server-readiness:markdown -- --output ./server-readiness.md
+npm run security:server-storage:json -- --output ./server-storage-readiness.json
+npm run security:server-storage:markdown -- --output ./server-storage-readiness.md
 npm run server:env:init
 ```
 
-`server:env:init`은 git에서 제외되는 `.env.server.local` 초안을 만들고 48바이트 random server session secret을 생성합니다. 다만 `INSTITUTION_ALLOWED_ORIGINS`는 `REPLACE-ME` placeholder로 남아 readiness가 BLOCKED가 되도록 설계되어 있습니다. 승인된 HTTPS 운영자 origin을 넣고, 공개키 registry와 private approval records가 준비된 뒤에만 서버 readiness를 다시 통과시켜야 합니다. `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET`은 생성하지 않습니다.
+`security:server-storage` validates the two server-side storage roots before production use. `INSTITUTION_AUDIT_LEDGER_DIR` and `INSTITUTION_ACCOUNT_REGISTRY_DIR` must be absolute, outside the repository workspace, outside public/build artifact folders, separate non-nested directories, and writable by the server process. The JSON/Markdown reports redact filesystem paths and include only PASS/BLOCKED states.
+
+`server:env:init`은 git에서 제외되는 `.env.server.local` 초안을 만들고 48바이트 random server session secret을 생성합니다. 다만 `INSTITUTION_ALLOWED_ORIGINS`, `INSTITUTION_AUDIT_LEDGER_DIR`, `INSTITUTION_ACCOUNT_REGISTRY_DIR`는 `REPLACE-ME` placeholder로 남아 readiness가 BLOCKED가 되도록 설계되어 있습니다. 승인된 HTTPS 운영자 origin, repo 외부의 쓰기 가능한 storage root, 공개키 registry와 private approval records가 준비된 뒤에만 서버 readiness를 다시 통과시켜야 합니다. `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET`은 생성하지 않습니다.
 
 ### 데스크톱 release readiness
 

@@ -151,6 +151,7 @@ npm run build
 - GitHub Release 업로드 직전에는 `npm run desktop:publish:check -- --feed-dir <배포폴더>`로 `JIUM_DESKTOP_RELEASE_TAG`, `package.json` version, update metadata version, human approval, GitHub upload token, 산출물 검증을 한 번 더 확인
 - `Desktop Signed Release`의 GitHub Release 업로드 job은 `publish_to_github_release=true`와 `publish_approval=APPROVED`가 모두 있어야 실행되며, 업로드 job만 `contents: write` 권한을 사용
 - `desktop:release:json`과 `desktop:release:markdown`은 updater URL 원문, 인증서 경로·hash, team ID, signing key ID, 피해자 지표를 저장하지 않는 redacted 인수인계 리포트를 생성
+- 서버 운영 전에는 `npm run security:server-storage`로 감사 원장과 기관 계정 registry 저장소가 repo 외부의 쓰기 가능한 분리 경로인지 확인
 - 운영 오픈 직전에는 `npm run ops:go-live:check`로 서버 readiness, desktop publish readiness, public HTTPS URL, legal/go-live/data-retention 승인, support/incident-response 지정 여부를 한 번에 확인
 - 운영 인수인계 증적은 `npm run ops:handoff:bundle`로 `dist/operational-handoff-bundle`에 모으며, 서버·데스크톱·go-live 리포트와 redacted runbook을 함께 보관
 - 첫 진단 화면과 사건 보드에는 악성 확장프로그램, 원격제어, 공용 PC, 가해자 접근 가능성을 확인하는 기기 안전점검을 표시
@@ -208,4 +209,18 @@ Server deployments can now create a private env scaffold with:
 npm run server:env:init
 ```
 
-The scaffold writes `.env.server.local`, generates a 48-byte random server session secret, keeps `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET` out, and intentionally leaves `INSTITUTION_ALLOWED_ORIGINS` as a blocked placeholder until the approved HTTPS operator origin is known.
+The scaffold writes `.env.server.local`, generates a 48-byte random server session secret, keeps `NEXT_PUBLIC_INSTITUTION_SESSION_SECRET` out, and intentionally leaves `INSTITUTION_ALLOWED_ORIGINS` plus server storage directories as blocked placeholders until the approved HTTPS operator origin and deployment volumes are known.
+
+## v0.3.55 Server Storage Readiness
+
+Server deployments now have a separate storage gate:
+
+```bash
+npm run security:server-storage
+npm run security:server-storage:json -- --output ./server-storage-readiness.json
+npm run security:server-storage:markdown -- --output ./server-storage-readiness.md
+```
+
+The gate requires audit ledger and account registry directories to be absolute, outside the app repository, outside public/build artifact folders, separate from each other, and writable by the server process. Reports redact filesystem paths and record only readiness states.
+
+`npm run security:server-readiness` and `npm run ops:handoff:bundle` now include this storage result, so production handoff is blocked until private server storage is explicitly provisioned.

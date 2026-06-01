@@ -1,3 +1,5 @@
+import type { ServerStorageReadiness } from "./check-server-storage-readiness.mjs";
+
 export type ServerRuntimeReadiness = {
   valid: boolean;
   errors: string[];
@@ -6,6 +8,7 @@ export type ServerRuntimeReadiness = {
   activeKeyCount: number;
   templateFiles: string[];
   envSummary: ServerRuntimeEnvSummary;
+  storage: ServerStorageReadiness;
 };
 
 export const REQUIRED_SERVER_ROUTE_TEMPLATES: string[];
@@ -34,6 +37,9 @@ export type ServerRuntimeReadinessReport = {
     routeTemplateCount: number;
     requiredRouteTemplateCount: number;
     allowedOriginCount: number;
+    storageStatus: "READY" | "BLOCKED";
+    storageReadyDirectoryCount: number;
+    storageRequiredDirectoryCount: number;
   };
   envSummary: ServerRuntimeEnvSummary;
   checks: Array<{

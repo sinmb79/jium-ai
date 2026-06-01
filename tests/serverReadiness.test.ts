@@ -65,13 +65,17 @@ function validKey() {
 }
 
 function serverEnv(root: string, overrides: Record<string, string | undefined> = {}) {
+  const storageRoot = path.join(os.tmpdir(), `${path.basename(root)}-private-storage`);
+  if (!tempDirs.includes(storageRoot)) {
+    tempDirs.push(storageRoot);
+  }
   return {
     JIUM_SERVER_ROUTES: "true",
     NODE_ENV: "production",
     INSTITUTION_SESSION_SECRET: "0123456789abcdef0123456789abcdef",
     INSTITUTION_ALLOWED_ORIGINS: "https://agency.example",
-    INSTITUTION_AUDIT_LEDGER_DIR: path.join(root, "audit-ledger"),
-    INSTITUTION_ACCOUNT_REGISTRY_DIR: path.join(root, "account-registry"),
+    INSTITUTION_AUDIT_LEDGER_DIR: path.join(storageRoot, "audit-ledger"),
+    INSTITUTION_ACCOUNT_REGISTRY_DIR: path.join(storageRoot, "account-registry"),
     INSTITUTION_SECURE_COOKIES: "true",
     ...overrides,
   };
@@ -172,19 +176,22 @@ describe("server runtime readiness", () => {
     const root = await tempRepo();
     await writeRequiredRouteTemplates(root);
     await writeRegistry(root, [validKey()]);
-    const result = validateServerRuntimeReadiness({ root, env: serverEnv(root) });
+    const env = serverEnv(root);
+    const result = validateServerRuntimeReadiness({ root, env });
     const report = buildServerRuntimeReadinessReport(result, { generatedAt: "2026-06-01T00:00:00.000Z" });
     const markdown = formatServerRuntimeReadinessMarkdown(report);
     const serialized = JSON.stringify(report);
 
     expect(report.status).toBe("READY");
     expect(report.summary.allowedOriginCount).toBe(1);
+    expect(report.summary.storageStatus).toBe("READY");
     expect(report.checks.every((check) => check.status === "PASS")).toBe(true);
     expect(markdown).toContain("JiumAI Server Runtime Readiness Report");
     expect(markdown).toContain("Status: READY");
     expect(serialized).not.toContain("0123456789abcdef0123456789abcdef");
     expect(serialized).not.toContain("https://agency.example");
-    expect(serialized).not.toContain(path.join(root, "audit-ledger"));
+    expect(serialized).not.toContain(env.INSTITUTION_AUDIT_LEDGER_DIR);
+    expect(serialized).not.toContain(env.INSTITUTION_ACCOUNT_REGISTRY_DIR);
   });
 
   it("reports blocked checks and safe next actions without leaking env values", async () => {

@@ -53,6 +53,8 @@ describe("server runtime env initializer", () => {
     expect(readiness.valid).toBe(false);
     expect(readiness.errors.join("\n")).toContain("INSTITUTION_ALLOWED_ORIGINS");
     expect(readiness.errors.join("\n")).toContain("placeholder");
+    expect(readiness.errors.join("\n")).toContain("INSTITUTION_AUDIT_LEDGER_DIR");
+    expect(readiness.errors.join("\n")).toContain("INSTITUTION_ACCOUNT_REGISTRY_DIR");
     expect(content).not.toContain("NEXT_PUBLIC_INSTITUTION_SESSION_SECRET");
   });
 

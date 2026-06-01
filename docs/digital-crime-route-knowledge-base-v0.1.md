@@ -391,3 +391,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - `INSTITUTION_ALLOWED_ORIGINS` remains a `REPLACE-ME` placeholder so server readiness stays blocked until an approved HTTPS operator origin is configured.
 - Server readiness now classifies weak or placeholder session secrets as `SET_WEAK` and blocks them.
 - Server readiness rejects non-HTTPS, placeholder, credentialed, query, or fragment-bearing institution origins.
+
+## Implemented in v3.55
+
+- Added `scripts/check-server-storage-readiness.mjs` and `security:server-storage`.
+- Server storage readiness blocks placeholder, relative, repository-contained, public/build artifact, nested, or unwritable audit ledger and account registry directories.
+- `security:server-readiness` now includes the storage gate.
+- `ops:handoff:bundle` now includes redacted server storage readiness JSON and Markdown reports.
+- `server:env:init` now leaves server storage directories as explicit deployment placeholders.
