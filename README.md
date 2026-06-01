@@ -506,3 +506,13 @@ npm run desktop:release-env:apply -- --channel <approved-release-channel> --upda
 ```
 
 The command writes only the release channel, HTTPS updater URL, release tag, and `JIUM_DESKTOP_PUBLISH_APPROVAL=APPROVED` after validation. Signing certificates, certificate passwords, Azure signing secrets, and GitHub tokens are never read from `.env.desktop.local`; they must stay in the real process environment or GitHub Secrets. `desktop:release:check`, `desktop:signing-secrets:check`, `desktop:publish:check`, and `ops:action-plan` now load or route these non-secret settings through the guarded command. Details are in [Desktop Release Env Apply v0.3.80](docs/desktop-release-env-apply-v0.3.80.md).
+
+## v0.3.81 Hosted Security Header Audit Env Apply
+
+READY hosted security header audit evidence can now be applied to `.env.server.local` through a guarded CLI:
+
+```bash
+npm run ops:hosted-audit:apply -- --audit-report ops/private/production-onboarding/hosted-security-header-audit.json
+```
+
+The command only accepts a READY `jium-security-header-url-audit-v1` report that targets HTTPS production hosting, fetched successfully, returned below HTTP 400, and has zero header failures. It writes only the relative audit report path to the ignored server env file and emits redacted reports with status fields plus a SHA-256 digest. Details are in [Hosted Security Header Audit Env Apply v0.3.81](docs/hosted-security-header-audit-env-apply-v0.3.81.md).

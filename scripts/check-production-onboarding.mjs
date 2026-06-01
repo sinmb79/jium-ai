@@ -390,7 +390,7 @@ function nextActionFor(error) {
     return "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init, then record route approvals with npm run ops:onboarding:approve-public-operations.";
   }
   if (error.includes("hosted security header audit")) {
-    return "Run npm run security:headers:check against the approved HTTPS public app URL, set JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT, then rerun onboarding.";
+    return "Run npm run security:headers:check against the approved HTTPS public app URL, apply the READY report with npm run ops:hosted-audit:apply, then rerun onboarding.";
   }
   if (error.includes("approval records")) {
     return "Complete the private operational approval records packet and run npm run ops:approvals:check.";

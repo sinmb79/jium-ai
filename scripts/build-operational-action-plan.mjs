@@ -169,6 +169,7 @@ const PHASE_BLUEPRINTS = [
     verificationCommands: [
       "npm run public:hosting:bundle",
       "npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json",
+      "npm run ops:hosted-audit:apply -- --audit-report ops/private/production-onboarding/hosted-security-header-audit.json",
       "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
       "npm run ops:go-live:env:apply -- --incident-owner-ref <pseudonymous-incident-owner-reference>",
       "npm run ops:go-live:check",
@@ -178,7 +179,7 @@ const PHASE_BLUEPRINTS = [
     baseActions: [
       "Build the production static hosting bundle with npm run public:hosting:bundle.",
       "Deploy dist/static-hosting-bundle/site to Cloudflare Pages, Netlify, or another approved _headers-capable host.",
-      "Run hosted security header audit against the approved HTTPS public app URL and set JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT to the redacted report.",
+      "Run hosted security header audit against the approved HTTPS public app URL and apply it with npm run ops:hosted-audit:apply.",
       "Apply approved go-live flags and the pseudonymous incident owner reference with npm run ops:go-live:env:apply.",
       "Set only approval states and setting-presence values in production env; do not put raw contacts or victim indicators into reports.",
       "Confirm server runtime, storage, desktop publish, onboarding, and private approvals are all READY.",

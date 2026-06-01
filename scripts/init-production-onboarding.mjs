@@ -67,7 +67,7 @@ function onboardingReadme({ generatedAt, packageVersion }) {
     "6. `npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json`",
     "7. `npm run ops:onboarding:approve-public-operations -- --section <public-app|privacy-notice|support-route> --evidence-ref <pseudonymous-public-operations-evidence-reference>`",
     "8. `npm run ops:onboarding:approve-checklist -- --record <checklist-record-id> --evidence-ref <pseudonymous-evidence-reference>`",
-    "9. Set `JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT=ops/private/production-onboarding/hosted-security-header-audit.json` in the private go-live environment.",
+    "9. Apply the READY hosted security header audit with `npm run ops:hosted-audit:apply -- --audit-report ops/private/production-onboarding/hosted-security-header-audit.json`.",
     "10. `npm run server:deployment:bundle`",
     "11. `npm run desktop:publish:check -- --feed-dir <signed-desktop-folder>`",
     "12. `npm run ops:approvals:check`",

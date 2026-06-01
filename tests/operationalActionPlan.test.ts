@@ -142,6 +142,9 @@ describe("operational action plan", () => {
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
       "npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json",
     );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
+      "npm run ops:hosted-audit:apply -- --audit-report ops/private/production-onboarding/hosted-security-header-audit.json",
+    );
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands.some((command) => command.startsWith("Upload "))).toBe(
       false,
     );

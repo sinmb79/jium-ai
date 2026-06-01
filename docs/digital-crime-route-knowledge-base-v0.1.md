@@ -496,3 +496,11 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - `desktop:release:check`, `desktop:signing-secrets:check`, and `desktop:publish:check` now load only allowlisted non-secret desktop release keys from `.env.desktop.local`.
 - Signing certificates, certificate passwords, Azure signing secrets, and GitHub tokens are intentionally excluded from `.env.desktop.local` and must come from the process environment or GitHub Secrets.
 - `ops:action-plan` now routes desktop release env blockers to `desktop:release-env:apply` instead of undocumented manual edits.
+
+## Implemented in v0.3.81
+
+- Added `scripts/apply-hosted-security-header-audit-env.mjs` and `ops:hosted-audit:apply` for applying READY hosted security header audit evidence to `.env.server.local`.
+- The command requires a valid `jium-security-header-url-audit-v1` report with `READY` status, HTTPS target state, completed fetch, HTTP status below 400, and zero header failures.
+- Reports store only env update status, audit readiness states, failure counts, and SHA-256 digest values; raw audit report paths and raw public URLs remain out of generated reports.
+- Hosted audit evidence parsing now tolerates UTF-8 BOM JSON files created by Windows review tools.
+- `ops:action-plan`, `ops:onboarding:check`, and `ops:go-live:check` now route hosted audit env blockers to the guarded command instead of undocumented manual edits.

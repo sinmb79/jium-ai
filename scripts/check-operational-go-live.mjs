@@ -89,7 +89,7 @@ function goLiveNextActionFor(error) {
     return "Apply the approved pseudonymous incident owner reference with npm run ops:go-live:env:apply.";
   }
   if (error.includes("hosted security header audit")) {
-    return "Run npm run security:headers:check against the approved HTTPS public app URL and attach the READY redacted report before go-live.";
+    return "Run npm run security:headers:check against the approved HTTPS public app URL, then apply the READY redacted report with npm run ops:hosted-audit:apply.";
   }
   if (error.includes("server runtime")) {
     return "Resolve server runtime readiness blockers, including trusted keys and server-only env.";

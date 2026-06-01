@@ -65,7 +65,7 @@ export function validateHostedSecurityHeaderAuditEvidence({ root, env = process.
 
   let report;
   try {
-    report = JSON.parse(readFileSync(reportPath, "utf8"));
+    report = JSON.parse(readFileSync(reportPath, "utf8").replace(/^\uFEFF/, ""));
   } catch {
     errors.push("hosted security header audit report is not valid JSON");
     return {
