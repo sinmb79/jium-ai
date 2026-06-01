@@ -718,3 +718,19 @@
   - update endpoint 원문, signing certificate path/hash, team ID, signing key ID, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호는 저장하지 않는다.
 - 검증 범위
   - asar 내부 필수 항목, 금지 의존성, redacted distribution report, updater YAML parser, checksum/size mismatch 차단을 테스트했다.
+
+## v3.46 데스크톱 릴리즈 후보 증적 bundle
+
+- 릴리즈 후보 증적
+  - `desktop:release:bundle`은 distribution, release readiness, update feed 리포트를 `dist/desktop-release-bundle`에 모은다.
+  - summary에는 gate별 READY/BLOCKED, 오류 수, 버전, 커밋, 상대 artifact 이름, byte size, digest 값을 남긴다.
+  - update endpoint 원문, signing certificate path/password, signing key material, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호는 bundle에 저장하지 않는다.
+- GitHub Actions 보강
+  - `Desktop Release Candidate` 수동 workflow를 추가해 Windows runner에서 unsigned desktop package를 만들고 evidence bundle을 artifact로 업로드한다.
+  - 같은 workflow는 `dist/desktop/win-unpacked`도 별도 artifact로 보관해 담당자가 실제 실행 후보와 증적을 함께 검토할 수 있게 한다.
+  - workflow는 signing secret을 직접 다루지 않고, release channel과 update URL은 readiness 판정용 입력으로만 사용한다.
+- 운영 한계
+  - 이 bundle은 릴리즈 후보 검토 증적이며, 코드서명, HTTPS update hosting, 법률·기관 sign-off 완료를 대체하지 않는다.
+  - update metadata가 없으면 update-feed gate는 BLOCKED로 남아야 정상이다.
+- 검증 범위
+  - bundle 파일 생성, redaction, gate summary, 수동 workflow 구조, artifact upload 설정을 테스트했다.

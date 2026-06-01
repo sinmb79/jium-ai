@@ -13,6 +13,7 @@ export const REQUIRED_DESKTOP_FILES = [
   "scripts/package-desktop-dir.mjs",
   "scripts/check-desktop-distribution.mjs",
   "scripts/check-desktop-update-feed.mjs",
+  "scripts/build-desktop-release-bundle.mjs",
 ];
 
 export const REQUIRED_DESKTOP_PACKAGE_SCRIPTS = [
@@ -23,6 +24,7 @@ export const REQUIRED_DESKTOP_PACKAGE_SCRIPTS = [
   "desktop:package:signed",
   "desktop:distribution:check",
   "desktop:update-feed:check",
+  "desktop:release:bundle",
   "desktop:release:check",
   "desktop:release:json",
   "desktop:release:markdown",

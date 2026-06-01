@@ -324,3 +324,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Added `desktop:distribution:check` and `desktop:update-feed:check` scripts so release operators can separate local package integrity from signed installer/update-feed readiness.
 - The new distribution and update-feed reports use relative artifact names and checksum status only; they do not store update URLs, certificate paths, signing key IDs, victim indicators, raw URLs, invite links, onion addresses, emails, or phone numbers.
 - The current unsigned local package can pass distribution integrity checks, while update-feed readiness must remain BLOCKED until signed installer metadata is generated and uploaded together.
+
+## Implemented in v3.46
+
+- Added `scripts/build-desktop-release-bundle.mjs` and `desktop:release:bundle` to gather desktop distribution, release readiness, update feed, and summary reports under `dist/desktop-release-bundle`.
+- Added a manual `Desktop Release Candidate` GitHub Actions workflow that builds an unsigned Windows release candidate, creates the evidence bundle, and uploads both as artifacts.
+- The bundle summary records gate status, version, commit, relative artifact names, byte sizes, and digest values while keeping update URLs, signing secrets, and victim indicators out of the evidence packet.
+- The workflow is intentionally manual and does not embed signing certificate paths, passwords, or key material.

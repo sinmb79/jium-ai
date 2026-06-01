@@ -31,6 +31,7 @@
     "desktop:package:signed": "npm run desktop:export && node scripts/prepare-desktop-app-dir.mjs && npm run desktop:release:check && electron-builder --config electron-builder.config.cjs --publish never",
     "desktop:distribution:check": "node scripts/check-desktop-distribution.mjs",
     "desktop:update-feed:check": "node scripts/check-desktop-update-feed.mjs",
+    "desktop:release:bundle": "node scripts/build-desktop-release-bundle.mjs",
     "desktop:release:check": "node scripts/check-desktop-release-readiness.mjs",
     "desktop:release:json": "node scripts/check-desktop-release-readiness.mjs --json",
     "desktop:release:markdown": "node scripts/check-desktop-release-readiness.mjs --markdown",

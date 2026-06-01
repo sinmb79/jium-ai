@@ -51,4 +51,26 @@ describe("GitHub Actions security gates", () => {
     expect(workflow).toContain("uses: actions/setup-node@v6");
     expect(workflow).not.toContain("FORCE_JAVASCRIPT_ACTIONS_TO_NODE24");
   });
+
+  it("has a manual desktop release candidate workflow with evidence artifacts", () => {
+    const workflow = readFileSync(".github/workflows/desktop-release-candidate.yml", "utf8");
+
+    expect(workflow).toContain("workflow_dispatch:");
+    expect(workflow).toContain("release_channel:");
+    expect(workflow).toContain("update_url:");
+    expect(workflow).toContain("runs-on: windows-latest");
+    expect(workflow).toContain("uses: actions/checkout@v6");
+    expect(workflow).toContain("uses: actions/setup-node@v6");
+    expect(workflow).toContain("node-version: 24");
+    expect(workflow).toContain("npm run security:secrets");
+    expect(workflow).toContain("npm run typecheck");
+    expect(workflow).toContain("tests/desktopReleaseBundle.test.ts");
+    expect(workflow).toContain("npm run desktop:package:dir");
+    expect(workflow).toContain("npm run desktop:release:bundle");
+    expect(workflow).toContain("uses: actions/upload-artifact@v6");
+    expect(workflow).toContain("dist/desktop-release-bundle");
+    expect(workflow).toContain("dist/desktop/win-unpacked");
+    expect(workflow).not.toContain("WINDOWS_SIGNING_CERT_PATH");
+    expect(workflow).not.toContain("WINDOWS_SIGNING_CERT_PASSWORD");
+  });
 });

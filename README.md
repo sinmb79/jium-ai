@@ -146,6 +146,7 @@ npm run build
 - 데스크톱 정적 산출물은 `npm run desktop:export`로 생성하며, release 전에는 `npm run desktop:release:check`로 channel, HTTPS update URL, signing profile 준비 여부를 확인
 - 로컬 데스크톱 배포 산출물은 `npm run desktop:distribution:check`로 `app.asar` 필수 파일, 금지 의존성, artifact 크기와 SHA-256 지문을 점검
 - 자동 업데이트 feed는 signed installer와 `latest.yml`이 같은 빌드에서 생성된 뒤 `npm run desktop:update-feed:check -- --feed-dir <배포폴더>`로 버전, SHA-512, 파일 크기 일치 여부를 확인
+- 릴리즈 후보 증적은 `npm run desktop:release:bundle`로 `dist/desktop-release-bundle`에 모으며, GitHub Actions의 `Desktop Release Candidate` 수동 워크플로도 같은 bundle과 Windows unpacked package를 artifact로 보관
 - `desktop:release:json`과 `desktop:release:markdown`은 updater URL 원문, 인증서 경로·hash, team ID, signing key ID, 피해자 지표를 저장하지 않는 redacted 인수인계 리포트를 생성
 - 첫 진단 화면과 사건 보드에는 악성 확장프로그램, 원격제어, 공용 PC, 가해자 접근 가능성을 확인하는 기기 안전점검을 표시
 

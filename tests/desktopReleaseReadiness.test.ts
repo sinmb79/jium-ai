@@ -31,6 +31,7 @@ async function writeDesktopRepo(root: string) {
   await writeFile(path.join(root, "scripts", "package-desktop-dir.mjs"), "export {};\n", "utf8");
   await writeFile(path.join(root, "scripts", "check-desktop-distribution.mjs"), "export {};\n", "utf8");
   await writeFile(path.join(root, "scripts", "check-desktop-update-feed.mjs"), "export {};\n", "utf8");
+  await writeFile(path.join(root, "scripts", "build-desktop-release-bundle.mjs"), "export {};\n", "utf8");
   await writeFile(
     path.join(root, "package.json"),
     JSON.stringify(
@@ -50,6 +51,7 @@ async function writeDesktopRepo(root: string) {
           "desktop:package:signed": "npm run desktop:export && node scripts/prepare-desktop-app-dir.mjs && npm run desktop:release:check && electron-builder --config electron-builder.config.cjs --publish never",
           "desktop:distribution:check": "node scripts/check-desktop-distribution.mjs",
           "desktop:update-feed:check": "node scripts/check-desktop-update-feed.mjs",
+          "desktop:release:bundle": "node scripts/build-desktop-release-bundle.mjs",
           "desktop:release:check": "node scripts/check-desktop-release-readiness.mjs",
           "desktop:release:json": "node scripts/check-desktop-release-readiness.mjs --json",
           "desktop:release:markdown": "node scripts/check-desktop-release-readiness.mjs --markdown",
