@@ -126,6 +126,13 @@ npm run build:server
 
 실제 운영 전 최종 승인은 `npm run security:server-readiness` 또는 `npm run build:server:production`으로 확인합니다. 이 검사는 서버 env뿐 아니라 `data/trusted-authorized-feed-keys.json`에 최소 1개의 활성 승인 기관 공개키가 등록되어 있는지도 확인합니다. 만료됐거나 아직 유효하지 않은 공개키는 운영 활성키로 세지 않습니다. 현재 공개 저장소의 기본 registry는 비어 있으므로, 파트너 공개키 승인 절차가 끝나기 전에는 이 readiness 검사가 실패해야 정상입니다.
 
+운영자 인수인계용 readiness 리포트는 아래 명령으로 생성합니다. 리포트는 secret 값, Origin 원문, 파일시스템 경로를 저장하지 않고 설정 여부와 개수만 표시합니다.
+
+```bash
+npm run security:server-readiness:json -- --output ./server-readiness.json
+npm run security:server-readiness:markdown -- --output ./server-readiness.md
+```
+
 대시보드의 "기관 공개키 승인" 패널은 후보 JWK 공개키를 검토하고 registry patch JSON을 만들기 위한 보조 도구입니다. fingerprint와 checklist를 승인 기록에 남기는 용도이며, 개인키·PEM private key·서명 key material은 입력하거나 저장하지 않습니다.
 
 같은 패널에서 registry 수명주기 검토를 실행하면 활성, 곧 만료, 만료, 만료일 없음, 활성 전 상태를 집계하고 운영 차단 항목을 표시합니다. 운영자는 폐기할 keyId와 폐기 시각을 입력해 검토 가능한 retirement patch를 만들 수 있습니다. 실제 교체 때는 새 공개키를 먼저 승인한 뒤 기존 키를 폐기하고, readiness 검사로 최소 1개의 활성 공개키가 남는지 확인해야 합니다.

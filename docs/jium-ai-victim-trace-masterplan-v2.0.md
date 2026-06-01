@@ -431,6 +431,13 @@ v3.39 기관 계정 lifecycle 감사 연결에서 추가 반영한 항목:
 - 최소 정보 원칙: 감사 원장은 승인자 실명이나 연락처, URL, 초대링크, 메모 원문을 저장하지 않고 내부 승인 참조번호만 남긴다.
 - 담당자 handoff: 기관 감사자가 승인 문서, 계정 registry, hash-chain 감사 원장을 같은 기준으로 대조할 수 있게 한다.
 
+v3.40 서버 운영 readiness 리포트에서 추가 반영한 항목:
+
+- 운영 인수인계: 서버 운영 readiness 결과를 JSON 또는 Markdown 리포트로 남길 수 있게 했다.
+- 차단 항목 가시화: 서버 profile, 신뢰 공개키, Route template, storage 설정, Origin 설정, deployment guard를 개별 check로 분리한다.
+- secret 비노출: 리포트에는 세션 secret 값, Origin 원문, 파일 경로를 넣지 않고 존재 여부와 개수만 표시한다.
+- 배포 승인 보조: 기술 readiness 리포트는 실제 기관 승인과 운영 절차 sign-off를 대체하지 않는다는 safety note를 포함한다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

@@ -571,6 +571,17 @@
   - 감사 원장 검증 패널과 서버 요약 API는 기존 redacted ledger 흐름을 유지하면서 새 lifecycle 필드를 recent record 안에서 확인할 수 있음
   - 발급·해지 HTTP handler 테스트와 감사 로그 안전 테스트로 registry-approval-audit 연결을 검증
 
+## v3.40 서버 운영 readiness 리포트
+
+- 운영자 handoff 리포트
+  - `npm run security:server-readiness:json`과 `npm run security:server-readiness:markdown` 스크립트를 추가
+  - 서버 운영 profile, 활성 신뢰 공개키 수, Route template 수, Origin 개수, 차단 항목, 다음 조치 항목을 구조화해 출력
+- secret redaction
+  - 리포트에는 `INSTITUTION_SESSION_SECRET` 값, Origin 원문, 감사 원장/계정 registry 파일 경로를 기록하지 않음
+  - env 값은 `SET/MISSING/TRUE/NOT_TRUE` 같은 존재 여부와 개수만 표시
+- 검증 범위
+  - JSON/Markdown 리포트 생성, 파일 출력, blocked next action, secret/origin/path 미노출을 서버 readiness 테스트로 검증
+
 ## 남은 운영제품 개발 단계
 
 ### Phase A: 제출 패키지 고도화
@@ -633,6 +644,7 @@
 - 기관 계정 관리자 UI 서버 연동: 1차 구현 완료
 - 기관 계정 승인 workflow: 1차 구현 완료
 - 기관 계정 lifecycle 감사 연결: 1차 구현 완료
+- 서버 운영 readiness 리포트: 1차 구현 완료
 - 운영 배포 전 과제: 실제 파트너 공개키 값 등록과 승인 기록 보관, 데스크톱 앱 패키징·서명·자동 업데이트, 운영 승인 워크플로와 배포 환경 hardening
 
 ## 공식 경로 기준

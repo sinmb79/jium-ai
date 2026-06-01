@@ -1,9 +1,14 @@
 import { spawnSync } from "node:child_process";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { validateServerRuntimeReadiness } from "../scripts/check-server-readiness.mjs";
+import {
+  buildServerRuntimeReadinessReport,
+  formatServerRuntimeReadinessMarkdown,
+  summarizeServerRuntimeEnv,
+  validateServerRuntimeReadiness,
+} from "../scripts/check-server-readiness.mjs";
 
 const tempDirs: string[] = [];
 
@@ -88,6 +93,8 @@ describe("server runtime readiness", () => {
     expect(result.keyCount).toBe(1);
     expect(result.activeKeyCount).toBe(1);
     expect(result.templateFiles).toContain("api/institution/login/route.ts");
+    expect(result.envSummary.INSTITUTION_SESSION_SECRET).toBe("SET");
+    expect(JSON.stringify(result)).not.toContain("0123456789abcdef0123456789abcdef");
   });
 
   it("rejects registries that only contain expired keys", async () => {
@@ -159,5 +166,90 @@ describe("server runtime readiness", () => {
     expect(passed.stdout).toContain("active trusted key");
     expect(failed.status).toBe(1);
     expect(failed.stderr).toContain("Server runtime readiness check failed");
+  });
+
+  it("builds a redacted JSON and Markdown readiness report", async () => {
+    const root = await tempRepo();
+    await writeRequiredRouteTemplates(root);
+    await writeRegistry(root, [validKey()]);
+    const result = validateServerRuntimeReadiness({ root, env: serverEnv(root) });
+    const report = buildServerRuntimeReadinessReport(result, { generatedAt: "2026-06-01T00:00:00.000Z" });
+    const markdown = formatServerRuntimeReadinessMarkdown(report);
+    const serialized = JSON.stringify(report);
+
+    expect(report.status).toBe("READY");
+    expect(report.summary.allowedOriginCount).toBe(1);
+    expect(report.checks.every((check) => check.status === "PASS")).toBe(true);
+    expect(markdown).toContain("JiumAI Server Runtime Readiness Report");
+    expect(markdown).toContain("Status: READY");
+    expect(serialized).not.toContain("0123456789abcdef0123456789abcdef");
+    expect(serialized).not.toContain("https://agency.example");
+    expect(serialized).not.toContain(path.join(root, "audit-ledger"));
+  });
+
+  it("reports blocked checks and safe next actions without leaking env values", async () => {
+    const root = await tempRepo();
+    await writeRegistry(root, []);
+    const result = validateServerRuntimeReadiness({
+      root,
+      env: serverEnv(root, {
+        JIUM_SERVER_ROUTES: "false",
+        INSTITUTION_ALLOWED_ORIGINS: "https://agency.example",
+        INSTITUTION_SESSION_SECRET: "0123456789abcdef0123456789abcdef",
+      }),
+    });
+    const report = buildServerRuntimeReadinessReport(result, { generatedAt: "2026-06-01T00:00:00.000Z" });
+
+    expect(report.status).toBe("BLOCKED");
+    expect(report.checks.some((check) => check.status === "BLOCKED")).toBe(true);
+    expect(report.nextActions.join("\n")).toContain("JIUM_SERVER_ROUTES=true");
+    expect(JSON.stringify(report)).not.toContain("0123456789abcdef0123456789abcdef");
+    expect(JSON.stringify(report)).not.toContain("https://agency.example");
+  });
+
+  it("writes CLI JSON and Markdown reports to operator-selected files", async () => {
+    const root = await tempRepo();
+    await writeRequiredRouteTemplates(root);
+    await writeRegistry(root, [validKey()]);
+    const scriptPath = path.join(process.cwd(), "scripts", "check-server-readiness.mjs");
+    const jsonPath = path.join(root, "reports", "readiness.json");
+    const markdownPath = path.join(root, "reports", "readiness.md");
+
+    const jsonRun = spawnSync(process.execPath, [scriptPath, "--json", "--output", jsonPath], {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, ...serverEnv(root) } as NodeJS.ProcessEnv,
+    });
+    const markdownRun = spawnSync(process.execPath, [scriptPath, "--markdown", "--output", markdownPath], {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, ...serverEnv(root) } as NodeJS.ProcessEnv,
+    });
+    const json = JSON.parse(await readFile(jsonPath, "utf8"));
+    const markdown = await readFile(markdownPath, "utf8");
+
+    expect(jsonRun.status).toBe(0);
+    expect(markdownRun.status).toBe(0);
+    expect(json.status).toBe("READY");
+    expect(markdown).toContain("Status: READY");
+    expect(JSON.stringify(json)).not.toContain("0123456789abcdef0123456789abcdef");
+    expect(markdown).not.toContain("https://agency.example");
+  });
+
+  it("summarizes server env presence rather than raw values", () => {
+    const summary = summarizeServerRuntimeEnv({
+      JIUM_SERVER_ROUTES: "true",
+      GITHUB_PAGES: "false",
+      INSTITUTION_SESSION_SECRET: "0123456789abcdef0123456789abcdef",
+      INSTITUTION_ALLOWED_ORIGINS: "https://agency.example,https://partner.example",
+      INSTITUTION_AUDIT_LEDGER_DIR: "C:/secure/audit",
+      INSTITUTION_ACCOUNT_REGISTRY_DIR: "C:/secure/accounts",
+      NEXT_PUBLIC_INSTITUTION_SESSION_SECRET: "",
+    });
+
+    expect(summary.INSTITUTION_SESSION_SECRET).toBe("SET");
+    expect(summary.INSTITUTION_ALLOWED_ORIGINS_COUNT).toBe(2);
+    expect(JSON.stringify(summary)).not.toContain("agency.example");
+    expect(JSON.stringify(summary)).not.toContain("0123456789abcdef");
   });
 });

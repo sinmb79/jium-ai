@@ -287,3 +287,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Provision and revoke audit events now carry pseudonymous account ID, approval reference, approval scope, target role, and target account status.
 - Revocation audit events also carry the safe reason code so registry records and audit ledgers can be reconciled.
 - Audit event validation keeps rejecting raw URLs, invite links, onion addresses, emails, phone-like identifiers, and unsafe free-text approval references.
+
+## Implemented in v3.40
+
+- Added redacted JSON and Markdown server-runtime readiness reports for operator handoff.
+- The readiness report summarizes env presence, trusted key counts, required route templates, blocked checks, and next actions.
+- Secret values, trusted origin strings, and filesystem paths are intentionally excluded from report output.
+- Added `security:server-readiness:json` and `security:server-readiness:markdown` scripts for repeatable deployment review.

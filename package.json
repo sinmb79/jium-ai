@@ -17,6 +17,8 @@
     "security:feeds": "npm run security:feed-keys && npm test -- --run tests/authorizedFeedAccess.test.ts tests/authorizedIntelligenceFeed.test.ts tests/authorizedFeedSignature.test.ts tests/authorizedFeedKeyRegistryScript.test.ts tests/AuthorizedFeedPanel.test.tsx tests/digitalCrimeRouteKnowledge.test.ts tests/promotionSurfaceIntelligence.test.ts tests/learningStore.test.ts",
     "security:deployment": "node scripts/check-deployment-profile.mjs",
     "security:server-readiness": "node scripts/check-server-readiness.mjs",
+    "security:server-readiness:json": "node scripts/check-server-readiness.mjs --json",
+    "security:server-readiness:markdown": "node scripts/check-server-readiness.mjs --markdown",
     "server:routes:materialize": "node scripts/materialize-server-routes.mjs",
     "server:routes:clean": "node scripts/materialize-server-routes.mjs --clean",
     "desktop:vault": "node scripts/native-secure-vault-bridge.mjs",
