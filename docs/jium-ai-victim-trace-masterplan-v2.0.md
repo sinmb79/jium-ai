@@ -410,6 +410,13 @@ v3.36 기관 계정 발급·해지 backend에서 추가 반영한 항목:
 - 서버 Route: `/api/institution/accounts` 템플릿을 추가하고 CSRF, Origin, Content-Type, body size, HttpOnly 세션 쿠키 검사를 적용한다.
 - 감사 기록: 계정 발급, 해지, 조회, 거부 이벤트를 기관 인증 감사 원장에 비식별 필드만으로 기록한다.
 
+v3.37 기관 계정 관리자 UI 서버 연동에서 추가 반영한 항목:
+
+- 서버 운영 UI: 대시보드 기관 계정 관리자 패널에서 서버 계정 목록 조회, 발급, 해지를 수행할 수 있게 했다.
+- 쿠키 기반 보안: 계정 관리 요청은 HttpOnly 기관 세션 쿠키와 계정 관리자 보호 header를 전제로 하며, 브라우저에 세션 토큰을 노출하지 않는다.
+- 구조화 입력: 기관 ID, 가명 subjectId, role, evidenceAccessScope, 만료시각, capability 목록, 해지 사유 코드를 분리해 감사 가능한 계정 lifecycle로 정리한다.
+- 운영 점검 유지: 기존 기관 세션 JSON 검토와 Markdown 리포트 기능은 서버 발급 전후 감사 보조 수단으로 계속 유지한다.
+
 ## 7. 장기 로드맵
 
 ### Phase 1: 해커톤 MVP

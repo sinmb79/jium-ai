@@ -54,6 +54,23 @@ export type InstitutionAccountRevocationInput = {
   reasonCode?: string;
 };
 
+export type PublicInstitutionAccountView = Pick<
+  InstitutionAccountRecord,
+  | "accountId"
+  | "organizationId"
+  | "organizationName"
+  | "subjectId"
+  | "role"
+  | "capabilityIds"
+  | "evidenceAccessScope"
+  | "status"
+  | "createdAt"
+  | "updatedAt"
+  | "expiresAt"
+  | "revokedAt"
+  | "revokedReasonCode"
+>;
+
 const UNSAFE_ACCOUNT_MARKERS = ["http://", "https://", "discord.gg/", "t.me/", "telegram.me/", ".onion", "@", "010-"];
 const PHONE_PATTERN = /\b(?:\+82[-.\s]?)?0(?:1[016789]|2|[3-6]\d)[-.\s]?\d{3,4}[-.\s]?\d{4}\b/;
 const SAFE_REASON_CODE_PATTERN = /^[a-zA-Z0-9._:-]{1,80}$/;
@@ -308,7 +325,7 @@ export function revokeInstitutionAccount(
   };
 }
 
-export function publicInstitutionAccountView(account: InstitutionAccountRecord) {
+export function publicInstitutionAccountView(account: InstitutionAccountRecord): PublicInstitutionAccountView {
   return {
     accountId: account.accountId,
     organizationId: account.organizationId,

@@ -2,10 +2,13 @@ import {
   provisionInstitutionAccount,
   publicInstitutionAccountView,
   revokeInstitutionAccount,
-  type InstitutionAccountProvisionInput,
   type InstitutionAccountRegistry,
-  type InstitutionAccountRevocationInput,
 } from "@/lib/institutionAccountRegistry";
+import {
+  INSTITUTION_ACCOUNT_ADMIN_CSRF_HEADER,
+  INSTITUTION_ACCOUNT_ADMIN_CSRF_VALUE,
+  type InstitutionAccountAdminRequestBody,
+} from "@/lib/institutionAccountProvisioningClient";
 import {
   classifyInstitutionRequestOrigin,
   createInstitutionAuditEvent,
@@ -23,9 +26,8 @@ import { verifyInstitutionSessionFromCookieToken } from "@/lib/institutionLogin"
 import { readInstitutionSessionTokenFromCookie } from "@/lib/institutionSessionCookie";
 import type { InstitutionSessionTokenKey } from "@/lib/institutionSessionToken";
 
-export const INSTITUTION_ACCOUNT_ADMIN_CSRF_HEADER = "x-jium-institution-account-admin";
-export const INSTITUTION_ACCOUNT_ADMIN_CSRF_VALUE = "1";
 export const INSTITUTION_ACCOUNT_ADMIN_MAX_BODY_BYTES = 24 * 1024;
+export { INSTITUTION_ACCOUNT_ADMIN_CSRF_HEADER, INSTITUTION_ACCOUNT_ADMIN_CSRF_VALUE };
 
 export type InstitutionAccountRegistryStoreAdapter = {
   read: () => Promise<InstitutionAccountRegistry>;
@@ -42,11 +44,6 @@ export type InstitutionAccountProvisioningHttpConfig = {
   now?: number;
   maxBodyBytes?: number;
 };
-
-type AccountAdminBody =
-  | { action: "LIST" }
-  | { action: "PROVISION"; account: InstitutionAccountProvisionInput }
-  | { action: "REVOKE"; revocation: InstitutionAccountRevocationInput };
 
 type GuardFailure = {
   response: Response;
@@ -152,7 +149,7 @@ async function auditAccountAdminEvent(
   );
 }
 
-async function readJsonBody(request: Request, maxBodyBytes: number): Promise<AccountAdminBody> {
+async function readJsonBody(request: Request, maxBodyBytes: number): Promise<InstitutionAccountAdminRequestBody> {
   const declaredLength = Number(request.headers.get("Content-Length") || "0");
   if (Number.isFinite(declaredLength) && declaredLength > maxBodyBytes) {
     throw new Error("REQUEST_BODY_TOO_LARGE");
@@ -163,7 +160,7 @@ async function readJsonBody(request: Request, maxBodyBytes: number): Promise<Acc
   }
   try {
     const parsed = JSON.parse(bodyText);
-    return parsed && typeof parsed === "object" ? (parsed as AccountAdminBody) : ({ action: "LIST" } as AccountAdminBody);
+    return parsed && typeof parsed === "object" ? (parsed as InstitutionAccountAdminRequestBody) : ({ action: "LIST" } as InstitutionAccountAdminRequestBody);
   } catch {
     throw new Error("INVALID_JSON");
   }
@@ -179,7 +176,7 @@ async function requireAccountAdminSession(request: Request, config: InstitutionA
   return session;
 }
 
-function actionEventType(action: AccountAdminBody["action"]): InstitutionAuditEventType {
+function actionEventType(action: InstitutionAccountAdminRequestBody["action"]): InstitutionAuditEventType {
   if (action === "PROVISION") {
     return "INSTITUTION_ACCOUNT_PROVISIONED";
   }
@@ -215,7 +212,7 @@ export async function handleInstitutionAccountAdminRequest(
     return jsonResponse(errorCode === "INSTITUTION_SESSION_REQUIRED" ? 401 : 403, { ok: false, errorCode });
   }
 
-  let body: AccountAdminBody;
+  let body: InstitutionAccountAdminRequestBody;
   try {
     body = await readJsonBody(request, config.maxBodyBytes || INSTITUTION_ACCOUNT_ADMIN_MAX_BODY_BYTES);
   } catch (error) {

@@ -984,6 +984,52 @@ h1 {
   background: #fffdf8;
 }
 
+.institution-account-panel,
+.account-admin-server,
+.account-admin-review {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.account-admin-server {
+  border: 1px solid var(--soft-line);
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 0.8rem;
+}
+
+.account-admin-server .label-row {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.account-admin-server .hint {
+  overflow-wrap: anywhere;
+}
+
+.account-admin-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.account-admin-list span,
+.account-admin-list small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.account-admin-list small {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.account-id-button {
+  cursor: pointer;
+}
+
 .trusted-key-review,
 .audit-ledger-review {
   display: grid;

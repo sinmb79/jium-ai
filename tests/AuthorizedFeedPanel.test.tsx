@@ -101,7 +101,7 @@ async function signCredential(privateKey: CryptoKey): Promise<SignedAuthorizedOp
       subjectId: "operator:ui-caseworker",
       issuerName: "Authorized NGO Partner",
       issuedAt: "2026-05-31T00:00:00.000Z",
-      expiresAt: "2026-06-01T00:00:00.000Z",
+      expiresAt: "2027-06-01T00:00:00.000Z",
       capabilityIds: ["AUTHORIZED_FEED_IMPORT", "AUTHORIZED_FEED_SUMMARY", "AUTHORIZED_FEED_PURGE"],
       limitations: ["비식별 승인 피드 수입", "피해자 화면에는 집계만 표시"],
     },

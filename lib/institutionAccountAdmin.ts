@@ -171,7 +171,7 @@ export function reviewInstitutionAccountSessions(
       "기관 subjectId가 이메일, 전화번호, 초대링크, 원문 URL이 아닌 가명 ID인지 확인",
       "TRUSTED_KEY_REVIEW와 INSTITUTION_AUDIT_LEDGER_REVIEW는 PROGRAM_ADMIN MFA 승인 기록을 대조",
       "만료 또는 60분 이내 만료 세션은 재발급 또는 폐기 절차로 분리",
-      "OFFICIAL_REQUEST_ONLY 접근은 사건별 요청번호와 법적 근거를 별도 제출 패킷에 남김",
+      "OFFICIAL_REQUEST_ONLY 접근은 사건별 요청번호와 법적 근거를 별도 제출 문서에 연결",
     ],
   };
 }

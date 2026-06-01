@@ -266,3 +266,10 @@ The demo should not attempt live crawling, hidden-room access, dark-web access, 
 - Added a server-side account registry file store guarded against path traversal and invalid registry contents.
 - Added `/api/institution/accounts` server route template for LIST, PROVISION, and REVOKE operations.
 - Account provisioning requires a PROGRAM_ADMIN MFA session with `INSTITUTION_ACCOUNT_ADMIN`; audit events stay privacy-minimized.
+
+## Implemented in v3.37
+
+- Connected the dashboard institution account admin panel to the server `/api/institution/accounts` route.
+- The panel can list, provision, and revoke institution accounts using credential-included POST requests and the account-admin CSRF header.
+- Account provisioning inputs are structured around pseudonymous organization and subject IDs, role, evidence-access scope, expiry, capabilities, and notes.
+- The offline session-review report remains available, and Korean UI/report text for the account admin panel was repaired.
