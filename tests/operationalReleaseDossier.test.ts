@@ -248,10 +248,14 @@ describe("operational release dossier", () => {
     expect(dossier.requiredReviewFiles.map((file) => file.path)).toContain(
       "dist/operational-launch-inputs/operational-launch-inputs-template.md",
     );
+    expect(dossier.requiredReviewFiles.map((file) => file.path)).toContain(
+      "dist/operational-launch-receipt/operational-launch-receipt.md",
+    );
     expect(dossier.nextCommands).toContain("npm run ops:launch-console");
     expect(dossier.nextCommands).toContain("npm run ops:launch-inputs");
     expect(dossier.nextCommands).toContain("npm run ops:launch-inputs:apply-check -- --input <private-approved-launch-inputs.json>");
     expect(dossier.nextCommands).toContain("npm run ops:launch-inputs:commands -- --input <private-approved-launch-inputs.json>");
+    expect(dossier.nextCommands).toContain("npm run ops:launch-inputs:receipt -- --input <private-approved-launch-inputs.json>");
     expect(dossier.nextCommands).toContain("npm run ops:approvals:input-template");
     expect(dossier.priorityActions[0]).toMatchObject({
       phaseId: "production-onboarding",

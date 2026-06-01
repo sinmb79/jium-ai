@@ -50,6 +50,11 @@ import {
   OPERATIONAL_LAUNCH_INPUTS_TEMPLATE_JSON,
   OPERATIONAL_LAUNCH_INPUTS_TEMPLATE_MARKDOWN,
 } from "./build-operational-launch-inputs.mjs";
+import {
+  OPERATIONAL_LAUNCH_RECEIPT_DIR,
+  OPERATIONAL_LAUNCH_RECEIPT_JSON,
+  OPERATIONAL_LAUNCH_RECEIPT_MARKDOWN,
+} from "./build-operational-launch-receipt.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -243,6 +248,18 @@ function buildRequiredReviewFiles() {
       label: "Operational launch inputs template Markdown",
       path: `${OPERATIONAL_LAUNCH_INPUTS_DIR}/${OPERATIONAL_LAUNCH_INPUTS_TEMPLATE_MARKDOWN}`,
       purpose: "Human-readable guide for reviewing private operating inputs before guarded apply commands.",
+    },
+    {
+      id: "operational-launch-receipt-json",
+      label: "Operational launch receipt JSON",
+      path: `${OPERATIONAL_LAUNCH_RECEIPT_DIR}/${OPERATIONAL_LAUNCH_RECEIPT_JSON}`,
+      purpose: "Redacted receipt proving command-packet/input digest alignment and final launch gate status.",
+    },
+    {
+      id: "operational-launch-receipt-markdown",
+      label: "Operational launch receipt Markdown",
+      path: `${OPERATIONAL_LAUNCH_RECEIPT_DIR}/${OPERATIONAL_LAUNCH_RECEIPT_MARKDOWN}`,
+      purpose: "Human-readable private command-packet receipt for final launch archive.",
     },
     {
       id: "release-dossier-json",
@@ -485,6 +502,7 @@ export async function buildOperationalReleaseDossier({
       "npm run ops:launch-inputs",
       "npm run ops:launch-inputs:apply-check -- --input <private-approved-launch-inputs.json>",
       "npm run ops:launch-inputs:commands -- --input <private-approved-launch-inputs.json>",
+      "npm run ops:launch-inputs:receipt -- --input <private-approved-launch-inputs.json>",
       "npm run ops:approvals:input-template",
       "npm run ops:go-live:rehearsal",
       "npm run ops:release-dossier",

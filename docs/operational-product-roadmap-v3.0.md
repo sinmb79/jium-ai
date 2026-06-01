@@ -1089,6 +1089,22 @@
 - Verification scope
   - Tested filled private input apply readiness, hosted-audit readiness, server-storage ready-to-create status, desktop blocker surfacing, redaction of raw values, report writing, CLI output, and output path guard.
 
+## v3.101 Operational launch receipt
+
+- Launch archive receipt
+  - Version was raised to `0.3.101`.
+  - Added `ops:launch-inputs:receipt`, with JSON and Markdown variants.
+  - The command reads the reviewed private launch input and private command packet, verifies digest alignment, and attaches current apply-readiness plus final go-live gate status.
+- Operational wiring
+  - The go-live action plan now tells operators to archive a receipt after the private command packet is run.
+  - Operational release dossiers list the receipt report as a required review/archive file and include the receipt command in next steps.
+- Safety boundary
+  - The receipt does not execute commands and does not approve launch.
+  - Reports store command IDs, command digests, input digests, counts, statuses, and redacted blocker summaries only.
+  - Raw URLs, storage paths, feed paths, support contacts, incident owner refs, command text, secrets, tokens, victim indicators, invite links, onion addresses, emails, and phone numbers are excluded from public reports.
+- Verification scope
+  - Tested command-packet/input digest matching, mismatch detection, current go-live blocker capture, raw-value redaction, report writing, CLI output, and output path guard.
+
 ## v3.99 Operational launch command packet
 
 - Private command packet

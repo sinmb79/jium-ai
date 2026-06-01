@@ -736,3 +736,13 @@ npm run ops:launch-inputs:apply-check -- --input ops/private/production-onboardi
 ```
 
 The report shows which phases are ready, ready-to-create, pending review output, or blocked across hosted audit evidence, server storage, server origin, trusted key review/apply, desktop feed, approval inputs, and go-live env. It does not apply anything and keeps raw URLs, paths, refs, and contacts out of public output. Details are in [Operational Launch Apply Readiness v0.3.100](docs/operational-launch-apply-readiness-v0.3.100.md).
+
+## v0.3.101 Operational Launch Receipt
+
+After the reviewed private launch command packet is generated and run by authorized operators, they can build a redacted receipt:
+
+```bash
+npm run ops:launch-inputs:receipt -- --input ops/private/production-onboarding/approved-launch-inputs.json
+```
+
+The receipt checks that the private command packet is under `ops/private`, the command sequence is complete, the command packet input digest matches the reviewed launch input, and the current apply-readiness/go-live gates are captured without raw command text, URLs, paths, contacts, refs, or secrets. Details are in [Operational Launch Receipt v0.3.101](docs/operational-launch-receipt-v0.3.101.md).

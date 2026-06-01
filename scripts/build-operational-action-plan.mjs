@@ -198,6 +198,7 @@ const PHASE_BLUEPRINTS = [
       "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
       "npm run ops:go-live:env:apply -- --incident-owner-ref <pseudonymous-incident-owner-reference>",
       "npm run ops:go-live:check",
+      "npm run ops:launch-inputs:receipt -- --input <private-approved-launch-inputs.json>",
       "npm run ops:handoff:bundle",
       "npm run ops:action-plan",
       "npm run ops:launch-console",
@@ -218,13 +219,14 @@ const PHASE_BLUEPRINTS = [
       "Apply approved go-live flags and the pseudonymous incident owner reference with npm run ops:go-live:env:apply.",
       "Set only approval states and setting-presence values in production env; do not put raw contacts or victim indicators into reports.",
       "Confirm server runtime, storage, desktop publish, onboarding, and private approvals are all READY.",
+      "Build npm run ops:launch-inputs:receipt after the private command packet is run so digest alignment and final gate status are archived without raw values.",
       "Archive the handoff bundle and action plan with the private release evidence packet.",
       "Build npm run ops:launch-console so owner lanes and approval command queues are reviewed before final launch.",
       "Build npm run ops:release-dossier so external reviewers receive a redacted evidence manifest before launch approval.",
     ],
     completionCriteria: [
       "Operational go-live status is READY.",
-      "The redacted handoff bundle, action plan, release dossier, and private approval records are archived together.",
+      "The redacted handoff bundle, action plan, launch receipt, release dossier, and private approval records are archived together.",
     ],
   },
 ];
