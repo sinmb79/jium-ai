@@ -95,7 +95,19 @@ describe("operational action plan", () => {
       "npm run server:storage:init -- --storage-root <approved-absolute-storage-root> --write-env",
     );
     expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
+      "npm run public:hosting:bundle",
+    );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
       "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
+    );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands).toContain(
+      "npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json",
+    );
+    expect(plan.runOrder.find((entry) => entry.phaseId === "go-live")?.verificationCommands.some((command) => command.startsWith("Upload "))).toBe(
+      false,
+    );
+    expect(plan.phases.find((phase) => phase.id === "go-live")?.actions.some((action) => action.action.includes("dist/static-hosting-bundle/site"))).toBe(
+      true,
     );
     expect(text).not.toContain("prod.example.com");
     expect(text).not.toContain("privacy.example.com");

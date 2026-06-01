@@ -186,12 +186,16 @@ export async function buildOperationalHandoffBundle({
       "Approved institution public key registry and approval record",
       "Server-only institution session secret and trusted origin deployment record",
       "Access-controlled, repo-external, writable audit ledger and account registry storage decision",
+      "Approved _headers-capable public static hosting deployment and READY hosted security header audit record",
       "Signed desktop installer, blockmap, and update metadata from the same build",
       "GitHub Release publish approval and asset review record",
       "Completed private production onboarding checklist, storage decision, and trusted-key candidate review evidence",
       "Private operational approval records packet for legal, data retention, support route, incident-response, release evidence, and go-live approval",
     ],
     nextActions: uniqueActions(
+      [
+        "Build npm run public:hosting:bundle and deploy dist/static-hosting-bundle/site to an approved _headers-capable host before public URL approval.",
+      ],
       serverReport.nextActions,
       serverStorageReport.nextActions,
       desktopReport.nextActions,

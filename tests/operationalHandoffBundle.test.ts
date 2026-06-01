@@ -307,6 +307,12 @@ describe("operational handoff bundle", () => {
       { id: "operational-go-live", status: "BLOCKED", errorCount: 1 },
     ]);
     expect(bundleText).toContain("External Records Needed");
+    expect(result.summary.externalRecordsNeeded).toContain(
+      "Approved _headers-capable public static hosting deployment and READY hosted security header audit record",
+    );
+    expect(result.summary.nextActions).toContain(
+      "Build npm run public:hosting:bundle and deploy dist/static-hosting-bundle/site to an approved _headers-capable host before public URL approval.",
+    );
     expect(bundleText).not.toContain("prod.example.com");
     expect(bundleText).not.toContain("support@example.com");
     expect(bundleText).not.toContain("ghs_secret");

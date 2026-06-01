@@ -405,3 +405,14 @@ npm run public:hosting:bundle
 ```
 
 The bundle writes `dist/static-hosting-bundle/site` for Cloudflare Pages or Netlify, verifies that exported routes do not use the GitHub Pages base path, and checks that `_headers` exactly matches the repository security policy. Details are in [Secure Static Hosting Bundle v0.3.70](docs/secure-static-hosting-bundle-v0.3.70.md).
+
+## v0.3.71 Static Hosting Go-Live Bridge
+
+The operational handoff and action-plan runbooks now connect the static hosting bundle to the final go-live path. Operators are explicitly guided to build the `_headers`-capable bundle, deploy `dist/static-hosting-bundle/site` to an approved public host, run the hosted security header audit, and attach the redacted audit report before public URL approval.
+
+```bash
+npm run ops:handoff:bundle
+npm run ops:action-plan
+```
+
+The generated action plan keeps public URLs, contacts, tokens, and victim indicators redacted while still requiring the evidence needed for production launch. Details are in [Static Hosting Go-Live Bridge v0.3.71](docs/static-hosting-go-live-bridge-v0.3.71.md).

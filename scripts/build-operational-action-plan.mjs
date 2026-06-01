@@ -151,12 +151,17 @@ const PHASE_BLUEPRINTS = [
     objective: "Run the final cross-gate check and archive the redacted handoff evidence before production launch.",
     evidenceTarget: "dist/operational-handoff-bundle",
     verificationCommands: [
+      "npm run public:hosting:bundle",
+      "npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json",
       "npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env",
       "npm run ops:go-live:check",
       "npm run ops:handoff:bundle",
       "npm run ops:action-plan",
     ],
     baseActions: [
+      "Build the production static hosting bundle with npm run public:hosting:bundle.",
+      "Deploy dist/static-hosting-bundle/site to Cloudflare Pages, Netlify, or another approved _headers-capable host.",
+      "Run hosted security header audit against the approved HTTPS public app URL and set JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT to the redacted report.",
       "Set only approval states and setting-presence values in production env; do not put raw contacts or victim indicators into reports.",
       "Confirm server runtime, storage, desktop publish, onboarding, and private approvals are all READY.",
       "Archive the handoff bundle and action plan with the private release evidence packet.",
@@ -242,6 +247,12 @@ function phaseForAction(action) {
   }
   if (
     text.includes("ops:public-env:init") ||
+    text.includes("public:hosting:bundle") ||
+    text.includes("static hosting") ||
+    text.includes("_headers-capable") ||
+    text.includes("security:headers:check") ||
+    text.includes("hosted security header audit") ||
+    text.includes("jium_hosted_security_header_audit_report") ||
     text.includes("public app") ||
     text.includes("privacy notice") ||
     text.includes("public, privacy, and support routes")
