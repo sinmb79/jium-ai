@@ -2,7 +2,7 @@
 
 작성일: 2026-05-31
 
-최신 구현 메모: v3.60에서 private onboarding scaffold의 안전한 version upgrade 명령을 추가했다. 세부 runbook은 `docs/production-onboarding-upgrade-v0.3.60.md`를 기준으로 한다.
+최신 구현 메모: v3.61에서 operational handoff bundle을 owner-routed action plan으로 바꾸는 `ops:action-plan` 명령을 추가했다. 세부 runbook은 `docs/operational-action-plan-v0.3.61.md`를 기준으로 한다.
 
 ## 운영제품 기준
 
@@ -916,6 +916,14 @@
 - Placeholder scaffolds are updated without changing approval status.
 - Already approved operational approval records are not rewritten automatically; the report marks them for manual review.
 - Verification covered placeholder upgrade, approved-record skip behavior, dry-run CLI output, and redaction.
+
+## v3.61 operational action plan
+
+- Added `scripts/build-operational-action-plan.mjs` with `ops:action-plan`, JSON, and Markdown variants.
+- The command refreshes or reads the redacted operational handoff summary and turns blockers into owner-routed phases.
+- The plan covers production onboarding, server runtime, server storage, signed desktop release, private approval records, and final go-live.
+- Each phase includes gate status, report references, evidence targets, verification commands, completion criteria, and handoff-derived next actions.
+- The report remains redacted and excludes raw URLs, contacts, owner names, secrets, tokens, certificate material, victim indicators, invite links, onion addresses, emails, phone numbers, and private storage paths.
 
 ## v3.57 production onboarding scaffold
 

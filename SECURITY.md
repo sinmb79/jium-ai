@@ -202,6 +202,8 @@ npm run ops:handoff:bundle
 
 `ops:handoff:bundle`은 서버 runtime readiness, desktop publish readiness, production onboarding readiness, go-live report, 운영 인수인계 runbook을 `dist/operational-handoff-bundle`에 모읍니다. bundle은 운영 승인 증적을 검토하기 위한 묶음이며, 승인 자체를 대체하지 않습니다. 이 bundle에도 public URL 값, support 연락처, incident owner 이름, secret, token, 인증서 material, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호를 넣지 않습니다.
 
+`ops:action-plan`은 같은 handoff bundle을 바탕으로 운영 액션 플랜을 생성합니다. 플랜은 onboarding, server runtime, server storage, desktop release, approval records, go-live 단계별 담당 역할, 증적 대상, 검증 명령을 정리하지만 승인 자체를 대체하지 않습니다. 생성 파일은 `dist/operational-handoff-bundle/operational-action-plan.json` 및 `.md`이며, raw URL, 연락처, 담당자 이름, secret, token, 인증서 material, 피해자 지표, 초대 링크, onion 주소, 이메일, 전화번호, private storage path를 저장하지 않아야 합니다.
+
 ### 기기 안전점검
 
 피해자가 민감한 피해사실을 입력하거나 암호화 보관함을 열기 전에는 앱 안의 기기·브라우저 안전점검을 먼저 확인합니다. 이 점검은 본인만 쓰는 기기, 확장프로그램 격리, 원격제어 종료, 가해자 접근 차단을 필수 항목으로 두고, 악성코드 검사·신뢰 가능한 네트워크·동기화/클립보드 노출 축소를 권장 항목으로 둡니다. 체크 상태는 화면 상태로만 다루며 확장프로그램 목록, 기기 식별자, 피해자 원문을 저장하지 않습니다.

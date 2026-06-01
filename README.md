@@ -280,3 +280,17 @@ npm run ops:onboarding:upgrade:json -- --dry-run
 ```
 
 The upgrade updates package/release metadata for placeholder scaffolds without marking anything approved. If operational approval records already contain approved release evidence, the command skips them and asks for manual review instead of rewriting old approvals.
+
+## v0.3.61 Operational Action Plan
+
+Operators can turn the redacted operational handoff bundle into an owner-routed launch checklist:
+
+```bash
+npm run ops:action-plan
+npm run ops:action-plan:json
+npm run ops:action-plan:markdown
+```
+
+The plan writes `operational-action-plan.json` and `operational-action-plan.md` under `dist/operational-handoff-bundle`. It groups blockers by onboarding, server runtime, server storage, desktop release, approval records, and go-live owner role, then attaches evidence targets and verification commands for each phase.
+
+The action plan remains redacted. It must not contain raw URLs, support contacts, incident owner names, secrets, tokens, certificate material, victim indicators, invite links, onion addresses, emails, phone numbers, or private storage paths.

@@ -1,6 +1,6 @@
 {
   "name": "jium-ai",
-  "version": "0.3.60",
+  "version": "0.3.61",
   "private": true,
   "description": "무료·로컬 우선 디지털 권리구제 도우미",
   "author": "22B Labs",
@@ -64,6 +64,9 @@
     "ops:handoff:bundle": "node scripts/build-operational-handoff-bundle.mjs",
     "ops:handoff:json": "node scripts/build-operational-handoff-bundle.mjs --json",
     "ops:handoff:markdown": "node scripts/build-operational-handoff-bundle.mjs --markdown",
+    "ops:action-plan": "node scripts/build-operational-action-plan.mjs",
+    "ops:action-plan:json": "node scripts/build-operational-action-plan.mjs --json",
+    "ops:action-plan:markdown": "node scripts/build-operational-action-plan.mjs --markdown",
     "build:server": "npm run server:routes:materialize && npm run security:deployment && next build",
     "build:server:production": "npm run server:routes:materialize && npm run security:server-readiness && next build",
     "security:secrets": "node scripts/secret-scan.mjs",
