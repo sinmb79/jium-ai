@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -18,10 +18,12 @@ import {
   buildServerRuntimeReadinessReport,
   validateServerRuntimeReadiness,
 } from "./check-server-readiness.mjs";
+import {
+  validateHostedSecurityHeaderAuditEvidence,
+} from "./hosted-security-header-audit-evidence.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
-const HOSTED_SECURITY_HEADER_AUDIT_SCHEMA = "jium-security-header-url-audit-v1";
 
 function present(value) {
   return Boolean(String(value || "").trim());
@@ -133,118 +135,6 @@ function envErrors(envSummary) {
   return errors;
 }
 
-function resolvePrivateEvidencePath(root, candidate) {
-  const value = String(candidate || "").trim();
-  if (!value) {
-    return "";
-  }
-  return path.isAbsolute(value) ? value : path.resolve(root, value);
-}
-
-function summarizeHostedSecurityHeaderAudit(report) {
-  return {
-    schema: typeof report?.schema === "string" ? report.schema : "",
-    status: typeof report?.status === "string" ? report.status : "",
-    targetUrlState: typeof report?.summary?.targetUrlState === "string" ? report.summary.targetUrlState : "",
-    fetchState: typeof report?.summary?.fetchState === "string" ? report.summary.fetchState : "",
-    httpStatus: typeof report?.summary?.httpStatus === "number" ? report.summary.httpStatus : null,
-    checkedHeaderCount:
-      typeof report?.summary?.checkedHeaderCount === "number" ? report.summary.checkedHeaderCount : 0,
-    passCount: typeof report?.summary?.passCount === "number" ? report.summary.passCount : 0,
-    failureCount: typeof report?.summary?.failureCount === "number" ? report.summary.failureCount : 0,
-  };
-}
-
-export function validateHostedSecurityHeaderAuditEvidence({ root = repoRoot, env = process.env } = {}) {
-  const reportPath = resolvePrivateEvidencePath(root, env.JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT);
-  const errors = [];
-  let fileStatus = "MISSING";
-  let summary = {
-    schema: "",
-    status: "MISSING",
-    targetUrlState: "",
-    fetchState: "",
-    httpStatus: null,
-    checkedHeaderCount: 0,
-    passCount: 0,
-    failureCount: 0,
-  };
-
-  if (!reportPath) {
-    errors.push("operational hosted security header audit evidence missing: JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT");
-    return {
-      valid: false,
-      errors,
-      sourceSummary: {
-        JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "MISSING",
-        fileStatus,
-        ...summary,
-      },
-    };
-  }
-
-  if (!existsSync(reportPath)) {
-    errors.push("operational hosted security header audit report file missing");
-    return {
-      valid: false,
-      errors,
-      sourceSummary: {
-        JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "SET",
-        fileStatus,
-        ...summary,
-      },
-    };
-  }
-
-  fileStatus = "FOUND";
-  let report;
-  try {
-    report = JSON.parse(readFileSync(reportPath, "utf8"));
-  } catch {
-    errors.push("operational hosted security header audit report is not valid JSON");
-    return {
-      valid: false,
-      errors,
-      sourceSummary: {
-        JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "SET",
-        fileStatus: "INVALID_JSON",
-        ...summary,
-      },
-    };
-  }
-
-  summary = summarizeHostedSecurityHeaderAudit(report);
-
-  if (summary.schema !== HOSTED_SECURITY_HEADER_AUDIT_SCHEMA) {
-    errors.push("operational hosted security header audit report schema is invalid");
-  }
-  if (summary.status !== "READY") {
-    errors.push("operational hosted security header audit report is not READY");
-  }
-  if (summary.targetUrlState !== "HTTPS") {
-    errors.push("operational hosted security header audit report must target HTTPS production hosting");
-  }
-  if (summary.fetchState !== "COMPLETED") {
-    errors.push("operational hosted security header audit report fetch state must be COMPLETED");
-  }
-  if (typeof summary.httpStatus !== "number" || summary.httpStatus >= 400) {
-    errors.push("operational hosted security header audit report HTTP status must be below 400");
-  }
-  if (summary.failureCount !== 0) {
-    errors.push("operational hosted security header audit report has blocking header failures");
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-    sourceSummary: {
-      JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "SET",
-      fileStatus,
-      ...summary,
-    },
-  };
-}
-
 export async function validateOperationalGoLive({
   root = repoRoot,
   env = process.env,
@@ -275,7 +165,7 @@ export async function validateOperationalGoLive({
     errors.push(`operational production onboarding readiness failed: ${productionOnboarding.errors.length} error(s)`);
   }
   if (!hostedSecurityHeaderAudit.valid) {
-    hostedSecurityHeaderAudit.errors.forEach((error) => errors.push(`operational hosted security header audit: ${error}`));
+    hostedSecurityHeaderAudit.errors.forEach((error) => errors.push(`operational ${error}`));
   }
 
   return {

@@ -107,6 +107,61 @@ function updateJsonPackageVersion({ root, filePath, label, packageVersion, dryRu
   return artifact(root, filePath, label, dryRun ? "WOULD_UPDATE" : "UPDATED", { previousPackageVersion, packageVersion });
 }
 
+function hostedSecurityHeaderAuditRecord() {
+  return {
+    id: "hosted-security-header-audit",
+    status: "PENDING_APPROVAL",
+    evidenceRef: "REPLACE-ME-HOSTED-SECURITY-HEADER-AUDIT-REF",
+    requiredCheck:
+      "Approved public app route has a READY redacted security header audit report and JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT points to it.",
+  };
+}
+
+function updateOperatorChecklist({ root, filePath, packageVersion, dryRun }) {
+  if (!existsSync(filePath)) {
+    return artifact(root, filePath, "operator-checklist", "MISSING");
+  }
+  let value;
+  try {
+    value = readJsonFile(filePath);
+  } catch {
+    return artifact(root, filePath, "operator-checklist", "INVALID_JSON");
+  }
+  if (!isPlainObject(value)) {
+    return artifact(root, filePath, "operator-checklist", "INVALID_JSON_OBJECT");
+  }
+  if (value.schema !== PRODUCTION_ONBOARDING_SCHEMA) {
+    return artifact(root, filePath, "operator-checklist", "SKIPPED_SCHEMA_MISMATCH");
+  }
+
+  const previousPackageVersion = String(value.packageVersion || "");
+  let changed = false;
+  if (previousPackageVersion !== packageVersion) {
+    value.packageVersion = packageVersion;
+    changed = true;
+  }
+
+  if (!Array.isArray(value.records)) {
+    value.records = [];
+    changed = true;
+  }
+
+  if (!value.records.some((record) => isPlainObject(record) && record.id === "hosted-security-header-audit")) {
+    value.records.push(hostedSecurityHeaderAuditRecord());
+    changed = true;
+  }
+
+  if (!changed) {
+    return artifact(root, filePath, "operator-checklist", "UNCHANGED", { previousPackageVersion, packageVersion });
+  }
+
+  writeJson(filePath, value, dryRun);
+  return artifact(root, filePath, "operator-checklist", dryRun ? "WOULD_UPDATE" : "UPDATED", {
+    previousPackageVersion,
+    packageVersion,
+  });
+}
+
 function publicOperationsTemplate({ generatedAt, packageVersion }) {
   return {
     schema: PRODUCTION_ONBOARDING_SCHEMA,
@@ -225,10 +280,9 @@ export function upgradeProductionOnboarding({
       packageVersion,
       dryRun,
     }),
-    updateJsonPackageVersion({
+    updateOperatorChecklist({
       root,
       filePath: path.join(resolvedOnboardingDir, "operator-checklist.json"),
-      label: "operator-checklist",
       packageVersion,
       dryRun,
     }),

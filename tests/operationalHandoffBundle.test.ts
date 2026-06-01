@@ -153,10 +153,11 @@ function productionOnboarding(valid = true): ProductionOnboardingReadiness {
     approvalRecords: approvalRecords(valid),
     checklist: {
       valid,
-      approvedRecordCount: valid ? 6 : 0,
-      requiredRecordCount: 6,
+      approvedRecordCount: valid ? 7 : 0,
+      requiredRecordCount: 7,
       presentRecordIds: [
         "desktop-signing-evidence",
+        "hosted-security-header-audit",
         "legal-go-live-approval",
         "public-operations-routes",
         "server-origin-approval",
@@ -180,6 +181,16 @@ function productionOnboarding(valid = true): ProductionOnboardingReadiness {
         JIUM_PRIVACY_NOTICE_URL: valid ? ("SET_HTTPS" as const) : ("MISSING" as const),
         JIUM_SUPPORT_CONTACT_ROUTE: valid ? ("SET_HTTPS" as const) : ("MISSING" as const),
       },
+    },
+    hostedSecurityHeaderAudit: {
+      valid,
+      status: valid ? "READY" : "BLOCKED",
+      envKeyStatus: valid ? ("SET" as const) : ("MISSING" as const),
+      fileStatus: valid ? ("FOUND" as const) : ("MISSING" as const),
+      targetUrlState: valid ? "HTTPS" : "",
+      fetchState: valid ? "COMPLETED" : "",
+      httpStatus: valid ? 200 : null,
+      failureCount: valid ? 0 : 1,
     },
     trustedKeyExample: {
       valid: true,

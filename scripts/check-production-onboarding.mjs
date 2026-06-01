@@ -20,6 +20,10 @@ import {
 import {
   validateServerStorageReadiness,
 } from "./check-server-storage-readiness.mjs";
+import {
+  HOSTED_SECURITY_HEADER_AUDIT_ENV_KEY,
+  validateHostedSecurityHeaderAuditEvidence,
+} from "./hosted-security-header-audit-evidence.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -38,6 +42,7 @@ export const REQUIRED_OPERATOR_CHECKLIST_RECORDS = [
   "server-storage-decision",
   "desktop-signing-evidence",
   "public-operations-routes",
+  "hosted-security-header-audit",
   "legal-go-live-approval",
 ];
 
@@ -73,6 +78,10 @@ function parseEnvFile(filePath) {
         return [line.slice(0, index), line.slice(index + 1)];
       }),
   );
+}
+
+function compactEnv(env) {
+  return Object.fromEntries(Object.entries(env || {}).filter(([, value]) => value !== undefined));
 }
 
 function parseJsonFile(filePath, errors, label) {
@@ -380,6 +389,9 @@ function nextActionFor(error) {
   if (error.includes("public operations")) {
     return "Prepare approved HTTPS public, privacy, and support routes with npm run ops:public-env:init, then approve public-operations.template.json.";
   }
+  if (error.includes("hosted security header audit")) {
+    return "Run npm run security:headers:check against the approved HTTPS public app URL, set JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT, then rerun onboarding.";
+  }
   if (error.includes("approval records")) {
     return "Complete the private operational approval records packet and run npm run ops:approvals:check.";
   }
@@ -398,6 +410,9 @@ export function validateProductionOnboarding({
   const packageVersion = readPackageVersion(root);
   const errors = [];
   const resolvedOnboardingDir = path.resolve(root, onboardingDir);
+  const serverEnvFilePath = path.resolve(root, DEFAULT_SERVER_RUNTIME_ENV_PATH);
+  const serverEnvValues = parseEnvFile(serverEnvFilePath);
+  const onboardingEnv = { ...serverEnvValues, ...compactEnv(env) };
   const requiredFiles = REQUIRED_ONBOARDING_FILE_NAMES.map((fileName) => {
     const filePath = path.join(resolvedOnboardingDir, fileName);
     const status = existsSync(filePath) ? "FOUND" : "MISSING";
@@ -407,7 +422,7 @@ export function validateProductionOnboarding({
     return { fileName, status };
   });
 
-  const serverEnv = validateServerEnvFile(path.resolve(root, DEFAULT_SERVER_RUNTIME_ENV_PATH), root);
+  const serverEnv = validateServerEnvFile(serverEnvFilePath, root);
   errors.push(...serverEnv.errors);
 
   const approvalRecords = validateOperationalApprovalRecords({ root, env, now });
@@ -436,8 +451,11 @@ export function validateProductionOnboarding({
   const publicOperationsTemplate = publicOperationsValue
     ? validatePublicOperationsTemplate(publicOperationsValue, packageVersion)
     : { valid: false, errors: publicOperationsErrors, approvedSectionCount: 0 };
-  const publicOperationsEnv = validatePublicOperationsEnv(path.resolve(root, DEFAULT_SERVER_RUNTIME_ENV_PATH));
+  const publicOperationsEnv = validatePublicOperationsEnv(serverEnvFilePath);
   errors.push(...publicOperationsErrors, ...publicOperationsTemplate.errors, ...publicOperationsEnv.errors);
+
+  const hostedSecurityHeaderAudit = validateHostedSecurityHeaderAuditEvidence({ root, env: onboardingEnv });
+  errors.push(...hostedSecurityHeaderAudit.errors.map((error) => `hosted security header audit: ${error}`));
 
   const trustedKeyErrors = [];
   const trustedKeyValue = parseJsonFile(path.join(resolvedOnboardingDir, "trusted-key-candidate.example.json"), trustedKeyErrors, "trusted key candidate example");
@@ -470,6 +488,16 @@ export function validateProductionOnboarding({
       httpsRouteCount: publicOperationsEnv.httpsRouteCount,
       requiredRouteCount: publicOperationsEnv.requiredRouteCount,
       envKeyStatuses: publicOperationsEnv.keyStatuses,
+    },
+    hostedSecurityHeaderAudit: {
+      valid: hostedSecurityHeaderAudit.valid,
+      status: hostedSecurityHeaderAudit.sourceSummary.status,
+      envKeyStatus: hostedSecurityHeaderAudit.sourceSummary[HOSTED_SECURITY_HEADER_AUDIT_ENV_KEY],
+      fileStatus: hostedSecurityHeaderAudit.sourceSummary.fileStatus,
+      targetUrlState: hostedSecurityHeaderAudit.sourceSummary.targetUrlState,
+      fetchState: hostedSecurityHeaderAudit.sourceSummary.fetchState,
+      httpStatus: hostedSecurityHeaderAudit.sourceSummary.httpStatus,
+      failureCount: hostedSecurityHeaderAudit.sourceSummary.failureCount,
     },
     trustedKeyExample: {
       valid: trustedKeyExample.valid,
@@ -514,6 +542,11 @@ export function buildProductionOnboardingReport(readiness, options = {}) {
       status: readiness.publicOperations?.valid ? "PASS" : "BLOCKED",
     },
     {
+      id: "hosted-security-header-audit",
+      label: "Hosted public app security header audit evidence is READY",
+      status: readiness.hostedSecurityHeaderAudit?.valid ? "PASS" : "BLOCKED",
+    },
+    {
       id: "approval-records",
       label: "Operational approval records packet is complete",
       status: approvalReport.status === "READY" ? "PASS" : "BLOCKED",
@@ -542,6 +575,8 @@ export function buildProductionOnboardingReport(readiness, options = {}) {
       publicOperationsRequiredSectionCount: readiness.publicOperations?.requiredSectionCount || 3,
       publicOperationsHttpsRouteCount: readiness.publicOperations?.httpsRouteCount || 0,
       publicOperationsRequiredRouteCount: readiness.publicOperations?.requiredRouteCount || 3,
+      hostedSecurityHeaderAuditStatus: readiness.hostedSecurityHeaderAudit?.valid ? "READY" : "BLOCKED",
+      hostedSecurityHeaderFailureCount: readiness.hostedSecurityHeaderAudit?.failureCount || 0,
       approvalRecordsStatus: approvalReport.status,
       serverStorageStatus: readiness.serverEnv.storageStatus,
     },
@@ -552,7 +587,7 @@ export function buildProductionOnboardingReport(readiness, options = {}) {
       : ["Run server deployment, desktop publish, go-live, and operational handoff gates with the approved private records."],
     safetyNotes: [
       "This report stores readiness states, counts, package version, and relative onboarding directory only.",
-      "It does not store generated session secrets, trusted origin values, storage directory paths, support contacts, incident owner names, victim indicators, raw URLs, invite links, onion addresses, emails, phone numbers, passwords, tokens, or certificate material.",
+      "It does not store generated session secrets, hosted audit report paths, trusted origin values, storage directory paths, support contacts, incident owner names, victim indicators, raw URLs, invite links, onion addresses, emails, phone numbers, passwords, tokens, or certificate material.",
       "A READY result means private onboarding files are structurally complete; legal, institution, hosting, and release approvals must still be archived externally.",
     ],
   };
@@ -570,6 +605,7 @@ export function formatProductionOnboardingMarkdown(report) {
     `- Operator checklist: ${report.summary.checklistApprovedRecordCount}/${report.summary.checklistRequiredRecordCount}`,
     `- Storage decision: ${report.summary.storageApprovedSectionCount}/${report.summary.storageRequiredSectionCount}`,
     `- Public operations: ${report.summary.publicOperationsApprovedSectionCount}/${report.summary.publicOperationsRequiredSectionCount} approved, ${report.summary.publicOperationsHttpsRouteCount}/${report.summary.publicOperationsRequiredRouteCount} HTTPS routes`,
+    `- Hosted security header audit: ${report.summary.hostedSecurityHeaderAuditStatus} (${report.summary.hostedSecurityHeaderFailureCount} failures)`,
     `- Approval records: ${report.summary.approvalRecordsStatus}`,
     `- Server storage: ${report.summary.serverStorageStatus}`,
     "",

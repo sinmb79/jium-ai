@@ -30,7 +30,7 @@ function tempStorageRoot() {
   return dir;
 }
 
-async function writeReadyServerEnv(root: string, storageRoot: string) {
+async function writeReadyServerEnv(root: string, storageRoot: string, hostedSecurityHeaderAuditReport = "") {
   await writeFile(
     path.join(root, ".env.server.local"),
     [
@@ -45,6 +45,7 @@ async function writeReadyServerEnv(root: string, storageRoot: string) {
       "JIUM_PUBLIC_APP_URL=https://prod.example/jium/",
       "JIUM_PRIVACY_NOTICE_URL=https://prod.example/jium/privacy/",
       "JIUM_SUPPORT_CONTACT_ROUTE=https://prod.example/jium/support/",
+      hostedSecurityHeaderAuditReport ? `JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT=${hostedSecurityHeaderAuditReport}` : "",
       "",
     ].join("\n"),
     "utf8",
@@ -120,6 +121,37 @@ async function writeReadyPublicOperations(root: string, version = "0.3.58") {
   await writeFile(path.join(dir, "public-operations.template.json"), `${JSON.stringify(publicOps, null, 2)}\n`, "utf8");
 }
 
+async function writeHostedSecurityHeaderAudit(root: string, status: "READY" | "BLOCKED" = "READY") {
+  const reportPath = path.join(root, DEFAULT_PRODUCTION_ONBOARDING_DIR, "hosted-security-header-audit.json");
+  await writeFile(
+    reportPath,
+    JSON.stringify(
+      {
+        schema: "jium-security-header-url-audit-v1",
+        generatedAt: "2026-06-01T00:00:00.000Z",
+        status,
+        summary: {
+          targetUrlState: "HTTPS",
+          fetchState: "COMPLETED",
+          httpStatus: 200,
+          checkedHeaderCount: 6,
+          passCount: status === "READY" ? 6 : 0,
+          failureCount: status === "READY" ? 0 : 6,
+          missingCount: status === "READY" ? 0 : 6,
+          mismatchCount: 0,
+        },
+        checks: [],
+        errors: status === "READY" ? [] : [{ code: "SECURITY_HEADER_MISSING", header: "Content-Security-Policy" }],
+        safetyNotes: ["The raw target URL, host, path, query, and response header values are intentionally omitted."],
+      },
+      null,
+      2,
+    ),
+    "utf8",
+  );
+  return path.relative(root, reportPath).replace(/\\/g, "/");
+}
+
 afterEach(async () => {
   await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
 });
@@ -140,6 +172,7 @@ describe("production onboarding readiness", () => {
       expect.arrayContaining(["server-env", "operator-checklist", "storage-decision", "approval-records"]),
     );
     expect(report.checks.filter((check) => check.status === "BLOCKED").map((check) => check.id)).toContain("public-operations");
+    expect(report.checks.filter((check) => check.status === "BLOCKED").map((check) => check.id)).toContain("hosted-security-header-audit");
     expect(markdown).toContain("JiumAI Production Onboarding Readiness Report");
     expect(serialized).not.toContain("INSTITUTION_SESSION_SECRET=");
     expect(serialized).not.toContain(root);
@@ -149,8 +182,9 @@ describe("production onboarding readiness", () => {
     const root = await tempRepo();
     const storageRoot = tempStorageRoot();
     writeProductionOnboardingScaffold({ root, generatedAt: "2026-06-01T00:00:00.000Z" });
+    const hostedSecurityHeaderAudit = await writeHostedSecurityHeaderAudit(root);
     await mkdir(path.join(root, "ops", "private"), { recursive: true });
-    await writeReadyServerEnv(root, storageRoot);
+    await writeReadyServerEnv(root, storageRoot, hostedSecurityHeaderAudit);
     await writeReadyApprovalRecords(root);
     await writeReadyChecklist(root);
     await writeReadyStorageDecision(root);
@@ -162,11 +196,37 @@ describe("production onboarding readiness", () => {
 
     expect(readiness.valid).toBe(true);
     expect(report.status).toBe("READY");
+    expect(report.summary.hostedSecurityHeaderAuditStatus).toBe("READY");
     expect(report.checks.every((check) => check.status === "PASS")).toBe(true);
     expect(serialized).not.toContain("agency.example");
     expect(serialized).not.toContain("prod.example");
+    expect(serialized).not.toContain("hosted-security-header-audit.json");
     expect(serialized).not.toContain(storageRoot);
     expect(serialized).not.toContain("ssssssss");
+  });
+
+  it("blocks missing or blocked hosted security header audit evidence without leaking report paths", async () => {
+    const root = await tempRepo();
+    const storageRoot = tempStorageRoot();
+    writeProductionOnboardingScaffold({ root, generatedAt: "2026-06-01T00:00:00.000Z" });
+    const hostedSecurityHeaderAudit = await writeHostedSecurityHeaderAudit(root, "BLOCKED");
+    await mkdir(path.join(root, "ops", "private"), { recursive: true });
+    await writeReadyServerEnv(root, storageRoot, hostedSecurityHeaderAudit);
+    await writeReadyApprovalRecords(root);
+    await writeReadyChecklist(root);
+    await writeReadyStorageDecision(root);
+    await writeReadyPublicOperations(root);
+
+    const readiness = validateProductionOnboarding({ root });
+    const report = buildProductionOnboardingReport(readiness, { generatedAt: "2026-06-01T00:00:00.000Z" });
+    const serialized = JSON.stringify(report);
+
+    expect(readiness.valid).toBe(false);
+    expect(report.checks.find((check) => check.id === "hosted-security-header-audit")?.status).toBe("BLOCKED");
+    expect(report.summary.hostedSecurityHeaderFailureCount).toBe(6);
+    expect(readiness.errors.join("\n")).toContain("hosted security header audit report is not READY");
+    expect(serialized).not.toContain("hosted-security-header-audit.json");
+    expect(serialized).not.toContain(root);
   });
 
   it("blocks incomplete public operations env and approval records without leaking URLs", async () => {

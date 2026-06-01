@@ -1,4 +1,5 @@
 import type { DesktopPublishReadiness } from "./check-desktop-publish-readiness.mjs";
+import type { HostedSecurityHeaderAuditReadiness } from "./hosted-security-header-audit-evidence.mjs";
 import type { OperationalApprovalRecordsReadiness } from "./check-operational-approval-records.mjs";
 import type { ProductionOnboardingReadiness } from "./check-production-onboarding.mjs";
 import type { ServerRuntimeReadiness } from "./check-server-readiness.mjs";
@@ -14,23 +15,6 @@ export type OperationalGoLiveEnvSummary = {
   JIUM_INCIDENT_RESPONSE_OWNER: "SET" | "MISSING";
   JIUM_OPERATIONAL_APPROVAL_RECORDS: "SET" | "DEFAULT_PRIVATE_PATH";
   JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "SET" | "MISSING";
-};
-
-export type HostedSecurityHeaderAuditReadiness = {
-  valid: boolean;
-  errors: string[];
-  sourceSummary: {
-    JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT: "SET" | "MISSING";
-    fileStatus: "FOUND" | "MISSING" | "INVALID_JSON";
-    schema: string;
-    status: string;
-    targetUrlState: string;
-    fetchState: string;
-    httpStatus: number | null;
-    checkedHeaderCount: number;
-    passCount: number;
-    failureCount: number;
-  };
 };
 
 export type OperationalGoLiveReadiness = {
@@ -77,11 +61,6 @@ export type OperationalGoLiveReport = {
 };
 
 export function summarizeOperationalGoLiveEnv(env?: NodeJS.ProcessEnv): OperationalGoLiveEnvSummary;
-
-export function validateHostedSecurityHeaderAuditEvidence(options?: {
-  root?: string;
-  env?: NodeJS.ProcessEnv;
-}): HostedSecurityHeaderAuditReadiness;
 
 export function validateOperationalGoLive(options?: {
   root?: string;

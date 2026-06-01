@@ -43,6 +43,16 @@ export type ProductionOnboardingReadiness = {
       JIUM_SUPPORT_CONTACT_ROUTE: "MISSING" | "PLACEHOLDER" | "SET_HTTPS" | "SET_NOT_HTTPS" | "SET_INVALID";
     };
   };
+  hostedSecurityHeaderAudit: {
+    valid: boolean;
+    status: string;
+    envKeyStatus: "SET" | "MISSING";
+    fileStatus: "FOUND" | "MISSING" | "INVALID_JSON";
+    targetUrlState: string;
+    fetchState: string;
+    httpStatus: number | null;
+    failureCount: number;
+  };
   trustedKeyExample: {
     valid: boolean;
   };
@@ -65,6 +75,8 @@ export type ProductionOnboardingReport = {
     publicOperationsRequiredSectionCount: number;
     publicOperationsHttpsRouteCount: number;
     publicOperationsRequiredRouteCount: number;
+    hostedSecurityHeaderAuditStatus: "READY" | "BLOCKED";
+    hostedSecurityHeaderFailureCount: number;
     approvalRecordsStatus: "READY" | "BLOCKED";
     serverStorageStatus: "READY" | "BLOCKED";
   };

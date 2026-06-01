@@ -43,8 +43,13 @@ describe("production onboarding scaffold", () => {
     expect(serverEnv).toContain("REPLACE-ME-https-origin");
     expect(approvals).toContain("PENDING_APPROVAL");
     expect(checklist).toContain("PENDING_EXTERNAL_APPROVALS");
+    expect(checklist).toContain("hosted-security-header-audit");
     expect(readme).toContain("Verification Order");
     expect(readme).toContain("ops:public-env:init");
+    expect(readme).toContain("security:headers:check");
+    expect(summary.nextCommands).toContain(
+      "npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json",
+    );
     expect(await readFile(path.join(root, DEFAULT_PRODUCTION_ONBOARDING_DIR, "public-operations.template.json"), "utf8")).toContain(
       "PENDING_PUBLIC_OPERATIONS_APPROVAL",
     );

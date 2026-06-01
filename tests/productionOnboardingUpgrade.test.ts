@@ -86,6 +86,7 @@ describe("production onboarding upgrade", () => {
     expect(summary.artifacts.map((entry) => entry.status)).toEqual(["UPDATED", "UPDATED", "UPDATED", "UPDATED", "UPDATED"]);
     expect(checklist.packageVersion).toBe("0.3.60");
     expect(checklist.status).toBe("PENDING_EXTERNAL_APPROVALS");
+    expect(checklist.records.some((record: { id: string }) => record.id === "hosted-security-header-audit")).toBe(true);
     expect(storageDecision.packageVersion).toBe("0.3.60");
     expect(storageDecision.status).toBe("PENDING_STORAGE_APPROVAL");
     expect(publicOperations.packageVersion).toBe("0.3.60");
@@ -125,6 +126,23 @@ describe("production onboarding upgrade", () => {
     expect(publicOperations.packageVersion).toBe("0.3.65");
     expect(publicOperations.status).toBe("PENDING_PUBLIC_OPERATIONS_APPROVAL");
     expect(JSON.stringify(summary)).not.toContain(root);
+  });
+
+  it("adds the hosted security header audit checklist record when upgrading an older checklist", async () => {
+    const root = await tempRepo("0.3.68");
+    writeProductionOnboardingScaffold({ root, generatedAt: "2026-06-01T00:00:00.000Z" });
+    const checklistPath = path.join(root, DEFAULT_PRODUCTION_ONBOARDING_DIR, "operator-checklist.json");
+    const checklist = await readJson(checklistPath);
+    checklist.records = checklist.records.filter((record: { id: string }) => record.id !== "hosted-security-header-audit");
+    await writeFile(checklistPath, `${JSON.stringify(checklist, null, 2)}\n`, "utf8");
+    await setPackageVersion(root, "0.3.69");
+
+    const summary = upgradeProductionOnboarding({ root });
+    const upgraded = await readJson(checklistPath);
+
+    expect(summary.artifacts.find((entry) => entry.label === "operator-checklist")?.status).toBe("UPDATED");
+    expect(upgraded.records.some((record: { id: string }) => record.id === "hosted-security-header-audit")).toBe(true);
+    expect(upgraded.records.find((record: { id: string }) => record.id === "hosted-security-header-audit")?.status).toBe("PENDING_APPROVAL");
   });
 
   it("supports CLI dry-run JSON without writing changes", async () => {

@@ -381,3 +381,17 @@ npm run ops:go-live:check
 ```
 
 The go-live report stores only whether the audit report is present and READY, plus redacted counts. It does not store the audit report path, public URL, host, path, query, response header values, support contact, incident owner, tokens, or victim indicators. Details are in [Hosted Security Header Go-Live Gate v0.3.68](docs/hosted-security-header-go-live-gate-v0.3.68.md).
+
+## v0.3.69 Hosted Security Header Onboarding Gate
+
+Production onboarding now prepares and checks hosted security header audit evidence before final go-live:
+
+```bash
+npm run ops:onboarding:init
+npm run ops:public-env:init -- --base-url <approved-https-public-base-url> --write-env
+npm run security:headers:check -- <approved-https-public-app-url> --json --output ops/private/production-onboarding/hosted-security-header-audit.json
+$env:JIUM_HOSTED_SECURITY_HEADER_AUDIT_REPORT="ops/private/production-onboarding/hosted-security-header-audit.json"
+npm run ops:onboarding:check
+```
+
+`ops:onboarding:check` now blocks unless the referenced audit report is READY, HTTPS-targeted, fetched successfully, below HTTP 400, and has zero header failures. The report remains redacted and does not store the audit report path, public URL, host, path, query, response header values, contacts, tokens, or victim indicators. Details are in [Hosted Security Header Onboarding Gate v0.3.69](docs/hosted-security-header-onboarding-gate-v0.3.69.md).
