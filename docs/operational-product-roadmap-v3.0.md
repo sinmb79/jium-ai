@@ -1089,6 +1089,21 @@
 - Verification scope
   - Tested filled private input apply readiness, hosted-audit readiness, server-storage ready-to-create status, desktop blocker surfacing, redaction of raw values, report writing, CLI output, and output path guard.
 
+## v3.104 운영 런치 UI
+
+- 제품 내 운영 전환 화면
+  - Version was raised to `0.3.104`.
+  - 사건 보드에 `jium-operational-launch-console-v1` JSON을 가져오는 운영 런치 패널을 추가했다.
+  - UI는 남은 go-live owner lane, blocked phase, P0 count, 첫 검증 명령을 요약한다.
+- 운영 연결
+  - 운영자가 생성 파일을 따로 열지 않아도 `ops:launch-console:json` 결과를 제품 안에서 확인할 수 있다.
+  - private 운영값을 복사하지 않고 내부 인수인계용 compact Markdown 요약을 저장할 수 있다.
+- 안전 경계
+  - 패널은 read-only이며 launch 승인, private approval record 작성, 기관 제출, release asset 업로드, 외부 서비스 호출을 하지 않는다.
+  - raw URL, 연락처, token, invite route, onion 주소, 전화번호, private path가 JSON에 있으면 import를 차단한다.
+- 검증 범위
+  - redacted JSON parsing, unsafe JSON rejection, default guide, imported launch lane rendering, CaseBoard integration을 테스트했다.
+
 ## v3.103 Operational approval evidence upload digests
 
 - Approval evidence closure
