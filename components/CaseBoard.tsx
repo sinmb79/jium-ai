@@ -17,6 +17,7 @@ import { TrustedKeyApprovalPanel } from "@/components/TrustedKeyApprovalPanel";
 import { InstitutionAuditLedgerPanel } from "@/components/InstitutionAuditLedgerPanel";
 import { InstitutionAccountAdminPanel } from "@/components/InstitutionAccountAdminPanel";
 import { DeviceSafetyPanel } from "@/components/DeviceSafetyPanel";
+import { OperationalLaunchPanel } from "@/components/OperationalLaunchPanel";
 
 const statuses = Object.keys(STATUS_LABELS) as CaseStatus[];
 
@@ -56,6 +57,7 @@ export function CaseBoard() {
           </a>
         </div>
         <DeviceSafetyPanel compact />
+        <OperationalLaunchPanel />
         <EncryptedVaultPanel />
         <InstitutionAccountAdminPanel />
         <TrustedKeyApprovalPanel />
@@ -83,6 +85,7 @@ export function CaseBoard() {
         ) : null}
       </div>
       <DeviceSafetyPanel compact />
+      <OperationalLaunchPanel />
       <EncryptedVaultPanel />
       <InstitutionAccountAdminPanel />
       <TrustedKeyApprovalPanel />

@@ -766,3 +766,13 @@ npm run ops:approvals:digest-evidence
 ```
 
 This prevents release-evidence approval from omitting proof that signed desktop assets were uploaded and verified. If `dist/desktop-release-upload/desktop-release-upload-report.json` and `.md` are missing, the digest blocks until the release manager runs `desktop:release-upload:check`. Details are in [Operational Approval Evidence Upload Digests v0.3.103](docs/operational-approval-evidence-upload-digests-v0.3.103.md).
+
+## v0.3.104 운영 런치 UI
+
+사건 보드에 남은 운영 전환 작업을 한눈에 보는 로컬 운영 런치 패널을 추가했습니다:
+
+```bash
+npm run ops:launch-console:json -- --output dist/operational-launch-console/report.json
+```
+
+운영자는 redacted launch-console JSON을 앱에 붙여넣어 담당 역할, 막힌 단계, P0 작업 수, 첫 검증 명령을 확인할 수 있습니다. 실제 URL, 연락처, 토큰, 초대 링크, onion 주소, 전화번호, private path가 들어간 JSON은 차단하며, 내부 인수인계용 Markdown 요약도 저장할 수 있습니다. 자세한 설명은 [운영 런치 UI v0.3.104](docs/operational-launch-ui-v0.3.104.md)를 보세요.

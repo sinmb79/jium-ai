@@ -986,6 +986,40 @@ h1 {
   background: #fbfdff;
 }
 
+.operational-launch-panel {
+  display: grid;
+  gap: 0.85rem;
+  border-color: #b9cfe0;
+  background: #fbfdff;
+}
+
+.launch-lane-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.launch-lane-card {
+  display: grid;
+  gap: 0.55rem;
+  border: 1px solid var(--soft-line);
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 0.8rem;
+}
+
+.command-chip {
+  display: block;
+  border: 1px solid var(--soft-line);
+  border-radius: 0.4rem;
+  background: #f7f5ef;
+  color: #26302c;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  padding: 0.45rem 0.55rem;
+}
+
 .audit-ledger-panel {
   display: grid;
   gap: 0.8rem;
@@ -1258,6 +1292,7 @@ h1 {
   .two-col,
   .evidence-summary dl div,
   .agency-workflow-grid,
+  .launch-lane-grid,
   .submission-summary-grid {
     grid-template-columns: 1fr;
   }
